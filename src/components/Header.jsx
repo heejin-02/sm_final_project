@@ -5,13 +5,13 @@ import Weather from './Weather';
 
 function Header({ user }) {
   return (
-    <header className="header flex align-center justify-between p-4">
+    <header className="header flex align-center justify-between p-4 relative">
 
       <div className="user-area">
         {user && <span>{user.name} 님 👋</span>}
       </div>
 
-      <div className="logo-area">
+      <div className="logo-area center-absolute">
         <img src={logo} alt="로고" className="logo" width="150" />
       </div>
 
