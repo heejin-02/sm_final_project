@@ -1,3 +1,5 @@
+// openweathermap API 사용
+
 import React, { useEffect, useState } from 'react';
 import {
   WiDaySunny,
@@ -96,10 +98,10 @@ function WeatherBox() {
     );
 
   return (
-    <div className="bg-blue-100 text-blue-900 p-4 rounded-xl w-[250px] shadow text-sm">
-      <h3 className="font-bold mb-2 text-base">
-        {weather.cityKorean} 현재 날씨
-      </h3>
+    <div className="p-4 text-base">
+      <div className="font-bold mb-2">
+        {weather.cityKorean} 마포구
+      </div>
 
       <div className="flex items-center gap-2 mb-1">
         <WiDaySunny size={24} />
@@ -108,20 +110,26 @@ function WeatherBox() {
         </span>
       </div>
 
-      <div className="flex items-center gap-2 mb-1">
-        <WiHumidity size={22} />
-        <span>습도: {weather.humidity}%</span>
-      </div>
-
-      <div className="flex items-center gap-2 mb-1">
-        <WiStrongWind size={22} />
-        <span>풍속: {weather.wind} m/s</span>
-      </div>
-
       <div className="flex items-center gap-2">
-        <WiRaindrops size={22} />
-        <span>강수량: {weather.rain} mm</span>
+        <div className="flex items-center gap-2 mb-1">
+          {/* 습도 */}
+          <WiHumidity size={22} />
+          <span className="flex-none">{weather.humidity}%</span>
+        </div>
+
+        <div className="flex items-center gap-2 mb-1">
+          {/* 풍속 */}
+          <WiStrongWind size={22} />
+          <span className="flex-none">{weather.wind} m/s</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* 강수량 */}
+          <WiRaindrops size={22} />
+          <span className="flex-none">{weather.rain} mm</span>
+        </div>        
       </div>
+
     </div>
   );
 }

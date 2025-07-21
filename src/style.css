@@ -1,16 +1,64 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: "S-CoreDream-3Light";
-  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff")
-    format("woff");
-  font-weight: normal;
-  font-style: normal;
-}
-* {
-  font-family: "S-CoreDream-3Light";
+@layer base {
+
+  /* font css */
+  @font-face {
+    font-family: "S-CoreDream-3Light";
+    src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff")
+      format("woff");
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'KoddiUD-OnGodi';
+    font-weight: 400;
+    font-style: normal;
+    src: url('/fonts/KoddiUD-OnGodi-Regular.woff2') format('woff2'),
+         url('/fonts/KoddiUD-OnGodi-Regular.woff')  format('woff'),
+         url('/fonts/KoddiUD-OnGodi-Regular.eot');
+  }
+  @font-face {
+    font-family: 'KoddiUD-OnGodi';
+    font-weight: 700;
+    font-style: normal;
+    src: url('/fonts/KoddiUD-OnGodi-Bold.woff2') format('woff2'),
+         url('/fonts/KoddiUD-OnGodi-Bold.woff')  format('woff'),
+         url('/fonts/KoddiUD-OnGodi-Bold.eot');
+  }
+  @font-face {
+    font-family: 'KoddiUD-OnGodi';
+    font-weight: 800;
+    font-style: normal;
+    src: url('/fonts/KoddiUD-OnGodi-ExtraBold.woff2') format('woff2'),
+         url('/fonts/KoddiUD-OnGodi-ExtraBold.woff')  format('woff'),
+         url('/fonts/KoddiUD-OnGodi-ExtraBold.eot');
+  }
+
+  /* css */
+  *{
+    font-family: "KoddiUD-OnGodi";
+  }
+
+  html{
+    font-size: 18px;
+  }
 }
 
-textarea {
-  outline: 0;
+/* TailwindCSS utilities 레이어에 커스텀 클래스 추가 */
+@layer utilities {
+  .center-absolute {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .frm-input{
+    border: solid 1px #eee;
+  }
+
+  .form-ul{
+    font-size: 1rem;
+  }
 }
