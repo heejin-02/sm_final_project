@@ -19,4 +19,4 @@ export const logout = () =>
 
 // 로그인한 사용자 정보 불러오기
 export const getCurrentUser = () =>
-  api.get('/auth/me'); //서버에서 정보 보내줌
+  api.get('/auth/loginSuccess'); //서버에서 정보 보내줌

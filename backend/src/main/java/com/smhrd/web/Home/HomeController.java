@@ -18,7 +18,7 @@ public class HomeController {
         return "home";
     }
 
-    @PostMapping("/login")
+    @PostMapping("/login") // 로그인 API
     public ResponseEntity<HomeDTO> login(@RequestBody HomeDTO dto, HttpSession session) {
         HomeDTO user = homeService.login(dto.getUserPhone(), dto.getUserPw());
         if (user == null) {
@@ -33,8 +33,8 @@ public class HomeController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<HomeDTO> me(HttpSession session) {
+    @GetMapping("/loginSuccess") // 로그인 성공 후에 사용자 정보를 반환하는 API
+    public ResponseEntity<HomeDTO> loginSuccess(HttpSession session) {
         String phone = (String) session.getAttribute("loginId");
         if (phone == null)
             return ResponseEntity.status(401).build();
