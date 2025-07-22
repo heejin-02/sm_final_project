@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.smhrd.web.qcClassification.QcClassificationMapper">
+
+    <insert id="insertClassification" parameterType="QcClassificationDTO">
+        INSERT INTO QC_CLASSIFICATION (
+            CLASS_IDX,
+            ANLS_MODEL,
+            ANLS_CONTEN,
+            ANLS_RESULT,
+            CREATED_AT,
+            INSECT_IDX,
+            IMG_IDX
+        ) VALUES (
+            QC_CLASSIFICATION_SEQ.NEXTVAL,
+            #{anlsModel},
+            #{anlsConten},
+            #{anlsResult},
+            TO_TIMESTAMP(#{createdAt}, 'YYYY-MM-DD HH24:MI:SS'),
+            #{insectIdx},
+            #{imgIdx}
+        )
+    </insert>
+
+</mapper>
