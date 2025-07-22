@@ -24,6 +24,7 @@ export default function App() {
         <>
           <Route path="/detail" element={<Detail />} />
           <Route path="/write"  element={<Write  />} />
+          <Route path="/select-farm"  element={<SelectFarm  />} />
         </>
       )}
 

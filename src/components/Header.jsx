@@ -1,11 +1,11 @@
 import React from "react";
-import logo from '../assets/images/logo.png';
+import logo from '/images/logo.svg';
 import Weather from './Weather';
 
 
 function Header({ user }) {
   return (
-    <header className="header flex align-center justify-between p-4 relative">
+    <header className="header flex align-center justify-between p-4 fixed">
 
       <div className="user-area">
         {user && <span>{user.name} 님 👋</span>}
