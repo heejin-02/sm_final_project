@@ -3,22 +3,24 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-  <mapper namespace="com.smhrd.web.admin.AdminMapper">
+<mapper namespace="com.smhrd.web.admin.AdminMapper">
 
-    <select id="selectFarmList" resultType="com.smhrd.web.admin.AdminDTO">
-        SELECT 
-            FARM_IDX AS farmIdx,
-            FARM_NAME AS farmName,
-            FARM_ADDR AS farmAddr,
-            FARM_PHONE AS farmPhone,
-            FARM_CROPS AS farmCrops,
-            FARM_AREA AS farmArea,
-            TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS createdAt,
-            FARM_IMG AS farmImg,
-            USER_PHONE AS userPhone
-        FROM QC_FARM
-        ORDER BY CREATED_AT DESC
-    </select>
+  <select id="selectFarmList" resultType="com.smhrd.web.admin.AdminDTO">
+    SELECT 
+      f.FARM_IDX AS farmIdx,
+      u.USER_NAME AS userName,
+      u.USER_PHONE AS userPhone,
+      TO_CHAR(u.JOINED_AT, 'YYYY-MM-DD') AS joinAt,
+      f.FARM_NAME AS farmName,
+      f.FARM_ADDR AS farmAddr,
+      f.FARM_PHONE AS farmPhone,
+      f.FARM_CROPS AS farmCrops,
+      f.FARM_AREA AS farmArea,
+      TO_CHAR(f.CREATED_AT, 'YYYY-MM-DD') AS createdAt,
+      f.FARM_IMG AS farmImg
+    FROM QC_FARM f
+    LEFT JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+    ORDER BY f.CREATED_AT DESC
+  </select>
 
 </mapper>
-  
