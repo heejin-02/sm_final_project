@@ -54,6 +54,15 @@
   html{
     font-size: 18px;
   }
+
+  .logo{
+    width: 112px;
+  }  
+
+  .home{
+    display: flex;
+    flex-direction: column;
+  }  
 }
 
 /* TailwindCSS utilities 레이어에 커스텀 클래스 추가 */
@@ -68,104 +77,40 @@
   }
 
   .header {
-    @apply fixed top-0 inset-x-0 z-99999 bg-white;
+    @apply  fixed top-0 left-0 right-0 mx-auto z-99999 bg-white;
   }
-  .login-form {
-    @apply mx-auto max-w-md text-lg;
-  }
-  .btn-submit {
-    @apply w-full py-3 rounded-lg bg-[var(--color-primary)] text-white mt-6;
-  }  
-
-  .header{
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    z-index: 99999;
-    background: #fff;    
-  }
-
   .section{
-    min-height: 100vh;
-    padding-top: 126px;
+    @apply  min-h-dvh pt-[126px];
   }
-
   .section.bg{
-    position: relative;
+    @apply  relative bg-center bg-cover;
   }
-  .section.bg:after{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    content: '';
-    background: rgba(0, 0, 0, 0.2);
-    z-index: 1;
+  .section.bg::after {
+    @apply absolute block top-0 left-0 w-full h-full bg-black/20 z-1 content-[''];
   }
-
-  .center-absolute {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .center-absolute{
+    @apply  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
   }
-
   .frm-input{
-    border: solid 1px #eee;
-    padding: 6px;
-    background: #fff;
+    @apply  block w-full p-2 border border-[#eee] rounded-md bg-white;
   }
-
   .login-form{
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    font-size: 1.125rem;
+    @apply  w-full max-w-[400px] mx-auto text-lg;
   }
   .login-form .frm-label{
-    margin-bottom: 6px;
-  }
-
-  .form-ul{
-    text-align: left;
+    @apply  mb-1.5;
   }
   .form-ul > li{
-    display: flex;
-    flex-direction: column; 
+    @apply  flex flex-col;
   }
   .form-ul > li + li{
-    margin-top: 12px;
+    @apply  mt-1;
+  }
+  .btn-submit {
+    @apply  w-full py-3 rounded-md bg-[var(--color-primary)] text-white mt-4 cursor-pointer border-[var(--color-primary)] text-lg;
+  } 
+  .cont-wrap{
+    @apply  flex flex-col justify-center items-center gap-5 h-full flex-1 bg-white/65 z-5 m-[1.2rem] py-5 px-4 text-center;
   }
 
-  .btn-submit{
-    width: 100%;
-    padding: 12px;
-    font-size: 1.125rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background: #1a6900; /*#0055A4*/
-    color: #fff;
-    margin-top: 24px;
-  }
-
-  .logo{
-    width: 112px;
-  }
-
-  .home{
-    display: flex;
-    flex-direction: column;
-  }
-  .home .cont-wrap{
-    flex: 1;
-    height: auto;
-    background: rgba(255, 255, 255, 0.65);
-    margin: 1.35rem;
-    padding: 1.25rem 1rem;
-    z-index: 5;
-  }
 }

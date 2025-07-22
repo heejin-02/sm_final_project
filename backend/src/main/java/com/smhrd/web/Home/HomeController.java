@@ -25,6 +25,7 @@ public class HomeController {
             return ResponseEntity.status(401).build();
         }
         String role = "admin".equals(dto.getUserPhone()) ? "admin" : "user";
+        session.setAttribute("loginId", dto.getUserPhone());
         session.setAttribute("role", role);
         session.setAttribute("userName", user.getUserName());
         user.setUserPw(null);

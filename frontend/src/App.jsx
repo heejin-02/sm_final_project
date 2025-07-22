@@ -1,23 +1,24 @@
 // src/App.jsx
-import React, { useState } from 'react'
+import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext';
 
 import Home from './pages/Home'
 import SelectFarm from './pages/SelectFarm'  
 import AdminPage from './pages/AdminPage'
 
 export default function App() {
-  const [role, setRole] = useState(null)
+  const { user } = useAuth();
 
   return (
     <Routes>
-      <Route path="/" element={<Home onLogin={setRole} />} />
+      <Route path="/" element={<Home />} />
 
-      {role === 'admin' && (
+      {user?.role === 'admin' && (
         <Route path="/admin" element={<AdminPage />} />
       )}
 
-      {role && role !== 'admin' && (
+      {user?.role && user.role !== 'admin' && (
         <Route path="/select-farm" element={<SelectFarm />} />
       )}
 
