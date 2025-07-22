@@ -5,7 +5,7 @@
 
 <mapper namespace="com.smhrd.web.qcClassification.QcClassificationMapper">
 
-    <insert id="insertClassification" parameterType="QcClassificationDTO">
+    <insert id="insertClassification" parameterType="com.smhrd.web.qcClassification.QcClassificationDTO">
         INSERT INTO QC_CLASSIFICATION (
             CLASS_IDX,
             ANLS_MODEL,
