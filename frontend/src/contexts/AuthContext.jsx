@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.js
-import { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 // 1. Context 생성
 const AuthContext = createContext();
@@ -8,11 +8,23 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null); // 로그인한 사용자 정보
 
-  const login = (userData) => setUser(userData); // 로그인 시 정보 저장
-  const logout = () => setUser(null);            // 로그아웃 시 초기화
+  const login = (userData) => {
+    // 로그인 시 정보 저장
+    setUser(userData); 
+  };
+
+  const logout = () => {
+    // 로그아웃 시 초기화
+    setUser(null) 
+  };   
+  
+  const selectFarm = (farm) => { 
+    // 농장정보 받아오기
+    setUser((prev) => ({ ...prev, selectedFarm: farm }));
+  };  
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, selectFarm }}>
       {children}
     </AuthContext.Provider>
   );

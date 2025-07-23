@@ -112,5 +112,8 @@
   .cont-wrap{
     @apply  flex flex-col justify-center items-center gap-5 h-full flex-1 bg-white/65 z-5 m-[1.2rem] py-5 px-4 text-center;
   }
+  .farmList-item{
+    @apply w-[calc(50%-0.25rem)] bg-white rounded p-5 text-2xl cursor-pointer hover:bg-[var(--color-primary)] hover:text-white;
+  }
 
 }

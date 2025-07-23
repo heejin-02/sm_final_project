@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as loginAPI, getCurrentUser } from '../api/auth'; // 서버 요청용 login
 import { useAuth } from '../contexts/AuthContext'; // 상태 저장용 login
+import { DUMMY_FARMS } from '../mocks/farms';
 
 export default function LoginForm({ onLogin }) {
 	const [id, setId] = useState('');
@@ -22,11 +23,12 @@ export default function LoginForm({ onLogin }) {
       name: data.userName, // ✅ 바로 data.userName
       phone: data.userPhone,
       role: data.role,
-      farmName: data.farm?.name ?? '' // ← farmName은 현재 안 내려오니까 일단 빈 문자열
+      farms: DUMMY_FARMS, // ← 여기에 더미 데이터 주입
+      selectedFarm: null
     };
 
 		login(userData); // context에 저장
-		navigate(userData.role === 'admin' ? '/admin' : '/select-farm');
+		navigate(userData.role === 'admin' ? '/admin' : '/select-farm', { replace: true });
 
 	} catch (err) {
 		console.error('로그인 실패:', err);
