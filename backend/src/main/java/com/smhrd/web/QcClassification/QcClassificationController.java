@@ -1,4 +1,4 @@
-package com.smhrd.web.qcClassification;
+package com.smhrd.web.QcClassification;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

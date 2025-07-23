@@ -1,4 +1,4 @@
-package com.smhrd.web.qcClassification;
+package com.smhrd.web.QcClassification;
 
 import org.apache.ibatis.annotations.Mapper;
 

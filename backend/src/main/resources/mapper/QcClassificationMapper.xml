@@ -3,13 +3,13 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.smhrd.web.qcClassification.QcClassificationMapper">
+<mapper namespace="com.smhrd.web.QcClassification.QcClassificationMapper">
 
-    <insert id="insertClassification" parameterType="com.smhrd.web.qcClassification.QcClassificationDTO">
+    <insert id="insertClassification" parameterType="com.smhrd.web.QcClassification.QcClassificationDTO">
         INSERT INTO QC_CLASSIFICATION (
-            CLASS_IDX,
+            ANLS_IDX,
             ANLS_MODEL,
-            ANLS_CONTEN,
+            ANLS_CONTENT,
             ANLS_RESULT,
             CREATED_AT,
             INSECT_IDX,
@@ -17,7 +17,7 @@
         ) VALUES (
             QC_CLASSIFICATION_SEQ.NEXTVAL,
             #{anlsModel},
-            #{anlsConten},
+            #{anlsContent, jdbcType=CLOB},
             #{anlsResult},
             TO_TIMESTAMP(#{createdAt}, 'YYYY-MM-DD HH24:MI:SS'),
             #{insectIdx},

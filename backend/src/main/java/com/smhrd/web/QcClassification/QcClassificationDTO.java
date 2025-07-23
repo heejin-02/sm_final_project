@@ -1,4 +1,4 @@
-package com.smhrd.web.qcClassification;
+package com.smhrd.web.QcClassification;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QcClassificationDTO {
+	
     private String anlsModel;
-    private String anlsConten;
+    private String anlsContent;
     private String anlsResult;
     private String createdAt;
     private int insectIdx;
