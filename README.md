@@ -35,7 +35,6 @@
 | 백엔드 | Spring Boot, Oracle DB |
 | 협업 도구 | GitHub Projects, Notion |
 
----
 
 ## 🖼 시스템 아키텍처
 
