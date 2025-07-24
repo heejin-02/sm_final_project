@@ -1,0 +1,20 @@
+# Python
+python/
+venv/
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+
+# Build
+/target/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
