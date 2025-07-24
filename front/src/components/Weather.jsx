@@ -98,32 +98,32 @@ function WeatherBox() {
     );
 
   return (
-    <div className="p-4 text-base">
+    <div className="">
       <div className="font-bold mb-2">
         {weather.cityKorean} 마포구
       </div>
 
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-1">
         <WiDaySunny size={24} />
         <span>
           {weather.condition} · {weather.temp}°C
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center">
+        <div className="flex items-center gap-1">
           {/* 습도 */}
           <WiHumidity size={22} />
           <span className="flex-none">{weather.humidity}%</span>
         </div>
 
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-1">
           {/* 풍속 */}
           <WiStrongWind size={22} />
           <span className="flex-none">{weather.wind} m/s</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {/* 강수량 */}
           <WiRaindrops size={22} />
           <span className="flex-none">{weather.rain} mm</span>
