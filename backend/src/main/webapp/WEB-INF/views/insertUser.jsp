@@ -10,7 +10,7 @@
 </head>
 <body>
     <h1>회원 추가</h1>
-    <form action="/insertUser" method="post">
+	<form action="${pageContext.request.contextPath}/insertUser" method="post">
         <ul>
             <li>
                 <span>휴대폰 번호 (아이디)</span>
@@ -26,7 +26,7 @@
             </li>
             <li>
                 <span>가입 날짜</span>
-                <input type="date" name="joinedAt" class="ipt_tt" required>
+				<input type="date" name="joinedAt" class="ipt_tt" required>
             </li>
             <li>
                 <button type="submit">등록하기</button>

@@ -3,16 +3,14 @@ import axios from 'axios';
 import { DUMMY_USERS } from '../mocks/users';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8095/web/api',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: 'http://localhost:8095',
+  withCredentials: true,               
+  headers: { 'Content-Type': 'application/json' }
 });
 
 // 로그인
-export const login = (userPhone, userPw) =>
-  api.post('/auth/login', { userPhone, userPw });
+export const loginCheck = (id, pw) =>
+  api.post('/api/home/loginCheck', null, { params: { id, pw } });
 
 export async function getUserFarms(userPhone) {
   // 실제 백엔드: return axios.get(`/web/api/user/${userPhone}/farms`);
