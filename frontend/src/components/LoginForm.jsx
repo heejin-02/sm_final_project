@@ -1,9 +1,10 @@
 // src/components/LoginForm.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login as loginAPI, getCurrentUser } from '../api/auth'; // 서버 요청용 login
+import { login as loginAPI } from '../api/auth'; // 서버 요청용 login
 import { useAuth } from '../contexts/AuthContext'; // 상태 저장용 login
-import { DUMMY_FARMS } from '../mocks/farms';
+//import { DUMMY } from '../mocks/users';
+ 
 
 export default function LoginForm({ onLogin }) {
 	const [id, setId] = useState('');
@@ -20,10 +21,10 @@ export default function LoginForm({ onLogin }) {
 		const { data } = await getCurrentUser();
 
     const userData = {
-      name: data.userName, // ✅ 바로 data.userName
       phone: data.userPhone,
+      name: data.userName,
       role: data.role,
-      farms: DUMMY_FARMS, // ← 여기에 더미 데이터 주입
+      farms: farms,
       selectedFarm: null
     };
 

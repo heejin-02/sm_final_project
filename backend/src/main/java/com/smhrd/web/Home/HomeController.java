@@ -2,12 +2,11 @@ package com.smhrd.web.Home;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@RequestMapping("/api/home")
 public class HomeController {
 
     @Autowired
@@ -18,31 +17,44 @@ public class HomeController {
         return "home";
     }
 
-    @PostMapping("/login") // 로그인 API
-    public ResponseEntity<HomeDTO> login(@RequestBody HomeDTO dto, HttpSession session) {
-        HomeDTO user = homeService.login(dto.getUserPhone(), dto.getUserPw());
-        if (user == null) {
-            return ResponseEntity.status(401).build();
+    @PostMapping("/loginCheck")
+    public String loginCheck(@RequestParam("id") String id,
+            @RequestParam("pw") String pw,
+            HttpSession session) {
+
+        HomeDTO result = homeService.login(id, pw);
+
+        if (result != null) {
+            session.setAttribute("loginId", result.getUserPhone());
+            session.setAttribute("userName", result.getUserName());
+
+            if ("admin".equals(id) && "admin".equals(pw)) {
+                session.setAttribute("role", "admin");
+                return "redirect:/admin";
+            }
+
+            session.setAttribute("role", "user");
+            return "redirect:/userPage";
+        } else {
+            return "redirect:/?error=true";
         }
-        String role = "admin".equals(dto.getUserPhone()) ? "admin" : "user";
-        session.setAttribute("loginId", dto.getUserPhone());
-        session.setAttribute("role", role);
-        session.setAttribute("userName", user.getUserName());
-        user.setUserPw(null);
-        user.setRole(role);
-        return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/loginSuccess") // 로그인 성공 후에 사용자 정보를 반환하는 API
-    public ResponseEntity<HomeDTO> loginSuccess(HttpSession session) {
-        String phone = (String) session.getAttribute("loginId");
-        if (phone == null)
-            return ResponseEntity.status(401).build();
-        HomeDTO user = new HomeDTO();
-        user.setUserPhone(phone);
-        user.setUserName((String) session.getAttribute("userName"));
-        user.setRole((String) session.getAttribute("role"));
-        return ResponseEntity.ok(user);
+    @GetMapping("/userPage")
+    public String userPage(HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        return "user".equals(role) ? "userPage" : "redirect:/?unauthorized=true";
+    }
+
+    @GetMapping("/adminPage")
+    public String adminPage(HttpSession session) {
+        String role = (String) session.getAttribute("role");
+
+        if ("admin".equals(role)) {
+            return "adminPage";
+        } else {
+            return "redirect:/?unauthorized=true";
+        }
     }
 
 }

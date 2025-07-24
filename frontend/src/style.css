@@ -55,6 +55,10 @@
     font-size: 18px;
   }
 
+  #app {
+    @apply pt-[126px];   /* 기본 헤더 높이 */
+  }
+
   .logo{
     width: 112px;
   }  
@@ -77,10 +81,10 @@
   }
 
   .header {
-    @apply  fixed top-0 left-0 right-0 mx-auto z-99999 bg-white;
+    @apply  fixed flex items-center top-0 left-0 right-0 mx-auto z-99999 bg-white shadow-md;
   }
   .section{
-    @apply  min-h-dvh pt-[126px];
+    @apply  min-h-dvh;
   }
   .section.bg{
     @apply  relative bg-center bg-cover;
@@ -113,7 +117,7 @@
     @apply  flex flex-col justify-center items-center gap-5 h-full flex-1 bg-white/65 z-5 m-[1.2rem] py-5 px-4 text-center;
   }
   .farmList-item{
-    @apply w-[calc(50%-0.25rem)] bg-white rounded p-5 text-2xl cursor-pointer hover:bg-[var(--color-primary)] hover:text-white;
+    @apply w-[calc(50%-0.25rem)] bg-white rounded px-5 py-6 text-3xl cursor-pointer hover:bg-[var(--color-primary)] hover:text-white;
   }
 
 }

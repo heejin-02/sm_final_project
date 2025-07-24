@@ -62,7 +62,12 @@
          <artifactId>tomcat-embed-jasper</artifactId>
          <scope>provided</scope>
       </dependency>
-
+      <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.3.0</version>
+		</dependency>
 
       <!--
       https://mvnrepository.com/artifact/org.glassfish.web/jakarta.servlet.jsp.jstl -->
@@ -109,12 +114,7 @@
          <version>3.0.4</version>
          <scope>test</scope>
       </dependency>
-
-	<dependency>
-	<groupId>org.springdoc</groupId>
-	<artifactId>springdoc-openapi-ui</artifactId>
-	<version>1.6.15</version>  <!-- 필요하다면 최신 버전으로 조정 -->
-	</dependency>      
+      
       
    </dependencies>
 

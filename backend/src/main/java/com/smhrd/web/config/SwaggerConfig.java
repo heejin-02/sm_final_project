@@ -9,11 +9,11 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
 	@Bean
-	public OpenAPI apiInfo() {
+	public OpenAPI openAPI() {
 		return new OpenAPI()
 				.info(new Info()
-						.title("벌레잡는109(백구) API 문서")
-						.description("Spring Boot 기반 해충 탐지 API")
-						.version("v1.0.0"));
+						.title("벌레잡는 109")
+						.description("AI 기반 해충 실시간 탐지 및 조기 알림 서비스")
+						.version("1.0.0"));
 	}
 }

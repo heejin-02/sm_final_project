@@ -12,12 +12,12 @@ export default function Header() {
     <header className="header flex align-center justify-between p-4 fixed">
 
       <div className="user-area">
-        {user?.name && <p className="text-sm">{user.name} 님</p>}
+        {user?.name && <span className="text-2xl">{user.name} 님</span>}
         {/* 선택된 농장 이름이 있으면 */}
         {user?.selectedFarm?.name && (
-          <p className="text-sm">
-            현재 농장: <span className="font-semibold">{user.selectedFarm.name}</span>
-          </p>
+          <span className="text-2xl">
+            의 <span className="font-semibold">{user.selectedFarm.name}</span>
+          </span>
         )}
       </div>
 

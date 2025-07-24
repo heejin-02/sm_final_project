@@ -1,0 +1,14 @@
+{
+	"configurations": [
+		{
+			"type": "java",
+			"name": "Spring Boot-FinalProjectApplication<FinalProject>",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"mainClass": "com.smhrd.web.FinalProjectApplication",
+			"projectName": "FinalProject",
+			"args": "",
+			"envFile": "${workspaceFolder}/.env"
+		}
+	]
+}
