@@ -119,5 +119,7 @@
   .farmList-item{
     @apply w-[calc(50%-0.25rem)] bg-white rounded px-5 py-6 text-3xl cursor-pointer hover:bg-[var(--color-primary)] hover:text-white;
   }
-
+  .tit{
+    @apply  text-2xl font-bold;
+  }
 }
