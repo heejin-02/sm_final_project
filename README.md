@@ -48,6 +48,7 @@
    ├▶ Twilio TTS → 전화 음성 알림
    ├▶ GPT 요약 → 벌레 리포트 생성
    └▶ LangChain + ChromaDB → 방제 챗봇 응답
+```
 
 ## 🤗 팀원 
 
