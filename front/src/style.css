@@ -67,6 +67,10 @@
     display: flex;
     flex-direction: column;
   }  
+
+  .main_farm{
+    height: calc(100vh - 126px);
+  }
 }
 
 /* TailwindCSS utilities 레이어에 커스텀 클래스 추가 */
@@ -121,5 +125,8 @@
   }
   .tit{
     @apply  text-2xl font-bold;
+  }
+  .noti-area{
+    @apply w-[380px] max-w-full;
   }
 }

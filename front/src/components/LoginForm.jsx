@@ -16,7 +16,6 @@ export default function LoginForm() {
     e.preventDefault();
     try {
       const { data } = await loginCheck(id.trim(), pw);
-      // 응답 그대로 userData로 매핑
       const userData = {
         phone: data.userPhone,
         name:  data.userName,
