@@ -1,3 +1,8 @@
+# Python
+*.py[cod]
+*.so
+*.ipynb_checkpoints/
+
 # 가상환경
 venv/
 */venv/
@@ -21,3 +26,26 @@ __pycache__/
 
 # PDF 등 출력물
 *.pdf
+
+# VSCode
+.vscode/
+
+# Mac / Windows
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# 모델 파일
+*.pt
+*.pth
+*.h5
+
+# 기타 빌드 / 캐시 파일
+build/
+dist/
+*.egg-info/
