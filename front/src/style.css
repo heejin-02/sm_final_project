@@ -71,6 +71,10 @@
   .main_farm{
     height: calc(100vh - 126px);
   }
+
+  .flex-0-auto{
+    flex: 0 0 auto;
+  }
 }
 
 /* TailwindCSS utilities 레이어에 커스텀 클래스 추가 */
@@ -128,5 +132,8 @@
   }
   .noti-area{
     @apply w-[380px] max-w-full;
+  }
+  .bordered-square-box{
+    @apply border rounded p-2 aspect-[4/2] flex flex-col items-center justify-center gap-2 flex-1;
   }
 }

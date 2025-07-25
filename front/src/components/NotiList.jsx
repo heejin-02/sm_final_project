@@ -13,7 +13,7 @@ export default function NotiList(){
   };	
 
 	return(
-		<div className="noti-area border border-[#666] p-4 shadow-sm rounded overflow-y-auto">
+		<div className="noti-area border border-[#666] p-4 shadow-sm rounded overflow-y-auto flex-0-auto">
 			<div className="flex justify-between items-center mb-3 text-xl">
 				<div className="tit">확인하지 않은 알림</div>
 				<div className="">
