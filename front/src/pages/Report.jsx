@@ -1,15 +1,17 @@
 // src/pages/Report.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useStatistics } from '../hooks/useStatistics';
 import Loader from '../components/Loader';
 import LeftPanel from '../components/LeftPanel';
+import DateNavigation from '../components/DateNavigation';
 
 export default function Report() {
   const { period } = useParams(); // 'daily', 'monthly', 'yearly'
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [currentDate, setCurrentDate] = useState(new Date());
   const { data, loading, error } = useStatistics(period);
 
   const farm = user?.selectedFarm;
@@ -50,11 +52,18 @@ export default function Report() {
   // 기간별 설명 설정
   const getPeriodDescription = () => {
     switch(period) {
-      case 'daily': return '오늘 하루 동안의 해충 탐지 현황입니다.';
-      case 'monthly': return '이번 달 해충 탐지 현황입니다.';
-      case 'yearly': return '올해 해충 탐지 현황입니다.';
+      case 'daily': return '선택한 날짜의 해충 탐지 현황입니다.';
+      case 'monthly': return '선택한 월의 해충 탐지 현황입니다.';
+      case 'yearly': return '선택한 연도의 해충 탐지 현황입니다.';
       default: return '해충 탐지 현황입니다.';
     }
+  };
+
+  // 날짜 변경 핸들러
+  const handleDateChange = (newDate) => {
+    setCurrentDate(newDate);
+    // TODO: 새로운 날짜로 데이터 다시 로드
+    console.log('날짜 변경:', newDate);
   };
 
   return (
@@ -71,13 +80,20 @@ export default function Report() {
             <h1 className="tit mb-2">{getPeriodTitle()}</h1>
             <p className="text-gray-600">{getPeriodDescription()}</p>
           </div>
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="btn-submit px-4 py-2 text-sm"
           >
             뒤로가기
           </button>
         </div>
+
+        {/* 날짜 선택 */}
+        <DateNavigation
+          period={period}
+          currentDate={currentDate}
+          onDateChange={handleDateChange}
+        />
 
         {/* 기간 선택 탭 */}
         <div className="flex gap-2 mb-6">
@@ -166,6 +182,42 @@ export default function Report() {
             </div>
           </div>
         </div>
+
+        {/* 계절별 비교 (연간 통계에만 표시) */}
+        {period === 'yearly' && (
+          <div className="mt-8">
+            <h2 className="text-xl font-bold mb-4">🌸 계절별 비교</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bordered-box text-center">
+                <div className="text-2xl mb-2">🌸</div>
+                <h3 className="font-bold mb-1">봄 (3-5월)</h3>
+                <div className="text-xl font-bold text-green-600">123마리</div>
+                <div className="text-sm text-gray-600">진딧물 多</div>
+              </div>
+
+              <div className="bordered-box text-center">
+                <div className="text-2xl mb-2">☀️</div>
+                <h3 className="font-bold mb-1">여름 (6-8월)</h3>
+                <div className="text-xl font-bold text-red-600">456마리</div>
+                <div className="text-sm text-gray-600">나방 多</div>
+              </div>
+
+              <div className="bordered-box text-center">
+                <div className="text-2xl mb-2">🍂</div>
+                <h3 className="font-bold mb-1">가을 (9-11월)</h3>
+                <div className="text-xl font-bold text-orange-600">234마리</div>
+                <div className="text-sm text-gray-600">거미 多</div>
+              </div>
+
+              <div className="bordered-box text-center">
+                <div className="text-2xl mb-2">❄️</div>
+                <h3 className="font-bold mb-1">겨울 (12-2월)</h3>
+                <div className="text-xl font-bold text-blue-600">89마리</div>
+                <div className="text-sm text-gray-600">활동 적음</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 차트 영역 (나중에 추가 가능) */}
         <div className="mt-8">
