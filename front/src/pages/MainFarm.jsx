@@ -39,7 +39,7 @@ export default function MainFarm() {
               rows={3}
               cols={3}
               gap={8}
-              onCellClick={id => navigate(`/regions/${id}`)}
+              // onCellClick={id => navigate(`/regions/${id}`)}
             />
           </div>
         </div>
@@ -64,10 +64,25 @@ export default function MainFarm() {
           </div>
 
           <div className='flex flex-col gap-1 btn-wrap'>
-            <div className="bordered-box hvborder">일간 통계</div>              
-            <div className="bordered-box hvborder">월간 통계</div>              
-            <div className="bordered-box hvborder">연간 통계</div>             
-          </div>                   
+            <div
+              className="bordered-box hvborder cursor-pointer"
+              onClick={() => navigate('/report/daily')}
+            >
+              일간 통계
+            </div>
+            <div
+              className="bordered-box hvborder cursor-pointer"
+              onClick={() => navigate('/report/monthly')}
+            >
+              월간 통계
+            </div>
+            <div
+              className="bordered-box hvborder cursor-pointer"
+              onClick={() => navigate('/report/yearly')}
+            >
+              연간 통계
+            </div>
+          </div>
         </div>
       </div>
     </div>
