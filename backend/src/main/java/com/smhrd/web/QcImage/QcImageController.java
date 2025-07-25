@@ -59,7 +59,7 @@ public class QcImageController {
             String videoUrl = "/" + dateFolder + "/" + fileName;
 
             QcImageDTO image = new QcImageDTO();
-            image.setCctvIdx(1L); // 임시 카메라 번호
+            image.setCctvIdx(2L); // 임시 카메라 번호
             image.setImgName(fileName);
             image.setImgExt("mp4");
             image.setImgSize(file.getSize());
