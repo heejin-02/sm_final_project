@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.smhrd.web.user.UserMapper">
+
+	<select id="findFarmsByUserPhone" resultType="com.smhrd.web.user.UserDTO">
+        SELECT 
+            farm_idx AS farmIdx,
+            farm_name AS farmName,
+            farm_addr AS farmAddr,
+            farm_phone AS farmPhone,
+            farm_crops AS farmCrops,
+            farm_area AS farmArea,
+            farm_img AS farmImg
+        FROM qc_farm
+        WHERE user_phone = #{userPhone}
+    </select>
+
+</mapper>
