@@ -14,7 +14,8 @@
             IMG_EXT,
             CREATED_AT,
             IMG_X,
-            IMG_Y
+            IMG_Y,
+            IMG_URL
         ) VALUES (
             QC_IMAGES_SEQ.NEXTVAL,
             #{cctvIdx},
@@ -23,7 +24,8 @@
             #{imgExt},
             TO_TIMESTAMP(#{createdAt}, 'YYYY-MM-DD HH24:MI:SS'),
             #{imgX},
-            #{imgY}
+            #{imgY},
+            #{imgUrl}
         )
     </insert>
 
