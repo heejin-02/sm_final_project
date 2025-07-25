@@ -79,9 +79,9 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
   return (
     <div className="detection-feedback">
       <div className="feedback-header">
-        <h3 className="tit-2">🤖 AI 탐지 결과가 정확한가요?</h3>
+        <h3 className="tit-2">🐶 해충 탐지 결과가 정확한가요?</h3>
         <p className="feedback-subtitle">
-          여러분의 피드백으로 AI가 더 똑똑해집니다!
+          사장님의 의견으로 백구가 더 똑똑해집니다!
         </p>
       </div>
 
@@ -151,7 +151,7 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
             <p className="question-text">어떤 부분이 틀렸나요? (여러 개 선택 가능)</p>
           </div>
 
-          {feedback.accuracy === 'wrong' && (
+
             <div className="feedback-section">
               <h4 className="section-title">🐛 해충 종류가 틀렸다면?</h4>
               <div className="feedback-grid">
@@ -166,7 +166,7 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
                 ))}
               </div>
             </div>
-          )}
+
 
           <div className="feedback-section">
             <h4 className="section-title">📍 위치가 틀렸다면?</h4>
@@ -182,7 +182,7 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
               ))}
             </div>
           </div>
-
+{/* 
           <div className="feedback-section">
             <h4 className="section-title">🔢 개수가 틀렸다면?</h4>
             <div className="feedback-grid">
@@ -196,7 +196,7 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="feedback-actions">
             <button className="feedback-submit-btn" onClick={() => handleSubmit()}>
@@ -213,11 +213,49 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
         <div className="feedback-step">
           <div className="feedback-complete">
             <div className="complete-icon">🎉</div>
-            <h3 className="complete-title">피드백 감사합니다!</h3>
+            <h3 className="complete-title">평가 완료되었습니다!</h3>
             <p className="complete-message">
-              소중한 의견이 AI 학습에 반영되어<br/>
+              소중한 의견이 백구 학습에 반영되어<br/>
               더 정확한 해충 탐지가 가능해집니다.
             </p>
+
+            {/* 제출된 피드백 내용 표시 */}
+            <div className="feedback-summary">
+              <h4 className="summary-title">📝 제출된 피드백</h4>
+              <div className="summary-content">
+                <div className="summary-item">
+                  <span className="summary-label">정확도 평가:</span>
+                  <span className="summary-value">
+                    {feedback.accuracy === 'correct' && '✅ 정확함'}
+                    {feedback.accuracy === 'partial' && '⚠️ 부분적으로 맞음'}
+                    {feedback.accuracy === 'wrong' && '❌ 틀림'}
+                    {feedback.accuracy === 'unknown' && '❓ 잘 모르겠음'}
+                  </span>
+                </div>
+
+                {feedback.wrongType && (
+                  <div className="summary-item">
+                    <span className="summary-label">올바른 해충:</span>
+                    <span className="summary-value">{feedback.wrongType}</span>
+                  </div>
+                )}
+
+                {feedback.correctRegion && (
+                  <div className="summary-item">
+                    <span className="summary-label">올바른 위치:</span>
+                    <span className="summary-value">{feedback.correctRegion}</span>
+                  </div>
+                )}
+
+                {feedback.countIssue && (
+                  <div className="summary-item">
+                    <span className="summary-label">개수 문제:</span>
+                    <span className="summary-value">{feedback.countIssue}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <button className="feedback-restart-btn" onClick={handleRestart}>
               다시 평가하기
             </button>

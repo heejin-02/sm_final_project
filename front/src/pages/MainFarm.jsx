@@ -43,26 +43,26 @@ export default function MainFarm() {
             />
           </div>
         </div>
-        <div className="flex gap-2 w-full h-[34%]">
-          <div className="flex flex-col gap-1">            
-            <div className="bordered-box flex-row">
-              <span className="text-sm whitespace-nowrap w-[100px] flex-none">찾은 해충</span>
-              <span className="w-full text-right">
-                <span className="text-xl font-semibold">10</span> 마리
-              </span>
-            </div>                       
-            <div className="bordered-box flex-row">
-              <span className="text-sm whitespace-nowrap w-[100px] flex-none">탐지 종류</span>
-              <span className="w-full text-right">
-                <span className="text-xl font-semibold">5</span> 종
+        <div className="stats-container">
+          <div className="stats-column">
+            <div className="stat-item">
+              <span className="stat-label">찾은 해충</span>
+              <span className="stat-content">
+                <span className="stat-number">10</span><span className="stat-unit"> 마리</span>
               </span>
             </div>
-            <div className="bordered-box flex-row">
-              <span className="text-sm whitespace-nowrap w-[100px] flex-none">발생 구역</span>
-              <span className="w-full text-right">
-                <span className="text-xl font-semibold">5</span> 곳
+            <div className="stat-item">
+              <span className="stat-label">탐지 종류</span>
+              <span className="stat-content">
+                <span className="stat-number">5</span><span className="stat-unit"> 종</span>
               </span>
-            </div>             
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">발생 구역</span>
+              <span className="stat-content">
+                <span className="stat-number">5</span><span className="stat-unit"> 곳</span>
+              </span>
+            </div>
           </div>
 
           <div className="bordered-box justify-start">
