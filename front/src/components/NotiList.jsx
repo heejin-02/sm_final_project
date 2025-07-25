@@ -24,7 +24,7 @@ export default function NotiList(){
 				{items.map(item => (
 				<li
 					key={item.id}
-					className="noti-item"
+					className="noti-item hvborder"
 					onClick={() => handleSelect(item)}
 				>
 					<div className="noti-item-top">

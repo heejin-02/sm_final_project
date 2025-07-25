@@ -64,9 +64,9 @@ export default function MainFarm() {
           </div>
 
           <div className='flex flex-col gap-1 btn-wrap'>
-            <div className="bordered-box">일간 통계</div>              
-            <div className="bordered-box">월간 통계</div>              
-            <div className="bordered-box">연간 통계</div>             
+            <div className="bordered-box hvborder">일간 통계</div>              
+            <div className="bordered-box hvborder">월간 통계</div>              
+            <div className="bordered-box hvborder">연간 통계</div>             
           </div>                   
         </div>
       </div>

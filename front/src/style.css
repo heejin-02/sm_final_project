@@ -64,7 +64,7 @@
   }
 
   .logo{
-    width: 112px;
+    /* width: 112px; */
   }
 
   .home{
@@ -94,7 +94,7 @@
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
   .section{
-    min-height: 100dvh;
+    min-height: calc(100vh - 126px);
   }
   .section.bg{
     position: relative;
@@ -216,14 +216,10 @@
     gap: 0.5rem;
   }
 
-  .noti-item{
-    border: 1px solid #666;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    cursor: pointer;
+  .hvborder{
     position: relative;
   }
-  .noti-item:after{
+  .hvborder:after{
     display: block;
     content: '';
     position: absolute;
@@ -235,11 +231,18 @@
     border-radius: 0.5rem;
     transition: border-color 0.2s ease;
   }
-  .noti-item:hover{
-    background-color: #f4fef1;
+  .hvborder:hover{
+    background-color: #efefef;
   }
-  .noti-item:hover:after{
-    border-color: var(--color-primary);
+  .hvborder:hover:after{
+    border-color: #000;
+  }
+
+  .noti-item{
+    border: 1px solid #666;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
   }
   .noti-item-top{
     display: flex;
@@ -286,7 +289,11 @@
   }
   .btn-wrap .bordered-box{
     white-space: nowrap;
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+  .btn-wrap .bordered-box:hover{
+    background-color: #efefef;
   }
 
   /* 농장 맵 스타일 */
