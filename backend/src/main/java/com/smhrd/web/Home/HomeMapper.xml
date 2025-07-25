@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.smhrd.web.Home.HomeMapper">
+
+    <select id="login" resultType="com.smhrd.web.Home.HomeDTO" parameterType="com.smhrd.web.Home.HomeDTO">
+	    SELECT USER_PHONE AS userPhone,
+	           USER_PW AS userPw,
+	           USER_NAME AS userName
+	    FROM QC_USER
+	    WHERE USER_PHONE = #{userPhone}
+	      AND USER_PW = #{userPw}
+	</select>
+	
+
+
+</mapper>

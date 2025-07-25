@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.smhrd.web.admin.AdminMapper">
+
+  <select id="selectFarmList" resultType="com.smhrd.web.admin.AdminDTO">
+    SELECT 
+      f.FARM_IDX AS farmIdx,
+      u.USER_NAME AS userName,
+      u.USER_PHONE AS userPhone,
+      TO_CHAR(u.JOINED_AT, 'YYYY-MM-DD') AS joinedAt,
+      f.FARM_NAME AS farmName,
+      f.FARM_ADDR AS farmAddr,
+      f.FARM_PHONE AS farmPhone,
+      f.FARM_CROPS AS farmCrops,
+      f.FARM_AREA AS farmArea,
+      TO_CHAR(f.CREATED_AT, 'YYYY-MM-DD') AS createdAt,
+      f.FARM_IMG AS farmImg
+    FROM QC_FARM f
+    LEFT JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+    ORDER BY f.CREATED_AT DESC
+  </select>
+  
+  
+  <select id="searchFarmList" parameterType="string" resultType="com.smhrd.web.admin.AdminDTO">
+	  SELECT 
+	    f.FARM_IDX AS farmIdx,
+	    u.USER_NAME AS userName,
+	    u.USER_PHONE AS userPhone,
+	    TO_CHAR(u.JOINED_AT, 'YYYY-MM-DD') AS joinedAt,
+	    f.FARM_NAME AS farmName,
+	    f.FARM_ADDR AS farmAddr,
+	    f.FARM_PHONE AS farmPhone,
+	    f.FARM_CROPS AS farmCrops,
+	    f.FARM_AREA AS farmArea,
+	    TO_CHAR(f.CREATED_AT, 'YYYY-MM-DD') AS createdAt,
+	    f.FARM_IMG AS farmImg
+	  FROM QC_FARM f
+	  LEFT JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+	  WHERE u.USER_NAME LIKE '%' || #{keyword} || '%'
+	  ORDER BY f.CREATED_AT DESC
+	</select>
+
+
+	<insert id="insertUser" parameterType="com.smhrd.web.admin.AdminDTO">
+	    INSERT INTO QC_USER (
+	        USER_PHONE,
+	        USER_PW,
+	        USER_NAME,
+	        JOINED_AT
+	    ) VALUES (
+	        #{userPhone},
+	        #{userPw},
+	        #{userName},
+	        #{joinedAt}
+	    )
+	</insert>
+
+
+	<select id="selectUserByPhone" parameterType="string" resultType="com.smhrd.web.admin.AdminDTO">
+	    SELECT USER_PHONE, USER_PW, USER_NAME, JOINED_AT
+	    FROM QC_USER
+	    WHERE USER_PHONE = #{userPhone}
+	</select>
+
+
+	<select id="selectFarmPage" resultType="com.smhrd.web.admin.AdminDTO">
+	    SELECT * FROM (
+	        SELECT ROW_NUMBER() OVER (ORDER BY FARM_IDX ASC) AS RNUM, 
+	               FARM_IDX, FARM_NAME, FARM_ADDR, FARM_PHONE, FARM_CROPS, FARM_AREA, CREATED_AT, FARM_IMG, USER_PHONE
+	        FROM QC_FARM
+	    )
+	    WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	
+	<insert id="insertFarm" parameterType="com.smhrd.web.admin.AdminDTO">
+	  INSERT INTO QC_FARM (
+	    FARM_IDX, USER_PHONE, FARM_NAME, FARM_ADDR,
+	    FARM_PHONE, FARM_CROPS, FARM_AREA, FARM_IMG, CREATED_AT
+	  ) VALUES (
+	    QC_FARM_SEQ.NEXTVAL, 
+	    #{userPhone, jdbcType=VARCHAR}, 
+	    #{farmName, jdbcType=VARCHAR}, 
+	    #{farmAddr, jdbcType=VARCHAR}, 
+	    #{farmPhone, jdbcType=VARCHAR}, 
+	    #{farmCrops, jdbcType=VARCHAR}, 
+	    #{farmArea, jdbcType=VARCHAR}, 
+	    #{farmImgName, jdbcType=VARCHAR}, 
+	    SYSDATE
+	  )
+	</insert>
+	
+	
+    <!-- 전체 글 개수 조회 -->
+    <select id="selectTotalCount" resultType="int">
+        SELECT COUNT(*) FROM QC_FARM f
+        LEFT JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+    </select>
+
+
+
+
+	<!-- 검색 없이 페이징 처리된 목록 조회 -->
+	<select id="selectFarmListWithPaging" parameterType="map" resultType="com.smhrd.web.admin.AdminDTO">
+	    SELECT * FROM (
+	        SELECT a.*, ROWNUM rnum FROM (
+	            SELECT 
+	                f.FARM_IDX AS farmIdx,
+	                u.USER_NAME AS userName,
+	                u.USER_PHONE AS userPhone,
+	                TO_CHAR(u.JOINED_AT, 'YYYY-MM-DD') AS joinedAt,
+	                f.FARM_NAME AS farmName,
+	                f.FARM_ADDR AS farmAddr,
+	                f.FARM_PHONE AS farmPhone,
+	                f.FARM_CROPS AS farmCrops,
+	                f.FARM_AREA AS farmArea,
+	                TO_CHAR(f.CREATED_AT, 'YYYY-MM-DD') AS createdAt,
+	                f.FARM_IMG AS farmImg
+	            FROM QC_FARM f
+	            LEFT JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+	            ORDER BY f.CREATED_AT DESC
+	        ) a
+	        WHERE ROWNUM &lt;= #{endRow}
+	    )
+	    WHERE rnum &gt;= #{startRow}
+	</select>
+	
+
+	
+  <!-- 검색어 포함 글 개수 조회 -->
+  <select id="selectSearchCount" resultType="int" parameterType="map">
+      SELECT COUNT(*) FROM QC_FARM f
+      LEFT JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+      WHERE
+      <choose>
+          <when test="searchField == 'userName'">
+              u.USER_NAME LIKE '%' || #{keyword} || '%'
+          </when>
+          <when test="searchField == 'farmName'">
+              f.FARM_NAME LIKE '%' || #{keyword} || '%'
+          </when>
+          <otherwise>
+              1=1
+          </otherwise>
+      </choose>
+  </select>
+
+  <!-- 검색어 포함 페이징 처리된 목록 조회 -->
+  <select id="searchFarmListWithPaging" resultType="com.smhrd.web.admin.AdminDTO" parameterType="map">
+      SELECT * FROM (
+          SELECT a.*, ROWNUM rnum FROM (
+              SELECT 
+                  f.FARM_IDX AS farmIdx,
+                  u.USER_NAME AS userName,
+                  u.USER_PHONE AS userPhone,
+                  TO_CHAR(u.JOINED_AT, 'YYYY-MM-DD') AS joinedAt,
+                  f.FARM_NAME AS farmName,
+                  f.FARM_ADDR AS farmAddr,
+                  f.FARM_PHONE AS farmPhone,
+                  f.FARM_CROPS AS farmCrops,
+                  f.FARM_AREA AS farmArea,
+                  TO_CHAR(f.CREATED_AT, 'YYYY-MM-DD') AS createdAt,
+                  f.FARM_IMG AS farmImg
+              FROM QC_FARM f
+              LEFT JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+              WHERE
+              <choose>
+                  <when test="searchField == 'userName'">
+                      u.USER_NAME LIKE '%' || #{keyword} || '%'
+                  </when>
+                  <when test="searchField == 'farmName'">
+                      f.FARM_NAME LIKE '%' || #{keyword} || '%'
+                  </when>
+                  <otherwise>
+                      1=1
+                  </otherwise>
+              </choose>
+              ORDER BY f.CREATED_AT DESC
+          ) a
+          WHERE ROWNUM &lt;= #{endRow}
+      )
+      WHERE rnum &gt;= #{startRow}
+  </select>
+
+			
+  
+	<select id="getUserByPhone" parameterType="string" resultType="com.smhrd.web.admin.AdminDTO">
+	    SELECT *
+	    FROM QC_USER
+	    WHERE USER_PHONE = #{userPhone}
+	</select>
+
+
+</mapper>

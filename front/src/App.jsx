@@ -1,33 +1,39 @@
 // src/App.jsx
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Home   from './pages/Home'
-import Detail from './pages/Detail'
-import Write  from './pages/Write'
-//import AdminDashboard from './pages/AdminDashboard'
+import { useAuth } from './contexts/AuthContext';
+
+import AdminPage from './pages/AdminPage'
+import Home from './pages/Home'
+import SelectFarm from './pages/SelectFarm' 
+import MainFarm from './pages/MainFarm'; 
+
 
 export default function App() {
-  const role = localStorage.getItem('role')
+  const { user } = useAuth();
 
   return (
     <Routes>
-      {/* 1) 기본 로그인/홈 화면 */}
-      <Route path="/" element={<Home />} />
+      <Route 
+        path="/"
+        element={
+          user
+            ? <Navigate to={user.role === 'admin' ? '/admin' : '/select-farm'} replace />
+            : <Home />
+        }
+      />
 
-      {/* 2) 어드민 전용 경로 */}
-      {role === 'admin' && (
-        <Route path="/admin/*" element={<AdminDashboard />} />
+      {user?.role === 'admin' && (
+        <Route path="/admin" element={<AdminPage />} />
       )}
 
-      {/* 3) 로그인된 사용자 전용 경로 */}
-      {!!role && (
+      {user?.role && user.role !== 'admin' && (
         <>
-          <Route path="/detail" element={<Detail />} />
-          <Route path="/write"  element={<Write  />} />
+          <Route path="/select-farm" element={<SelectFarm />} />
+          <Route path="/mainfarm/:id" element={<MainFarm />} />
         </>
       )}
 
-      {/* 4) 그 외 모두 홈으로 리다이렉트 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

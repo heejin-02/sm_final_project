@@ -11,7 +11,6 @@
 <body>
 	<h1>백구백구 109의 home 입니다.</h1>
 
-	<!-- 에러 메시지 출력 -->
 	<c:if test="${param.error == 'true'}">
 		<p style="color:red;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
 	</c:if>

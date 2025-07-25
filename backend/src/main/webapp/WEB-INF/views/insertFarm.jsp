@@ -10,7 +10,7 @@
 </head>
 <body>
     <h1>농장 추가</h1>
-    <form action="/insertFarm" method="post" enctype="multipart/form-data">
+		<form action="${pageContext.request.contextPath}/insertFarm" method="post" enctype="multipart/form-data">
         <ul>
             <li>
                 <span>농장 이름</span>
@@ -18,16 +18,17 @@
             </li>
             <li>
                 <span>농장 주소</span>
-                <input type="text" name="farmAddress" placeholder="농장 주소를 입력해주세요" class="ipt_tt" maxlength="200" required>
+                <input type="text" name="farmAddr" placeholder="농장 주소를 입력해주세요" class="ipt_tt" maxlength="200" required>
             </li>
             <li>
                 <span>농장 전화번호</span>
                 <input type="text" name="farmPhone" placeholder="농장 전화번호를 입력해주세요" class="ipt_tt" maxlength="20" required>
             </li>
             <li>
-                <span>서브 농장 이름</span>
-                <input type="text" name="subFarmName" placeholder="서브 농장 이름을 입력해주세요" class="ipt_tt" maxlength="100">
-            </li>
+			    <span>농작물 종류</span>
+			    <input type="text" name="farmCrops" placeholder="농작물을 입력해주세요" class="ipt_tt" maxlength="100" required>
+			</li>
+
             <li>
                 <span>농장 면적</span>
                 <input type="text" name="farmArea" placeholder="농장 면적을 입력해주세요" class="ipt_tt" maxlength="50">
@@ -39,6 +40,10 @@
             <li>
                 <span>농장 이미지</span>
                 <input type="file" name="farmImg" accept="image/*">
+            </li>
+            <li>
+                <span>농장주 휴대폰번호</span>
+                <input type="text" name="userPhone" placeholder="농장주 전화번호를 입력해주세요" class="ipt_tt" maxlength="20" required>
             </li>
             <li>
                 <button type="submit">등록하기</button>

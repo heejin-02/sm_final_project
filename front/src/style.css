@@ -14,51 +14,126 @@
     font-family: 'KoddiUD-OnGodi';
     font-weight: 400;
     font-style: normal;
-    src: url('/fonts/KoddiUD-OnGodi-Regular.woff2') format('woff2'),
-         url('/fonts/KoddiUD-OnGodi-Regular.woff')  format('woff'),
-         url('/fonts/KoddiUD-OnGodi-Regular.eot');
+    src: url('../public/fonts/KoddiUD-OnGodi-Regular.woff2') format('font-woff2'),
+         url('../public/fonts/KoddiUD-OnGodi-Regular.woff')  format('font-woff'),
+         url('../public/fonts/KoddiUD-OnGodi-Regular.eot');
   }
   @font-face {
     font-family: 'KoddiUD-OnGodi';
     font-weight: 700;
     font-style: normal;
-    src: url('/fonts/KoddiUD-OnGodi-Bold.woff2') format('woff2'),
-         url('/fonts/KoddiUD-OnGodi-Bold.woff')  format('woff'),
-         url('/fonts/KoddiUD-OnGodi-Bold.eot');
+    src: url('../fonts/KoddiUD-OnGodi-Bold.woff2') format('font-woff2'),
+         url('../public/fonts/KoddiUD-OnGodi-Bold.woff')  format('font-woff'),
+         url('../public/fonts/KoddiUD-OnGodi-Bold.eot');
   }
   @font-face {
     font-family: 'KoddiUD-OnGodi';
     font-weight: 800;
     font-style: normal;
-    src: url('/fonts/KoddiUD-OnGodi-ExtraBold.woff2') format('woff2'),
-         url('/fonts/KoddiUD-OnGodi-ExtraBold.woff')  format('woff'),
-         url('/fonts/KoddiUD-OnGodi-ExtraBold.eot');
+    src: url('../public/fonts/KoddiUD-OnGodi-ExtraBold.woff2') format('font-woff2'),
+         url('../public/fonts/KoddiUD-OnGodi-ExtraBold.woff')  format('font-woff'),
+         url('../public/fonts/KoddiUD-OnGodi-ExtraBold.eot');
   }
+
+  :root {
+    --color-primary: #1A6900;
+    --color-accent: #0055A4;
+    --color-yellow: #F2C14E;
+    --zoom-step-1: 100%;
+    --zoom-step-2: 125%;
+    --zoom-step-3: 150%;
+  }  
 
   /* css */
   *{
-    font-family: "KoddiUD-OnGodi";
+    font-family: 'KoddiUD-OnGodi', sans-serif;
+    font-weight: 500;
+    box-sizing: border-box;
   }
 
   html{
     font-size: 18px;
   }
+
+  #app {
+    @apply pt-[126px];   /* 기본 헤더 높이 */
+  }
+
+  .logo{
+    width: 112px;
+  }  
+
+  .home{
+    display: flex;
+    flex-direction: column;
+  }  
+
+  .main_farm{
+    height: calc(100vh - 126px);
+  }
+
+  .flex-0-auto{
+    flex: 0 0 auto;
+  }
 }
 
 /* TailwindCSS utilities 레이어에 커스텀 클래스 추가 */
 @layer utilities {
-  .center-absolute {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+
+  /* 확대 레벨 토글을 위한 유틸 */
+  [data-zoom="125%"] body {
+    transform: scale(1.25);
+  }
+  [data-zoom="150%"] body {
+    transform: scale(1.5);
   }
 
+  .header {
+    @apply  fixed flex items-center top-0 left-0 right-0 mx-auto z-99999 bg-white shadow-md;
+  }
+  .section{
+    @apply  min-h-dvh;
+  }
+  .section.bg{
+    @apply  relative bg-center bg-cover;
+  }
+  .section.bg::after {
+    @apply absolute block top-0 left-0 w-full h-full bg-black/20 z-1 content-[''];
+  }
+  .center-absolute{
+    @apply  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+  }
   .frm-input{
-    border: solid 1px #eee;
+    @apply  block w-full p-2 border border-[#eee] rounded-md bg-white;
   }
-
-  .form-ul{
-    font-size: 1rem;
+  .login-form{
+    @apply  w-full max-w-[400px] mx-auto text-lg;
+  }
+  .login-form .frm-label{
+    @apply  mb-1.5;
+  }
+  .form-ul > li{
+    @apply  flex flex-col;
+  }
+  .form-ul > li + li{
+    @apply  mt-1;
+  }
+  .btn-submit {
+    @apply  w-full py-3 rounded-md bg-[var(--color-primary)] text-white mt-4 cursor-pointer border-[var(--color-primary)] text-lg;
+  } 
+  .cont-wrap{
+    @apply  flex flex-col justify-center items-center gap-5 h-full flex-1 bg-white/65 z-5 m-[1.2rem] py-5 px-4 text-center;
+  }
+  .farmList-item{
+    @apply w-[calc(50%-0.25rem)] bg-white rounded px-5 py-6 text-3xl cursor-pointer hover:bg-[var(--color-primary)] hover:text-white;
+  }
+  .tit{
+    @apply  text-2xl font-bold;
+  }
+  .noti-area{
+    @apply w-[380px] max-w-full;
+  }
+  .bordered-square-box{
+    @apply border rounded p-2 aspect-[4/2] flex flex-col items-center justify-center gap-2 flex-1;
   }
 }
