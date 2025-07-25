@@ -55,18 +55,22 @@
     font-size: 18px;
   }
 
+}
+
+/* 컴포넌트 레이어 - 재사용 가능한 컴포넌트 스타일들 */
+@layer components {
   #app {
-    @apply pt-[126px];   /* 기본 헤더 높이 */
+    padding-top: 126px;   /* 기본 헤더 높이 */
   }
 
   .logo{
     width: 112px;
-  }  
+  }
 
   .home{
     display: flex;
     flex-direction: column;
-  }  
+  }
 
   .main_farm{
     height: calc(100vh - 126px);
@@ -75,11 +79,233 @@
   .flex-0-auto{
     flex: 0 0 auto;
   }
+
+  .header {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 99999;
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+  .section{
+    min-height: 100dvh;
+  }
+  .section.bg{
+    position: relative;
+    background-position: center;
+    background-size: cover;
+  }
+  .section.bg::after {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(0 0 0 / 0.2);
+    z-index: 1;
+    content: '';
+  }
+  .frm-input{
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #eee;
+    border-radius: 0.375rem;
+    background-color: white;
+  }
+  .login-form{
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 1.125rem;
+  }
+  .login-form .frm-label{
+    margin-bottom: 0.375rem;
+  }
+  .form-ul > li{
+    display: flex;
+    flex-direction: column;
+  }
+  .form-ul > li + li{
+    margin-top: 0.25rem;
+  }
+  .btn-submit {
+    width: 100%;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-radius: 0.375rem;
+    background-color: var(--color-primary);
+    color: white;
+    margin-top: 1rem;
+    cursor: pointer;
+    border: 1px solid var(--color-primary);
+    font-size: 1.125rem;
+  }
+  .cont-wrap{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.25rem;
+    height: 100%;
+    flex: 1;
+    background-color: rgb(255 255 255 / 0.65);
+    z-index: 5;
+    margin: 1.2rem;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    text-align: center;
+  }
+  .farmList-item{
+    width: calc(50% - 0.25rem);
+    background-color: white;
+    border-radius: 0.25rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    font-size: 1.875rem;
+    cursor: pointer;
+  }
+  .farmList-item:hover {
+    background-color: var(--color-primary);
+    color: white;
+  }
+  .tit{
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+  .noti-area{
+    width: 380px;
+    max-width: 100%;
+    border: 1px solid #666;
+    padding: 1rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    border-radius: 0.25rem;
+    overflow-y: auto;
+    flex: 0 0 auto;
+  }
+
+  .noti-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .noti-count{
+    color: #dc2626;
+    font-weight: bold;
+    font-size: 110%;
+  }
+
+  .noti-list{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .noti-item{
+    border: 1px solid #666;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    position: relative;
+  }
+  .noti-item:after{
+    display: block;
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 6px);
+    border: 4px solid transparent;
+    border-radius: 0.5rem;
+    transition: border-color 0.2s ease;
+  }
+  .noti-item:hover{
+    background-color: #f4fef1;
+  }
+  .noti-item:hover:after{
+    border-color: var(--color-primary);
+  }
+  .noti-item-top{
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .noti-bug-name{
+    font-size: 1.05rem;
+  }
+  .noti-accuracy{
+    background-color: var(--color-accent);
+    color: white;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+  }
+  .noti-item-bottom{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .bordered-box{
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  .bordered-box.flex-row{
+    flex-direction: row;
+    align-items: center;
+  }
+  .bordered-box.justify-start{
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  .bordered-box.break-keep{
+    word-break: keep-all;
+  }
+  .btn-wrap .bordered-box{
+    white-space: nowrap;
+    padding: 0.25rem 0.5rem;
+  }
+
+  /* 농장 맵 스타일 */
+  .farm_map{
+    width: 100%;
+    background-image: url('/images/farm_bg.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    height: 64%;
+  }
 }
 
-/* TailwindCSS utilities 레이어에 커스텀 클래스 추가 */
+/* 유틸리티 레이어 - 단일 목적의 유틸리티 클래스들 */
 @layer utilities {
-
   /* 확대 레벨 토글을 위한 유틸 */
   [data-zoom="125%"] body {
     transform: scale(1.25);
@@ -88,52 +314,10 @@
     transform: scale(1.5);
   }
 
-  .header {
-    @apply  fixed flex items-center top-0 left-0 right-0 mx-auto z-99999 bg-white shadow-md;
-  }
-  .section{
-    @apply  min-h-dvh;
-  }
-  .section.bg{
-    @apply  relative bg-center bg-cover;
-  }
-  .section.bg::after {
-    @apply absolute block top-0 left-0 w-full h-full bg-black/20 z-1 content-[''];
-  }
   .center-absolute{
-    @apply  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
-  }
-  .frm-input{
-    @apply  block w-full p-2 border border-[#eee] rounded-md bg-white;
-  }
-  .login-form{
-    @apply  w-full max-w-[400px] mx-auto text-lg;
-  }
-  .login-form .frm-label{
-    @apply  mb-1.5;
-  }
-  .form-ul > li{
-    @apply  flex flex-col;
-  }
-  .form-ul > li + li{
-    @apply  mt-1;
-  }
-  .btn-submit {
-    @apply  w-full py-3 rounded-md bg-[var(--color-primary)] text-white mt-4 cursor-pointer border-[var(--color-primary)] text-lg;
-  } 
-  .cont-wrap{
-    @apply  flex flex-col justify-center items-center gap-5 h-full flex-1 bg-white/65 z-5 m-[1.2rem] py-5 px-4 text-center;
-  }
-  .farmList-item{
-    @apply w-[calc(50%-0.25rem)] bg-white rounded px-5 py-6 text-3xl cursor-pointer hover:bg-[var(--color-primary)] hover:text-white;
-  }
-  .tit{
-    @apply  text-2xl font-bold;
-  }
-  .noti-area{
-    @apply w-[380px] max-w-full;
-  }
-  .bordered-square-box{
-    @apply border rounded p-2 aspect-[4/2] flex flex-col items-center justify-center gap-2 flex-1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 }
