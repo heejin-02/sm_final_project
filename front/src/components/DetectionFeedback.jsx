@@ -79,9 +79,9 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
   return (
     <div className="detection-feedback">
       <div className="feedback-header">
-        <h3 className="tit-2">🐶 해충 탐지 결과가 정확한가요?</h3>
+        <h3 className="tit-2">해충 탐지 결과가 정확한가요?</h3>
         <p className="feedback-subtitle">
-          사장님의 의견으로 백구가 더 똑똑해집니다!
+          사장님의 답변으로 백구가 더 똑똑해집니다!
         </p>
       </div>
 
@@ -202,7 +202,20 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
             <button className="feedback-submit-btn" onClick={() => handleSubmit()}>
               피드백 제출하기
             </button>
-            <button className="feedback-back-btn" onClick={() => setStep(1)}>
+            <button className="feedback-back-btn" onClick={() => {
+              // 2단계에서 선택한 상세 피드백들만 초기화
+              setFeedback(prev => ({
+                ...prev,
+                wrongType: null,
+                wrongReason: null,
+                correctRegion: null,
+                countIssue: null,
+                environment: [],
+                timeOfDay: null,
+                improvement: []
+              }));
+              setStep(1);
+            }}>
               이전으로
             </button>
           </div>

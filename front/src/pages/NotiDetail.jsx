@@ -88,21 +88,21 @@ export default function NotiDetail() {
           {/* 탐지 영상 */}
           <div className="flex gap-4">
             <div className="bordered-box flex-1/2">
-              <h3 className="tit-2 text-center">탐지 영상</h3>
-              <div className="video_wrap">
-                <video src="http://192.168.219.72:8095/videos/20250725/2_20250725_113404.mp4" controls/>
-              </div>
-            </div>
-            <div className="bordered-box flex-1/2">
-              <h3 className="tit-2 text-center">탐지 구역</h3>
-              <NotiFarmMap highlightRegion={notification.location.charAt(0)} />
-              <div className="mt-3 text-center">
+              {/* <h3 className="tit-2 text-center">탐지 구역</h3> */}
+              <div className="text-center mb-3">
                 <span className="text-gray-600">
                   <span className="font-semibold text-black">{notification.location}</span>에서&nbsp;
                   <span className="font-semibold text-black">{notification.bugName}</span> 탐지됨&nbsp; 
                   (신뢰도 {notification.accuracy}%)
                 </span>
                 <div>{notification.timestamp}</div>
+              </div>              
+              <NotiFarmMap highlightRegion={notification.location.charAt(0)} />
+            </div>            
+            <div className="bordered-box flex-1/2">
+              <h3 className="tit-2 text-center mb-3">탐지 영상</h3>
+              <div className="video_wrap">
+                <video src="http://192.168.219.72:8095/videos/20250725/2_20250725_113404.mp4" controls/>
               </div>
             </div>
           </div>

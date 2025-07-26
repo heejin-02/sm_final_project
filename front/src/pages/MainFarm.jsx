@@ -65,7 +65,7 @@ export default function MainFarm() {
             </div>
           </div>
 
-          <div className="bordered-box justify-start">
+          <div className="bordered-box justify-start overflow-y-auto scrl-custom">
             오늘은 어제 보다 벌레가 없네요! 다만 B 구역 에서만 4 마리의 벌레가 발견 되어 확인이 필요 합니다. 오후에 비가 내릴 예정 입니다. 습도 관리에 신경 써 주세요.
           </div>
 

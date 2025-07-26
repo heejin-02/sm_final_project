@@ -46,11 +46,11 @@ export default function SelectFarm() {
   return(
     <div className="section bg home bg-[url('/images/bg_home.jpg')] bg-center bg-cover">
       <div className="cont-wrap text-center flex flex-col justify-center gap-6">
-        <h2 className="font-bold text-3xl mb-4">관리할 농장을 선택해주세요</h2>
+        <h2 className="font-bold text-3xl">관리할 농장을 선택해주세요</h2>
         {farms.length === 0 ? (
           <p>등록된 농장이 없습니다.</p>
         ) : (
-          <ul className="flex flex-wrap justify-center gap-2">
+          <ul className="flex flex-wrap gap-2">
             {farms.map(farm => (
               <li
                 key={farm.id}
