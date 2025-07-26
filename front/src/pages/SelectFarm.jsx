@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserFarms } from '../api/auth';
-import bgImg from '/images/bg_home.jpg';
 
 export default function SelectFarm() {
 

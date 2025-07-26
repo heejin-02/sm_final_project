@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm'; // 로그인폼은 LoginForm 컴포넌트로 따로 분리
-import bgImg from '/images/bg_home.jpg';
 
 export default function Home({ onLogin }) {
   return(

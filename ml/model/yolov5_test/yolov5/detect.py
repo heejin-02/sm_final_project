@@ -41,6 +41,7 @@ def send_detection_to_api(insect_name, confidence, img_idx):
     try:
         res = requests.post("http://localhost:8095/api/qc-classification", json=payload)
         print(f"[전송] {insect_name} 저장 완료 | 신뢰도: {confidence:.2f} | 상태코드: {res.status_code} | 분석일시: {created_at}")
+        print(f"[디버그] img_idx 값: {img_idx}, insect_name: {insect_name}")
     except Exception as e:
         print("[전송 실패]", e)
 
