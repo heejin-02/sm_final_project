@@ -63,5 +63,5 @@ def ask_question(question: str):
 
 # ✅ 실행 예시
 if __name__ == "__main__":
-    # load_and_add_pdf("./pdf/2010병해충관리.pdf")
-    ask_question("그 병에 대해 설명하세요")
+    load_and_add_pdf("./pdf/알락수염노린재.pdf")
+    #ask_question("그 병에 대해 설명하세요")

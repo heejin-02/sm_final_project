@@ -1,18 +1,65 @@
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from datetime import datetime
 import shutil
 import oracledb
 import requests
+from dotenv import load_dotenv
+import os
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+import logging
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_chroma import Chroma
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
+import requests 
+import time
 
+# FastAPI 초기화
 app = FastAPI()
+
+# 🌱 환경 변수 로드
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # DB 설정
 DB_USER = "joo"
 DB_PASS = "smhrd4"
 DB_DSN = "project-db-campus.smhrd.com:1523/xe"
 oracledb.init_oracle_client(lib_dir=None)
+
+# 🌐 CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 🧠 LangChain 설정
+embedding = OpenAIEmbeddings(model="text-embedding-3-large", openai_api_key=OPENAI_API_KEY)
+vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embedding)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+chat = ChatOpenAI(model="gpt-4o-mini", openai_api_key=OPENAI_API_KEY)
+
+prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "다음은 최근 탐지 기록이다. 문서와 이 탐지 기록을 종합해, 해당 해충의 위험성과 방제 방법을 사용자에게 친절히 설명하라. "
+        "탐지 기록이 없으면 최근에 탐지된 이력이 없다고 설명하라.\n\n{context}"
+    )
+])
+
+document_chain = create_stuff_documents_chain(chat, prompt)
+rag_chain = create_retrieval_chain(retriever, document_chain)
 
 # 영상 저장 폴더
 VIDEO_DIR = Path(r"C:\Users\smhrd1\Desktop\videos")
@@ -26,7 +73,51 @@ INSECT_NAME_MAP = {
     4: "알락수염노린재"
 }
 
-import requests  # 꼭 필요!
+
+# 📋 요청 스키마
+class InsectRequest(BaseModel):
+    insect_name: str
+
+# 🐛 최근 탐지 내역 요약 함수
+def get_recent_analysis_text(insect_name: str) -> str:
+    logger = logging.getLogger("uvicorn.error")
+    try:
+        time.sleep(1)
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                sql = """
+                    SELECT 
+                        TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS TIME,
+                        SUBSTR(ANLS_CONTENT,
+                            INSTR(ANLS_CONTENT, ' ') + 1,
+                            INSTR(ANLS_CONTENT, '%') - INSTR(ANLS_CONTENT, ' ') - 1
+                        ) || '%' AS CONFIDENCE,
+                        ANLS_RESULT
+                    FROM QC_CLASSIFICATION
+                    WHERE ANLS_RESULT = :1
+                      AND CREATED_AT >= SYSDATE - 3
+                    ORDER BY CREATED_AT DESC
+                """
+                cur.execute(sql, [insect_name])
+                rows = cur.fetchall()
+                print("[DEBUG] DB 쿼리 결과 개수 : ", len(rows))
+                print("[DEBUG] 첫 행 : ", rows[0] if rows else "없음")
+
+
+                if not rows:
+                    return "최근 3일 내 탐지된 기록이 없습니다."
+
+                summary_lines = [
+                    f"{time}에 {result}가 {confidence}의 신뢰도로 탐지되었습니다."
+                    for time, confidence, result in rows
+                ]
+                print("[DEBUG] FastAPI → GPT 요약에 넘길 텍스트:", summary_lines)
+                return "\n".join(summary_lines)
+
+    except Exception as e:
+        logger.error(f"[DB ERROR] {e}")
+        return "[DB 오류] 분석 데이터를 불러오는 중 문제가 발생했습니다."
+
 
 @app.post("/api/upload")
 async def upload_video(
@@ -53,7 +144,7 @@ async def upload_video(
             # Spring Boot API 주소로 요청
             print("[UPLOAD DEBUG] 영상 업로드 요청 중...")
             response = requests.post("http://localhost:8095/api/qc-videos", files=files, data=data)
-            print("[UPLOAD DEBUG] 응답:", res.status_code, res.text)
+            print("[UPLOAD DEBUG] 응답:", response.status_code, response.text)
         
         if response.status_code != 200:
             raise HTTPException(status_code=500, detail="Spring Boot 업로드 실패")
@@ -123,3 +214,23 @@ def get_img_info_by_filename(video_name: str):
         print("[DB ERROR]", e)
 
     return None, None
+
+
+# 📌 API: 방제 정보 요약 제공
+@app.post("/summary")
+async def get_insect_summary(data: InsectRequest):
+    insect_name = data.insect_name
+
+    # 1️⃣ 최근 탐지 내역 불러오기
+    analysis_text = get_recent_analysis_text(insect_name)
+
+    # 2️⃣ 문서 검색 + 요약 생성
+    response = rag_chain.invoke({
+        "input": analysis_text
+    })
+
+    return {
+        "status": "success",
+        "insect": insect_name,
+        "solution_summary": response["answer"]
+    }
