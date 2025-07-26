@@ -24,5 +24,12 @@
             #{imgIdx}
         )
     </insert>
+    
+    <select id="findInsectNameByImgIdx" resultType="String">
+      	SELECT ANLS_RESULT
+    	FROM QC_CLASSIFICATION
+    	WHERE IMG_IDX = #{imgIdx}
+      	AND ROWNUM = 1
+	</select>
 
 </mapper>
