@@ -32,7 +32,7 @@ def send_detection_to_api(insect_name, confidence, img_idx):
     created_at = now.strftime("%Y-%m-%d %H:%M:%S")
     payload = {
         "anlsModel": "YOLOv5",
-        "anlsContent": f"{insect_name} {confidence*100:.2f}%로 탐지 완료. ",
+        "anlsContent": f"{insect_name} {confidence*100:.2f}%로 탐지완료",
         "anlsResult": insect_name,
         "createdAt": created_at,
         "insectIdx": get_insect_idx(insect_name),
