@@ -4,19 +4,21 @@ from pathlib import Path
 from datetime import datetime
 import shutil
 import oracledb
+import requests
 
-# DB 및 FastAPI 초기화
 app = FastAPI()
+
+# DB 설정
 DB_USER = "joo"
 DB_PASS = "smhrd4"
 DB_DSN = "project-db-campus.smhrd.com:1523/xe"
 oracledb.init_oracle_client(lib_dir=None)
 
-# 공통 설정
+# 영상 저장 폴더
 VIDEO_DIR = Path(r"C:\Users\smhrd1\Desktop\videos")
 VIDEO_DIR.mkdir(parents=True, exist_ok=True)
 
-# 🔻 벌레 이름 매핑
+# 벌레 ID → 이름 매핑 (선택)
 INSECT_NAME_MAP = {
     1: "꽃노랑총채벌레",
     2: "담배가루이",
@@ -24,45 +26,51 @@ INSECT_NAME_MAP = {
     4: "알락수염노린재"
 }
 
-# ✅ 1. 영상 업로드 API
+import requests  # 꼭 필요!
+
 @app.post("/api/upload")
 async def upload_video(
     file: UploadFile = File(...),
     cctv_idx: int = Form(...)
 ):
     try:
+        # 현재 시간 및 저장 경로 설정
         now = datetime.now()
         folder_name = now.strftime("%Y%m%d")
         folder_path = VIDEO_DIR / folder_name
         folder_path.mkdir(parents=True, exist_ok=True)
 
+        # 파일 저장
         file_path = folder_path / file.filename
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
-            with conn.cursor() as cur:
-                img_size = file_path.stat().st_size
-                img_ext = file.filename.split(".")[-1]
-                created_at = now.strftime("%Y-%m-%d %H:%M:%S")
+        # ✅ Spring Boot로 파일 업로드 (멀티파트 POST 요청)
+        with open(file_path, "rb") as f:
+            files = {"video": (file.filename, f, file.content_type)}
+            data = {"classId": cctv_idx}  # 또는 classId -> cctvIdx 맞춰줘야 함
 
-                cur.execute("""
-                    INSERT INTO QC_IMAGES (
-                        IMG_IDX, CCTV_IDX, IMG_NAME, IMG_SIZE, IMG_EXT, CREATED_AT
-                    ) VALUES (
-                        QC_IMAGES_SEQ.NEXTVAL, :1, :2, :3, :4, TO_TIMESTAMP(:5, 'YYYY-MM-DD HH24:MI:SS')
-                    ) RETURNING IMG_IDX INTO :6
-                """, [cctv_idx, file.filename, img_size, img_ext, created_at, cur.var(int)])
-                
-                img_idx = cur.getimplicitresults()[0][0]
-                conn.commit()
+            # Spring Boot API 주소로 요청
+            print("[UPLOAD DEBUG] 영상 업로드 요청 중...")
+            response = requests.post("http://localhost:8095/api/qc-videos", files=files, data=data)
+            print("[UPLOAD DEBUG] 응답:", res.status_code, res.text)
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Spring Boot 업로드 실패")
+
+        res_json = response.json()
+        img_idx = res_json.get("imgIdx")
+        video_url = res_json.get("videoUrl")
+
+        print("[DEBUG] Spring Boot 응답 IMG_IDX:", img_idx)
 
         return {
-            "videoUrl": f"/{folder_name}/{file.filename}",
+            "videoUrl": video_url,
             "imgIdx": img_idx
         }
 
     except Exception as e:
+        print("[FastAPI 오류]", e)
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ✅ 2. 영상 메타데이터 조회 API

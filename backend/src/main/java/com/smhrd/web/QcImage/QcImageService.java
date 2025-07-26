@@ -10,6 +10,8 @@ public class QcImageService {
     private QcImageMapper mapper;
 
     public int insertImage(QcImageDTO dto) {
+    	System.out.println("[LOG] QcImageService.insertImage() 호출됨");
+        System.out.println("[LOG] 이미지 이름: " + dto.getImgName());
         return mapper.insertImage(dto);
     }
 

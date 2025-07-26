@@ -32,7 +32,7 @@ def send_detection_to_api(insect_name, confidence, img_idx):
     created_at = now.strftime("%Y-%m-%d %H:%M:%S")
     payload = {
         "anlsModel": "YOLOv5",
-        "anlsContent": f"{insect_name} 저장 완료",
+        "anlsContent": f"{insect_name} {confidence*100:.2f}%로 탐지 완료. ",
         "anlsResult": insect_name,
         "createdAt": created_at,
         "insectIdx": get_insect_idx(insect_name),
@@ -144,6 +144,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 class_id = get_insect_idx(insect_name)
                 img_idx = upload_video(video_path, class_id)  # ✅ class_id 추가
                 if img_idx:
+                    time.sleep(1)  # DB 반영 기다림
                     send_detection_to_api(insect_name, best_conf, img_idx)
 
         if view_img:
