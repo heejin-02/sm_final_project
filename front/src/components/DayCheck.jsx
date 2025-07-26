@@ -57,19 +57,19 @@ export default function DayCheck() {
       {/* 통계 버튼들 */}
       <div className="day-check-buttons">
         <button
-          className={`stat-button hvborder ${currentPeriod === 'daily' ? 'active' : ''}`}
+          className={`btn stat-button hvborder ${currentPeriod === 'daily' ? 'active' : ''}`}
           onClick={() => navigate('/report/daily')}
         >
           일간 통계
         </button>
         <button
-          className={`stat-button hvborder ${currentPeriod === 'monthly' ? 'active' : ''}`}
+          className={`btn stat-button hvborder ${currentPeriod === 'monthly' ? 'active' : ''}`}
           onClick={() => navigate('/report/monthly')}
         >
           월간 통계
         </button>
         <button
-          className={`stat-button hvborder ${currentPeriod === 'yearly' ? 'active' : ''}`}
+          className={`btn stat-button hvborder ${currentPeriod === 'yearly' ? 'active' : ''}`}
           onClick={() => navigate('/report/yearly')}
         >
           연간 통계

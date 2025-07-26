@@ -32,6 +32,7 @@ export default function LoginForm() {
   };
   return (
     <form className="login-form" onSubmit={handleSubmit}>
+      {/* <h2 className="font-semibold text-2xl text-center mb-4">로그인</h2> */}
       <ul className="form-ul text-left">
         <li>
           <span htmlFor="userPhone" className="frm-label">아이디</span>
@@ -40,7 +41,7 @@ export default function LoginForm() {
             name="userPhone"
             type="text"
             placeholder="휴대폰번호를 입력해주세요"
-            className="frm-input"
+            className="input"
             value={id}
             onChange={e => setId(e.target.value)}
           />
@@ -52,13 +53,13 @@ export default function LoginForm() {
             name="userPw"
             type="password"
             placeholder="비밀번호를 입력해주세요"
-            className="frm-input"
+            className="input"
             value={pw}
             onChange={e => setPw(e.target.value)}
           />
         </li>
       </ul>
-      <button type="submit" className="btn-submit">로그인</button>
+      <button type="submit" className="btn btn-lg btn-primary w-full mt-4">로그인</button>
     </form>
   );
 }

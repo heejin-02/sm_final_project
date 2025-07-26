@@ -1,29 +1,32 @@
 // src/components/NotiFarmMap.jsx
-import React from "react";
+import Loader from './Loader';
 
 export default function NotiFarmMap({
-  highlightRegion,  // 강조할 구역 ID (예: "A", "B", "C" 등)
+  highlightRegion,  // 강조할 구역 이름 (예: "문앞", "00밭", "1번 레인" 등)
+  regions = [],     // 구역 데이터 배열 [{ id, name }, ...]
+  loading = false,  // 로딩 상태
   rows = 3,         // 세로 셀 개수
   cols = 3,         // 가로 셀 개수
   gap = 8,          // 셀 사이 간격(px)
 }) {
-  // 3x3 그리드의 구역 ID 생성 (A, B, C, D, E, F, G, H, I)
-  const generateRegions = () => {
-    const regions = [];
-    const regionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
-    
-    for (let i = 0; i < rows * cols; i++) {
-      regions.push({
-        id: regionLabels[i] || `구역${i + 1}`,
-        label: regionLabels[i] || `${i + 1}`,
-        isHighlighted: regionLabels[i] === highlightRegion
-      });
-    }
-    
-    return regions;
-  };
+  // 로딩 중이거나 구역 데이터가 없으면 로딩 표시
+  if (loading || !regions || regions.length === 0) {
+    return (
+      <div className="noti-farm-map">
+        <div className="farm-map-loading">
+          <Loader />
+          <p>구역 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const regions = generateRegions();
+  // 실제 구역 데이터만 사용
+  const regionsData = regions.map(region => ({
+    id: region.id,
+    name: region.name,
+    isHighlighted: region.name === highlightRegion
+  }));
 
   return (
     <div className="noti-farm-map">
@@ -38,12 +41,12 @@ export default function NotiFarmMap({
           minHeight: '200px',
         }}
       >
-        {regions.map((region) => (
+        {regionsData.map((region) => (
           <div
             key={region.id}
             className={`farm-cell ${region.isHighlighted ? 'highlighted' : ''}`}
           >
-            <span className="region-label">{region.label}구역</span>
+            <span className="region-label">{region.name}</span>
             {region.isHighlighted && (
               <div className="alert-indicator">
                 <span className="alert-icon">⚠️</span>

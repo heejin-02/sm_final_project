@@ -16,7 +16,7 @@ export const DUMMY_USERS = [
       { farm_idx: 1, farm_name: '행복농장' },
       { farm_idx: 2, farm_name: '푸른농장' },
 			{ farm_idx: 3, farm_name: '황금농장' },
-			{ farm_idx: 4, farm_name: '황금농장' },
+			{ farm_idx: 4, farm_name: '노랑농장' },
     ]
   },	
 ];

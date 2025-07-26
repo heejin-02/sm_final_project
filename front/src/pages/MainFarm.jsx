@@ -71,7 +71,7 @@ export default function MainFarm() {
 
           <div className='flex flex-col gap-1 btn-wrap'>
             <div
-              className="bordered-box hvborder cursor-pointer"
+              className="bordered-box hvborder cursor-pointer bg-[#0066c5]"
               onClick={() => navigate('/report/daily')}
             >
               일간 통계
@@ -83,7 +83,7 @@ export default function MainFarm() {
               월간 통계
             </div>
             <div
-              className="bordered-box hvborder cursor-pointer"
+              className="bordered-box hvborder cursor-pointer bg-[#00488a]"
               onClick={() => navigate('/report/yearly')}
             >
               연간 통계

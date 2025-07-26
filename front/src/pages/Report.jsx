@@ -74,19 +74,19 @@ export default function Report() {
       {/* 오른쪽 컨텐츠 영역 */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-6xl mx-auto">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="tit mb-2">{getPeriodTitle()}</h1>
-            <p className="text-gray-600">{getPeriodDescription()}</p>
+          {/* 헤더 */}
+          <div className="r-sec-top">
+            <div>
+              <p className="tit">{getPeriodTitle()}</p>
+              <p className="desc">{getPeriodDescription()}</p>
+            </div>
+            {/* <button 
+              onClick={() => navigate(-1)}
+              className="btn-submit px-4 py-2 text-sm"
+            >
+              뒤로가기
+            </button> */}
           </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="btn-submit px-4 py-2 text-sm"
-          >
-            뒤로가기
-          </button>
-        </div>
 
         {/* 날짜 선택 */}
         <DateNavigation

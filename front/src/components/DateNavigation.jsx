@@ -86,8 +86,8 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
         <div className="current-date-text">
           {formatDate(currentDate, period)}
         </div>
-        <button 
-          className="date-change-btn"
+        <button
+          className="btn btn-accent"
           onClick={() => setShowModal(true)}
         >
           날짜 변경
