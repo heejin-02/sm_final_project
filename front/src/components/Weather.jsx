@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Loader from './Loader';
 import {
-  WiDaySunny,
   WiHumidity,
   WiStrongWind,
   WiRaindrops,
@@ -44,6 +43,31 @@ const weatherKoreanMap = {
   Tornado: '토네이도',
 };
 
+// 날씨 아이콘 매핑 (OpenWeatherMap 공식 아이콘 사용)
+const getWeatherIcon = (iconCode) => {
+  // OpenWeatherMap 아이콘 URL
+  return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+};
+
+// 커스텀 아이콘으로 바꿀 때 사용할 매핑 (나중에 활성화)
+const customWeatherIcons = {
+  Clear: '/images/weather/clear.png',
+  Clouds: '/images/weather/clouds.png',
+  Rain: '/images/weather/rain.png',
+  Drizzle: '/images/weather/drizzle.png',
+  Thunderstorm: '/images/weather/thunderstorm.png',
+  Snow: '/images/weather/snow.png',
+  Mist: '/images/weather/mist.png',
+  Fog: '/images/weather/mist.png',
+  Smoke: '/images/weather/mist.png',
+  Haze: '/images/weather/mist.png',
+  Dust: '/images/weather/dust.png',
+  Sand: '/images/weather/dust.png',
+  Ash: '/images/weather/dust.png',
+  Squall: '/images/weather/wind.png',
+  Tornado: '/images/weather/wind.png',
+};
+
 function WeatherBox() {
   const [weather, setWeather] = useState(null);
 
@@ -73,10 +97,14 @@ function WeatherBox() {
           cityName,
           cityKorean,
           temp: data.main.temp,
+          tempMin: data.main.temp_min,
+          tempMax: data.main.temp_max,
           humidity: data.main.humidity,
           wind: data.wind.speed,
           rain: data.rain?.['1h'] || 0,
           condition: koreanCondition,
+          iconCode: data.weather[0].icon, // 아이콘 코드 추가
+          iconUrl: getWeatherIcon(data.weather[0].icon), // 아이콘 URL 추가
         });
       } catch (err) {
         console.error('날씨 정보를 가져오는 중 오류 발생:', err);
@@ -107,10 +135,18 @@ function WeatherBox() {
       </div>
 
       <div className="flex items-center gap-1">
-        <WiDaySunny size={24} />
+        <img
+          src={weather.iconUrl}
+          alt={weather.condition}
+          className="w-8 h-8"
+        />
         <span>
           {weather.condition} · {weather.temp}°C
         </span>
+      </div>
+
+      <div className="text-sm text-gray-600 mb-1">
+        최저 {weather.tempMin}°C · 최고 {weather.tempMax}°C
       </div>
 
       <div className="flex items-center">

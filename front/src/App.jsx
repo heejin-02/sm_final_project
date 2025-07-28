@@ -3,7 +3,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext';
 
-import AdminPage from './pages/AdminPage'
+import AdminMain from './pages/AdminMain'
 import Home from './pages/Home'
 import SelectFarm from './pages/SelectFarm'
 import MainFarm from './pages/MainFarm';
@@ -26,7 +26,7 @@ export default function App() {
       />
 
       {user?.role === 'admin' && (
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<AdminMain />} />
       )}
 
       {user?.role && user.role !== 'admin' && (

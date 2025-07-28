@@ -24,9 +24,9 @@ export default function NotiList(){
 	return(
 		<div className="noti-area scrl-custom">
 			<div className="noti-header">
-				<div className="tit">확인하지 않은 알림</div>
-				<div className="">
-					<span className="noti-count">{count}</span> 건
+				<div className="tit">오늘의 알림</div>
+				<div className="text-sm">
+					읽지않은 알림<span className="noti-count">{count}</span> 건
 				</div>
 			</div>
 			<ul className="noti-list">

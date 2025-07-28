@@ -13,10 +13,10 @@ export const DUMMY_USERS = [
 		user_pw : 'pw1',
 		user_name : '박용필',
     farms: [
-      { farm_idx: 1, farm_name: '행복농장' },
-      { farm_idx: 2, farm_name: '푸른농장' },
-			{ farm_idx: 3, farm_name: '황금농장' },
-			{ farm_idx: 4, farm_name: '노랑농장' },
+      { farm_idx: 1, farm_name: '토마토 A' },
+      { farm_idx: 2, farm_name: '토마토 B' },
+			{ farm_idx: 3, farm_name: '토마토 C' },
+			{ farm_idx: 4, farm_name: '토마토 D' },
     ]
   },	
 ];
