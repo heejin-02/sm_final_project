@@ -5,8 +5,10 @@ import { useAuth } from './contexts/AuthContext';
 
 import AdminPage from './pages/AdminPage'
 import Home from './pages/Home'
-import SelectFarm from './pages/SelectFarm' 
-import MainFarm from './pages/MainFarm'; 
+import SelectFarm from './pages/SelectFarm'
+import MainFarm from './pages/MainFarm';
+import Report from './pages/Report';
+import NotiDetail from './pages/NotiDetail';
 
 
 export default function App() {
@@ -31,6 +33,8 @@ export default function App() {
         <>
           <Route path="/select-farm" element={<SelectFarm />} />
           <Route path="/mainfarm/:id" element={<MainFarm />} />
+          <Route path="/report/:period" element={<Report />} />
+          <Route path="/notifications/:id" element={<NotiDetail />} />
         </>
       )}
 

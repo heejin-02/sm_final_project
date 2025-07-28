@@ -1,6 +1,7 @@
 // openweathermap API 사용
 
 import React, { useEffect, useState } from 'react';
+import Loader from './Loader';
 import {
   WiDaySunny,
   WiHumidity,
@@ -94,7 +95,9 @@ function WeatherBox() {
 
   if (!weather)
     return (
-      <div className="text-gray-600 animate-pulse">날씨 불러오는 중...</div>
+      <div className="flex items-center justify-center h-16">
+        <Loader size="text-lg" message="날씨 불러오는 중..." />
+      </div>
     );
 
   return (

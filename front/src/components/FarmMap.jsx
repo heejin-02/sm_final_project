@@ -1,44 +1,51 @@
 import React from "react";
 import { scaleLinear } from "d3-scale";
-import { interpolateYlOrRd } from "d3-scale-chromatic";
+import { rgb } from "d3-color";
 
 export default function FarmMap({
   data,        // [{ id, count }, …]
   rows,        // 세로 셀 개수 (예: 3)
   cols,        // 가로 셀 개수 (예: 3)
-  cellSize = 128,   // 각 셀 높이(px)
   gap = 4,          // 셀 사이격(px)
   onCellClick,      // 클릭 시 호출(id)
 }) {
   if (!data || data.length === 0) return null;
 
   // 색상 스케일 설정
+  // 1) 최대값 계산 (0은 고정)
   const counts = data.map(r => r.count);
-  const min = Math.min(...counts);
-  const max = Math.max(...counts);
-  const colorScale = scaleLinear().domain([min, max]).range([0, 1]);
+  const max = Math.max(...counts, 1); // all zero일 때 분모 0 방지
+
+  // 3단계 그라디언트 스케일: 0→max/2→max
+  const colorScale = scaleLinear()
+    .domain([0, max / 2, max])
+    .range(["#00AA00" /* 진한 연두 */, "#FFFF00" /* 노랑 */, "#FF0000" /* 빨강 */])
+    .clamp(true);
 
   return (
     <div
       className={`grid`}
       style={{
-        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, 1fr)`,
         gap: `${gap}px`,
+        height: "100%",
       }}
     >
-      {data.map(region => {
-        const ratio = colorScale(region.count);
+      {data.map((r, i) => {
+        const c = rgb(colorScale(r.count));          // d3-color 로 파싱
+        c.opacity = 0.5;              // α = 0.6 (60%)
+        const bg = c.formatRgb();     // "rgba(r,g,b,0.6)"
         return (
           <div
-            key={region.id}
+            key={r.id ?? i}
             className="flex items-center justify-center text-white font-bold text-3xl rounded cursor-pointer"
             style={{
-              backgroundColor: interpolateYlOrRd(ratio),
-              height: `${cellSize}px`,
+              backgroundColor: bg,
             }}
-            onClick={() => onCellClick?.(region.id)}
+            onClick={() => onCellClick?.(r.id)}
           >
-            {region.count}
+            {r.count}
           </div>
         );
       })}
