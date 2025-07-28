@@ -12,7 +12,6 @@
 
     INSERT INTO QC_IMAGES (
         IMG_IDX,
-        CCTV_IDX,
         IMG_NAME,
         IMG_SIZE,
         IMG_EXT,
@@ -22,7 +21,6 @@
         IMG_URL
     ) VALUES (
         #{imgIdx},
-        #{cctvIdx},
         #{imgName},
         #{imgSize},
         #{imgExt},

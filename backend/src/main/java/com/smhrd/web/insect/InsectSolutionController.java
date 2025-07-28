@@ -14,6 +14,7 @@ public class InsectSolutionController {
     @GetMapping("/solution")
     public ResponseEntity<InsectSummaryResponseDTO> getBugSolution(@RequestParam Long imgIdx) {
         InsectSummaryResponseDTO response = solutionService.getBugReportByImgIdx(imgIdx);
+        
         return ResponseEntity.ok(response);
     }
 }

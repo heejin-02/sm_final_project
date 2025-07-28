@@ -17,6 +17,7 @@ public class SolutionService {
     public InsectSummaryResponseDTO getBugReportByImgIdx(Long imgIdx) {
         String insectName = mapper.findInsectNameByImgIdx(imgIdx);
         
+        
         System.out.println("🐛 [DEBUG] imgIdx " + imgIdx + " → 벌레이름: " + insectName);
         String summary = insectSolutionService.getSolutionSummary(insectName);
 

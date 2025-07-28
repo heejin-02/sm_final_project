@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class QcImageDTO {
     private Long imgIdx;
-    private Long cctvIdx;
     private String imgName;
     private Long imgSize;
     private String imgExt;
