@@ -1,7 +1,7 @@
 // src/pages/SelectFarm
 // 로그인 후 계정에 등록된 농장이 1개 초과면 해당 페이지,
 // 아니면 바로 MainFarm으로 가시면 됩니다!
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserFarms } from '../api/auth';
@@ -15,27 +15,29 @@ export default function SelectFarm() {
   const [loading, setLoading] = useState(true); // 로딩 플래그  
 
   useEffect(() => {
-  if (!user?.phone) return;
+    if (!user?.userPhone) return;
 
-  setLoading(true);
-  getUserFarms(user.phone)
-    .then(res => {
-      setFarms(res.data);
-    })
-    .catch(err => {
-      console.error('농장 불러오기 실패', err);
-      setFarms([]);
-    })
-    .finally(() => {
-      setLoading(false);
-    });
-  }, [user?.phone]);
+    setLoading(true);
+    getUserFarms(user.userPhone)
+      .then(res => {
+        // 백엔드 응답 구조 그대로 사용
+        const farmData = res.data;
+        setFarms(farmData);
+      })
+      .catch(err => {
+        console.error('농장 불러오기 실패', err);
+        setFarms([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [user?.userPhone]);
 
   // 농장이 1개 이하라면 자동 선택 & 네비게이트
   useEffect(() => {
     if (!loading && farms.length === 1) {
       selectFarm(farms[0]);
-      navigate(`/mainfarm/${farms[0].id}`, { replace: true });
+      navigate(`/mainfarm/${farms[0].farmIdx}`, { replace: true });
     }
   }, [loading, farms, selectFarm, navigate]);
 
@@ -53,14 +55,14 @@ export default function SelectFarm() {
           <ul className="flex flex-wrap gap-2 w-full max-w-[1200px]">
             {farms.map(farm => (
               <li
-                key={farm.id}
+                key={farm.farmIdx}
                 className="farmList-item cursor-pointer"
                 onClick={() => {
                   selectFarm(farm);
-                  navigate(`/mainfarm/${farm.id}`);
+                  navigate(`/mainfarm/${farm.farmIdx}`);
                 }}
               >
-                {farm.name}
+                {farm.farmName}
               </li>
             ))}
           </ul>

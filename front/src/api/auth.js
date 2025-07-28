@@ -1,10 +1,9 @@
 // 인증 관련 api
 import axios from 'axios';
-import { DUMMY_USERS } from '../mocks/users';
 
 const api = axios.create({
   baseURL: 'http://localhost:8095',
-  withCredentials: true,               
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json' }
 });
 
@@ -12,13 +11,7 @@ const api = axios.create({
 export const loginCheck = (id, pw) =>
   api.post('/api/home/loginCheck', null, { params: { id, pw } });
 
-export async function getUserFarms(userPhone) {
-  // 실제 백엔드: return axios.get(`/web/api/user/${userPhone}/farms`);
-  const user = DUMMY_USERS.find(u => u.user_phone === userPhone);
-  return Promise.resolve({
-    data: (user?.farms || []).map(f => ({
-      id: f.farm_idx,
-      name: f.farm_name,
-    })),
-  });
-}
+// 사용자 - 농장 리스트 조회
+export const getUserFarms = (userPhone) =>
+  api.get('/api/user/farms', { params: { userPhone } });
+

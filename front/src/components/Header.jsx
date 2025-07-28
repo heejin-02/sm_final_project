@@ -15,8 +15,7 @@ export default function Header() {
   };
   
   return (
-    <header className="header flex align-center justify-between p-4 fixed">
-     
+    <header className="header">
       <div className="logo-area cursor-pointer" onClick={() => navigate('/')}>
         <img src={logo} alt="로고" className="logo" />
       </div>
@@ -47,7 +46,6 @@ export default function Header() {
           </div>
         )}
       </div>
-
     </header>
   );
 }

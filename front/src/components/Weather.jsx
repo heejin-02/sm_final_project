@@ -1,6 +1,7 @@
 // openweathermap API 사용
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import Loader from './Loader';
 import {
   WiHumidity,
@@ -78,13 +79,8 @@ function WeatherBox() {
       console.log('날씨 데이터 요청:', new Date().toLocaleTimeString());
       try {
         const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&units=metric&appid=${API_KEY}`;
-        const res = await fetch(url);
-
-        if (!res.ok) {
-          throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`);
-        }
-
-        const data = await res.json();
+        const response = await axios.get(url);
+        const data = response.data;
 
         const englishCondition = data.weather[0].main;
         const koreanCondition =
