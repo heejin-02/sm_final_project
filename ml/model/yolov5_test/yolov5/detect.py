@@ -6,7 +6,7 @@ from datetime import datetime
 import torch
 import requests
 import cv2
-
+from twilio.rest import Client
 from ultralytics.utils.plotting import Annotator, colors
 from models.common import DetectMultiBackend
 from utils.dataloaders import LoadStreams, LoadImages
@@ -16,6 +16,27 @@ from utils.general import (
     scale_boxes
 )
 from utils.torch_utils import select_device, smart_inference_mode
+from urllib.parse import quote
+
+
+# Twilio 설정 
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+USER_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")   # 수신자
+
+PUBLIC_FASTAPI_BASE = "https://1cb38370fc9a.ngrok-free.app"  # ngrok/배포 주소
+
+def make_call(insect_name: str, confidence: float):
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    url = f"{PUBLIC_FASTAPI_BASE}/twilio/voice?insect={quote(insect_name)}&conf={confidence}"
+    call = client.calls.create(
+        to=USER_PHONE_NUMBER,
+        from_=TWILIO_PHONE_NUMBER,
+        url=url
+    )
+    print(f"[전화 발신] Call SID: {call.sid}")
+    
 
 # 벌레 이름 → INSECT_IDX 매핑
 def get_insect_idx(name):
@@ -36,8 +57,12 @@ def send_detection_to_api(insect_name, confidence, img_idx):
         "anlsResult": insect_name,
         "createdAt": created_at,
         "insectIdx": get_insect_idx(insect_name),
-        "imgIdx": img_idx
+        "imgIdx": img_idx,
+        "notiCheck": 'N',
+        "ghIdx": 2,                               # 현재 테스트용, 실제로는 cctv 정보와 연결
+        "anlsAcc": int(confidence * 100)          # 0.87 → 87
     }
+
     try:
         res = requests.post("http://localhost:8095/api/qc-classification", json=payload)
         print(f"[전송] {insect_name} 저장 완료 | 신뢰도: {confidence:.2f} | 상태코드: {res.status_code} | 분석일시: {created_at}")
@@ -146,6 +171,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)  # DB 반영 기다림
                     send_detection_to_api(insect_name, best_conf, img_idx)
+                    #make_call(insect_name,best_conf)
 
         if view_img:
             cv2.imshow("YOLOv5", annotated_frame)
@@ -172,3 +198,4 @@ def main(opt):
 if __name__ == "__main__":
     opt = parse_opt()
     main(opt)
+

@@ -21,6 +21,9 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 import requests 
 import time
+from fastapi import Query
+from fastapi.responses import Response
+from fastapi import Request
 
 # FastAPI 초기화
 app = FastAPI()
@@ -30,9 +33,9 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # DB 설정
-DB_USER = "joo"
-DB_PASS = "smhrd4"
-DB_DSN = "project-db-campus.smhrd.com:1523/xe"
+DB_USER = os.getenv("DB_USER")
+DB_PASS =  os.getenv("DB_PASS")
+DB_DSN =  os.getenv("DB_DSN")
 oracledb.init_oracle_client(lib_dir=None)
 
 # 🌐 CORS 설정
@@ -88,10 +91,7 @@ def get_recent_analysis_text(insect_name: str) -> str:
                 sql = """
                     SELECT 
                         TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS TIME,
-                        SUBSTR(ANLS_CONTENT,
-                            INSTR(ANLS_CONTENT, ' ') + 1,
-                            INSTR(ANLS_CONTENT, '%') - INSTR(ANLS_CONTENT, ' ') - 1
-                        ) || '%' AS CONFIDENCE,
+                        ANLS_ACC || '%' AS CONFIDENCE,
                         ANLS_RESULT
                     FROM QC_CLASSIFICATION
                     WHERE ANLS_RESULT = :1
@@ -102,7 +102,6 @@ def get_recent_analysis_text(insect_name: str) -> str:
                 rows = cur.fetchall()
                 print("[DEBUG] DB 쿼리 결과 개수 : ", len(rows))
                 print("[DEBUG] 첫 행 : ", rows[0] if rows else "없음")
-
 
                 if not rows:
                     return "최근 3일 내 탐지된 기록이 없습니다."
@@ -216,7 +215,7 @@ def get_img_info_by_filename(video_name: str):
     return None, None
 
 
-# 📌 API: 방제 정보 요약 제공
+# 📌방제 정보 요약 제공
 @app.post("/summary")
 async def get_insect_summary(data: InsectRequest):
     insect_name = data.insect_name
@@ -234,3 +233,40 @@ async def get_insect_summary(data: InsectRequest):
         "insect": insect_name,
         "solution_summary": response["answer"]
     }
+
+# GET 방식 (브라우저 테스트용)
+@app.get("/twilio/voice")
+def twilio_voice_get(
+    insect: str = Query(default="알 수 없는 해충"),
+    conf: float | None = Query(default=None)
+):
+    if conf is not None:
+        msg = f"주의하세요. {insect}가 {conf * 100:.1f} 퍼센트 신뢰도로 탐지되었습니다."
+    else:
+        msg = f"주의하세요. {insect}가 탐지되었습니다."
+
+    xml = f"""
+    <Response>
+        <Say language="ko-KR" voice="alice">{msg}</Say>
+    </Response>
+    """
+    return Response(content=xml.strip(), media_type="application/xml")
+# POST 방식 (Twilio가 호출할 때 사용)
+@app.post("/twilio/voice")
+async def twilio_voice_post(request: Request):
+    form = await request.form()
+    insect = form.get("insect", "알 수 없는 해충")
+    conf = form.get("conf")
+
+    try:
+        conf = float(conf)
+        msg = f"주의하세요. {insect}가 {conf * 100:.1f} 퍼센트 신뢰도로 탐지되었습니다."
+    except:
+        msg = f"주의하세요. {insect}가 탐지되었습니다."
+
+    xml = f"""
+    <Response>
+        <Say language="ko-KR" voice="alice">{msg}</Say>
+    </Response>
+    """
+    return Response(content=xml.strip(), media_type="application/xml")
