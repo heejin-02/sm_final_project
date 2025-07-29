@@ -1,4 +1,4 @@
-package com.smhrd.web.admin;
+package com.smhrd.web.admin.farmInsert;
 
 import org.springframework.web.multipart.MultipartFile;
 import lombok.Data;
