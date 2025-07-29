@@ -117,7 +117,7 @@ def get_recent_analysis_text(insect_name: str) -> str:
         logger.error(f"[DB ERROR] {e}")
         return "[DB 오류] 분석 데이터를 불러오는 중 문제가 발생했습니다."
 
-
+# 탐지 후 비디오 영상 업로드하기 
 @app.post("/api/upload")
 async def upload_video(
     file: UploadFile = File(...),
@@ -215,26 +215,28 @@ def get_img_info_by_filename(video_name: str):
     return None, None
 
 
-# 📌방제 정보 요약 제공
-@app.post("/summary")
-async def get_insect_summary(data: InsectRequest):
-    insect_name = data.insect_name
+# GH_IDX img_idx에서 가져오기
+# @app.get("/get_ghIdx")
+# def get_ghIdx(imgIdx: int):
+#     try:
+#         with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+#             with conn.cursor() as cur:
+#                 sql = """
+#                 SELECT GH_IDX
+#                 FROM QC_IMAGES
+#                 WHERE IMG_IDX = :1
+#                 """
+#                 cur.execute(sql, [imgIdx])
+#                 result = cur.fetchone()
+#                 if result and result[0] is not None:
+#                     return {"ghIdx": result[0]}
+#                 else:
+#                     return {"ghIdx": None}
+#     except Exception as e:
+#         return {"error": str(e)}
 
-    # 1️⃣ 최근 탐지 내역 불러오기
-    analysis_text = get_recent_analysis_text(insect_name)
-
-    # 2️⃣ 문서 검색 + 요약 생성
-    response = rag_chain.invoke({
-        "input": analysis_text
-    })
-
-    return {
-        "status": "success",
-        "insect": insect_name,
-        "solution_summary": response["answer"]
-    }
-
-# GET 방식 (브라우저 테스트용)
+# Twilio API
+# GET 방식 
 @app.get("/twilio/voice")
 def twilio_voice_get(
     insect: str = Query(default="알 수 없는 해충"),
@@ -251,6 +253,7 @@ def twilio_voice_get(
     </Response>
     """
     return Response(content=xml.strip(), media_type="application/xml")
+
 # POST 방식 (Twilio가 호출할 때 사용)
 @app.post("/twilio/voice")
 async def twilio_voice_post(request: Request):

@@ -18,14 +18,15 @@ from utils.general import (
 from utils.torch_utils import select_device, smart_inference_mode
 from urllib.parse import quote
 
+# 고정 GH_IDX
+gh_idx = 1
 
-# Twilio 설정 
+# Twilio 설정
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-USER_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")   # 수신자
-
-PUBLIC_FASTAPI_BASE = "https://1cb38370fc9a.ngrok-free.app"  # ngrok/배포 주소
+USER_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")  # 수신자
+PUBLIC_FASTAPI_BASE = "https://d88304504349.ngrok-free.app"
 
 def make_call(insect_name: str, confidence: float):
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
@@ -36,9 +37,7 @@ def make_call(insect_name: str, confidence: float):
         url=url
     )
     print(f"[전화 발신] Call SID: {call.sid}")
-    
 
-# 벌레 이름 → INSECT_IDX 매핑
 def get_insect_idx(name):
     return {
         "꽃노랑총채벌레": 1,
@@ -47,46 +46,41 @@ def get_insect_idx(name):
         "알락수염노린재": 4
     }.get(name, 0)
 
-# 탐지 결과 API 전송 함수
+# 🐛 탐지 결과 API 전송
 def send_detection_to_api(insect_name, confidence, img_idx):
     now = datetime.now()
     created_at = now.strftime("%Y-%m-%d %H:%M:%S")
+
     payload = {
         "anlsModel": "YOLOv5",
-        "anlsContent": f"{insect_name} {confidence*100:.2f}%로 탐지완료",
+        "anlsContent": f"{insect_name} {confidence * 100:.2f}%로 탐지완료",
         "anlsResult": insect_name,
         "createdAt": created_at,
         "insectIdx": get_insect_idx(insect_name),
         "imgIdx": img_idx,
         "notiCheck": 'N',
-        "ghIdx": 2,                               # 현재 테스트용, 실제로는 cctv 정보와 연결
-        "anlsAcc": int(confidence * 100)          # 0.87 → 87
+        "ghIdx": gh_idx,
+        "anlsAcc": int(confidence * 100)
     }
 
     try:
         res = requests.post("http://localhost:8095/api/qc-classification", json=payload)
-        print(f"[전송] {insect_name} 저장 완료 | 신뢰도: {confidence:.2f} | 상태코드: {res.status_code} | 분석일시: {created_at}")
-        print(f"[디버그] img_idx 값: {img_idx}, insect_name: {insect_name}")
+        print(f"[전송] {insect_name} 저장 완료 | 신뢰도: {confidence:.2f} | 상태코드: {res.status_code}")
     except Exception as e:
         print("[전송 실패]", e)
 
-# 영상 업로드 함수
-def upload_video(file_path, class_id):
+# 🎥 영상 업로드 함수
+def upload_video(file_path, class_id, gh_idx):
     url = "http://localhost:8095/api/qc-videos"
     files = {"video": open(file_path, "rb")}
-    data = {"classId": class_id}
+    data = {"classId": class_id, "ghIdx": gh_idx}
     try:
-        res = requests.post(url, files=files, data=data)  # ✅ data 추가
+        res = requests.post(url, files=files, data=data)
         print(f"[서버 응답 상태코드] {res.status_code}")
         print(f"[서버 응답 본문] {res.text}")
         if res.status_code == 200:
             json_res = res.json()
-            video_url = json_res.get("videoUrl")
-            img_idx = json_res.get("imgIdx")
-            print(f"[업로드 성공] 영상 등록됨 : {video_url} / IMG_IDX: {img_idx}")
-            return img_idx
-        else:
-            print(f"[업로드 실패] 실패코드 : {res.status_code}")
+            return json_res.get("imgIdx")
     except Exception as e:
         print("[영상 전송 에러]", e)
     return None
@@ -105,14 +99,13 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
 
     save_dir = Path("clips")
     save_dir.mkdir(parents=True, exist_ok=True)
-
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
     frame_buffer = []
     recording = False
     start_time = None
     fps = 30
-    duration = 10  # seconds
+    duration = 10
     insect_name = ""
     best_conf = 0
     video_path = ""
@@ -151,6 +144,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                         recording = True
 
         annotated_frame = annotator.result()
+
         if recording:
             out.write(annotated_frame)
             if time.time() - start_time > duration:
@@ -158,20 +152,17 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 out.release()
                 print("[녹화 종료]")
 
-                # ffmpeg로 h264변환
                 converted_path = video_path.replace(".mp4", "_h264.mp4")
-                ffmpeg_cmd = f'ffmpeg -y -i "{video_path}" -vcodec libx264 -acodec aac "{converted_path}"'
-                os.system(ffmpeg_cmd)
+                os.system(f'ffmpeg -y -i "{video_path}" -vcodec libx264 -acodec aac "{converted_path}"')
                 os.remove(video_path)
                 video_path = converted_path
 
-
                 class_id = get_insect_idx(insect_name)
-                img_idx = upload_video(video_path, class_id)  # ✅ class_id 추가
+                img_idx = upload_video(video_path, class_id, gh_idx)
                 if img_idx:
-                    time.sleep(1)  # DB 반영 기다림
+                    time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    #make_call(insect_name,best_conf)
+                    # make_call(insect_name, best_conf)
 
         if view_img:
             cv2.imshow("YOLOv5", annotated_frame)
@@ -198,4 +189,3 @@ def main(opt):
 if __name__ == "__main__":
     opt = parse_opt()
     main(opt)
-
