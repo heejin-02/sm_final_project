@@ -56,7 +56,7 @@ export default function AddUser() {
   return (
     <div className="section p-6">
 			<div className="admin">
-				<h1 className="tit">회원 등록</h1>
+				<h1 className="tit-head">회원 등록</h1>
 				<form onSubmit={handleSubmit} className="form-ul">
 
 					<div className="form-item">

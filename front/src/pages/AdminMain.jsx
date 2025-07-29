@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAllUsers } from '../api/admin';
 import Loader from '../components/Loader';
 import AddUser from './AddUser';
+import AddUserModal from '../components/AddUserModal';
 
 export default function AdminMain() {
   const navigate = useNavigate();
@@ -22,6 +23,12 @@ export default function AdminMain() {
   const [isSearched, setIsSearched] = useState(false); // 검색 실행 여부
   const [searchedKeyword, setSearchedKeyword] = useState(''); // 실제 검색된 키워드
   const [searchedField, setSearchedField] = useState(''); // 실제 검색된 필드
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+
+  // 회원 추가 성공 시 리스트 새로고침
+  const handleAddUserSuccess = () => {
+    fetchAllUsers();
+  };
 
   // 전체 회원 정보 가져오기
   const fetchAllUsers = async () => {
@@ -40,6 +47,13 @@ export default function AdminMain() {
       setAllUserList(userList);
       setFilteredUserList(userList);
       setTotalCount(userList.length);
+
+      const duplicatePhones = userList
+        .map(user => user.userPhone)
+        .filter((v, i, arr) => arr.indexOf(v) !== i);
+      if (duplicatePhones.length) {
+        console.warn('⚠️ 중복된 userPhone 있음:', duplicatePhones);
+      }
 
       // 첫 페이지 데이터 설정
       updateDisplayedData(userList, 1);
@@ -121,12 +135,6 @@ export default function AdminMain() {
     updateDisplayedData(filteredUserList, page);
   };
 
-
-  // 회원 추가 페이지로 이동
-  const handleAddUser = () => {
-    navigate('/admin/add-user');
-  };
-
   // 회원 수정 페이지로 이동
   const handleEditUser = (userPhone) => {
     navigate(`/admin/edit-user/${userPhone}`);
@@ -148,10 +156,10 @@ export default function AdminMain() {
     return (
       <div className="section p-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 text-center">전체 회원 정보</h1>
+          <h1 className="tit-head">전체 회원 정보</h1>
           <div className="flex items-center justify-end mb-6">
-            <button
-              onClick={handleAddUser}
+            <button 
+              onClick={() => setShowAddUserModal(true)}
               className="btn btn-primary"
             >
               회원 추가
@@ -177,15 +185,13 @@ export default function AdminMain() {
 
   return (
     <div className="section">
-      <div className="max-w-7xl mx-auto">
-        {/* 헤더 */}
-        <h1 className="tit-head">전체 회원 정보</h1>
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-gray-600 mt-1">
-            총 {totalCount}명의 회원 (페이지당 {pageSize}개씩 표시)
-          </p>
-          <button
-            onClick={handleAddUser}
+      <div className="inner">
+        <h1 className="tit-head">관리자 페이지</h1>
+        
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="tit">전체 회원 정보</h2>
+          <button 
+            onClick={() => setShowAddUserModal(true)}
             className="btn btn-primary"
           >
             회원 추가
@@ -205,7 +211,7 @@ export default function AdminMain() {
                 className="input"
               >
                 <option value="" disabled>검색 조건</option>
-                <option value="user_name" selected>회원 이름</option>
+                <option value="user_name">회원 이름</option>
                 <option value="farm_name">농장 이름</option>
               </select>
             </div>
@@ -276,7 +282,7 @@ export default function AdminMain() {
                 {displayedUserList.length > 0 ? (
                   displayedUserList.map((user, index) => (
                     <tr
-                      key={user.farmIdx}
+                      key={user.userPhone}
                       className="clickable"
                       onClick={() => handleEditUser(user.userPhone)}
                       data-farm-idx={user.farmIdx}
@@ -359,6 +365,11 @@ export default function AdminMain() {
             </nav>
           </div>
         )}
+        <AddUserModal
+          isOpen={showAddUserModal}
+          onClose={() => setShowAddUserModal(false)}
+          onSuccess={handleAddUserSuccess}
+        />
       </div>
     </div>
   );

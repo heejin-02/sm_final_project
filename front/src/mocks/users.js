@@ -6,7 +6,6 @@ export const DUMMY_USERS = [
     user_phone: 'admin',
 		user_pw : 'admin',
 		user_name : '관리자',
-    role: 'admin',
   },
   {
     user_phone: '010-0000-0001',
