@@ -38,10 +38,25 @@ export default function AdminMain() {
       const response = await getAllUsers();
       const rawUserList = response.data || [];
 
-      // admin 계정 제외 및 가입일자 최신순 정렬
-      const userList = rawUserList
-        .filter(user => user.userPhone !== 'admin') // admin 계정 제외
+      // console.log('🔍 백엔드에서 받은 원본 데이터:', rawUserList.length, '건');
+
+      // admin 계정 제외
+      const filteredList = rawUserList.filter(user => user.userPhone !== 'admin');
+
+      // console.log('🔍 admin 제외 후:', filteredList.length, '건');
+
+      // 회원별로 중복 제거 (userPhone 기준으로 첫 번째 농장만 대표로 사용)
+      const uniqueUserMap = new Map();
+      filteredList.forEach(user => {
+        if (!uniqueUserMap.has(user.userPhone)) {
+          uniqueUserMap.set(user.userPhone, user);
+        }
+      });
+
+      const userList = Array.from(uniqueUserMap.values())
         .sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt)); // 가입일자 최신순
+
+      // console.log('중복 제거 후 최종 회원 수:', userList.length, '명');
 
       setAllUserList(userList);
       setFilteredUserList(userList);
@@ -50,9 +65,9 @@ export default function AdminMain() {
       const duplicatePhones = userList
         .map(user => user.userPhone)
         .filter((v, i, arr) => arr.indexOf(v) !== i);
-      if (duplicatePhones.length) {
-        console.warn('⚠️ 중복된 userPhone 있음:', duplicatePhones);
-      }
+      // if (duplicatePhones.length) {
+      //   console.warn('중복된 userPhone 있음:', duplicatePhones);
+      // }
 
       // 첫 페이지 데이터 설정
       updateDisplayedData(userList, 1);
@@ -77,6 +92,11 @@ export default function AdminMain() {
     const endIndex = startIndex + pageSize;
     const pageData = dataList.slice(startIndex, endIndex);
 
+    // console.log('페이지 데이터 업데이트 - 페이지:', page);
+    // console.log('전체 데이터:', dataList.length, '건');
+    // console.log('표시할 데이터:', pageData.length, '건');
+    // console.log('표시할 회원들:', pageData.map(u => u.userName));
+
     setDisplayedUserList(pageData);
     setCurrentPage(page);
     setTotalPages(Math.ceil(dataList.length / pageSize));
@@ -85,6 +105,9 @@ export default function AdminMain() {
   // 검색 처리
   const handleSearch = (e) => {
     e.preventDefault();
+
+    // console.log('검색 시작 - 검색어:', keyword, '검색 필드:', searchField);
+    // console.log('전체 데이터 수:', allUserList.length);
 
     if (!keyword.trim()) {
       // 검색어가 없으면 전체 데이터 표시
@@ -100,13 +123,24 @@ export default function AdminMain() {
 
       switch (searchField) {
         case 'user_name':
-          return user.userName?.toLowerCase().includes(searchValue);
+          const matches = user.userName?.toLowerCase().includes(searchValue);
+          // if (matches) {
+          //   console.log('매칭된 회원:', user.userName, user.userPhone);
+          // }
+          return matches;
         case 'farm_name':
-          return user.farmName?.toLowerCase().includes(searchValue);
+          const farmMatches = user.farmName?.toLowerCase().includes(searchValue);
+          // if (farmMatches) {
+          //   console.log('매칭된 농장:', user.farmName, user.userName);
+          // }
+          return farmMatches;
         default:
           return false;
       }
     });
+
+    // console.log('검색 결과:', filtered.length, '건');
+    // console.log('검색된 회원들:', filtered.map(u => u.userName));
 
     setFilteredUserList(filtered);
     setTotalCount(filtered.length);
@@ -286,7 +320,7 @@ export default function AdminMain() {
                 {displayedUserList.length > 0 ? (
                   displayedUserList.map((user, index) => (
                     <tr
-                      key={user.userPhone}
+                      key={`${user.userPhone}-${user.farmIdx || index}`}
                       className="clickable"
                       onClick={() => handleEditUser(user.userPhone)}
                       data-farm-idx={user.farmIdx}

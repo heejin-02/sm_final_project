@@ -38,11 +38,11 @@ export function AuthProvider({ children }) {
     setUser(null);
     setIsLoggedIn(false);
   };
-  
-  const selectFarm = (farm) => { 
+
+  const selectFarm = (farm) => {
     // 농장정보 받아오기
     setUser((prev) => ({ ...prev, selectedFarm: farm }));
-  };  
+  };
 
   return (
     <AuthContext.Provider value={{ user, isLoggedIn, login, logout, selectFarm }}>

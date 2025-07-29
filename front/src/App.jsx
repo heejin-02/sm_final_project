@@ -5,6 +5,7 @@ import { useAuth } from './contexts/AuthContext';
 
 import AdminMain from './pages/AdminMain'
 import AdminUserInfo from './pages/AdminUserInfo'
+import AdminFarmInfo from './pages/AdminFarmInfo'
 import Home from './pages/Home'
 import SelectFarm from './pages/SelectFarm'
 import MainFarm from './pages/MainFarm';
@@ -40,8 +41,10 @@ export default function App() {
 
       {user?.role === 'admin' && (
         <>
-          <Route path="/admin" element={<AdminMain />} />      
-          <Route path="/admin/userInfo/:userPhone" element={<AdminUserInfo />} />      
+          <Route path="/admin" element={<AdminMain />} />
+          <Route path="/admin/userInfo/:userPhone" element={<AdminUserInfo />} />
+          <Route path="/admin/farm/create" element={<AdminFarmInfo />} />
+          <Route path="/admin/farm/:farmIdx" element={<AdminFarmInfo />} />
         </>
       )}
 

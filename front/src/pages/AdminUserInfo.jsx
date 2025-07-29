@@ -11,6 +11,8 @@ export default function AdminUserInfo() {
   const [userDetailList, setUserDetailList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedUserName, setEditedUserName] = useState('');
 
   // 회원 상세 정보 가져오기
   const fetchUserDetail = async () => {
@@ -22,6 +24,11 @@ export default function AdminUserInfo() {
       const userDetail = response.data || [];
 
       setUserDetailList(userDetail);
+
+      // 편집 상태 초기화
+      if (userDetail.length > 0) {
+        setEditedUserName(userDetail[0].userName);
+      }
 
     } catch (error) {
       console.error('회원 상세 정보 조회 실패:', error);
@@ -35,6 +42,96 @@ export default function AdminUserInfo() {
   // 목록으로 돌아가기
   const handleGoBack = () => {
     navigate('/admin');
+  };
+
+  // 회원 삭제
+  const handleDeleteUser = () => {
+    if (window.confirm(`정말로 ${userDetailList[0]?.userName} 회원을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+      // TODO: 실제 API 호출로 회원 삭제
+      console.log('회원 삭제:', userPhone);
+      alert('회원이 삭제되었습니다.');
+      navigate('/admin');
+    }
+  };
+
+  // 농장 상세 페이지로 이동
+  const handleFarmClick = (farmIdx) => {
+    const selectedFarm = userDetailList.find(farm => farm.farmIdx === farmIdx);
+    const userInfo = userDetailList[0]; // 첫 번째 항목에서 회원 정보 추출
+
+    navigate(`/admin/farm/${farmIdx}`, {
+      state: {
+        userInfo: {
+          userName: userInfo.userName,
+          userPhone: userInfo.userPhone,
+          joinedAt: userInfo.joinedAt
+        },
+        farmInfo: selectedFarm,
+        mode: 'edit'
+      }
+    });
+  };
+
+  // 농장 추가 페이지로 이동
+  const handleAddFarm = () => {
+    const userInfo = userDetailList[0]; // 첫 번째 항목에서 회원 정보 추출
+
+    navigate('/admin/farm/create', {
+      state: {
+        userInfo: {
+          userName: userInfo.userName,
+          userPhone: userInfo.userPhone,
+          joinedAt: userInfo.joinedAt
+        },
+        mode: 'create'
+      }
+    });
+  };
+
+  // 수정 모드 시작
+  const handleStartEdit = () => {
+    setIsEditing(true);
+  };
+
+  // 수정 취소
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // 원래 값으로 되돌리기
+    if (userDetailList.length > 0) {
+      setEditedUserName(userDetailList[0].userName);
+    }
+  };
+
+  // 수정 저장
+  const handleSaveEdit = async () => {
+    // 이름 유효성 검사
+    if (!editedUserName.trim()) {
+      alert('이름을 입력해주세요.');
+      return;
+    }
+
+    if (editedUserName.trim().length < 2) {
+      alert('이름은 2글자 이상 입력해주세요.');
+      return;
+    }
+
+    try {
+      // TODO: 실제 API 호출로 회원 이름 수정
+      // console.log('회원 이름 수정:', editedUserName.trim());
+
+      // 임시로 로컬 상태 업데이트
+      const updatedList = userDetailList.map(user => ({
+        ...user,
+        userName: editedUserName.trim()
+      }));
+      setUserDetailList(updatedList);
+
+      setIsEditing(false);
+      alert('회원 정보가 수정되었습니다.');
+    } catch (error) {
+      // console.error('회원 정보 수정 실패:', error);
+      alert('수정에 실패했습니다.');
+    }
   };
 
   useEffect(() => {
@@ -53,8 +150,8 @@ export default function AdminUserInfo() {
 
   if (error) {
     return (
-      <div className="section p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="section">
+        <div className="inner">
           <h1 className="tit-head">회원 상세 정보</h1>
           <div className="flex items-center justify-end mb-6">
             <button
@@ -111,44 +208,103 @@ export default function AdminUserInfo() {
     <div className="section">
       <div className="inner">
         <h1 className="tit-head">회원 상세 정보</h1>
+				<div className="flex items-center justify-end mb-6">
+					<button
+						onClick={handleGoBack}
+						className="btn btn-secondary"
+					>
+						목록으로
+					</button>		
+				</div>		
 
-        {/* 회원 기본 정보 */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6 max-w-5xl mx-auto">
-          <div className="flex justify-center gap-6">
-            <div>
-              <span className="font-medium text-gray-700">이름</span>
-              <span className="ml-2 text-lg">{userInfo.userName}</span>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">아이디(휴대폰번호)</span>
-              <span className="ml-2 text-lg">{userInfo.userPhone}</span>
-            </div>						
-            <div>
-              <span className="font-medium text-gray-700">가입날짜</span>
-              <span className="ml-2 text-lg">{userInfo.joinedAt}</span>
+        {/* 회원 기본 정보 카드 */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8">
+          <div className="flex justify-between items-start mb-6">
+            <h3 className="text-xl font-semibold text-gray-800">회원 기본 정보</h3>
+            <div className="flex gap-2">
+              {!isEditing ? (
+                <button
+                  onClick={handleStartEdit}
+                  className="btn btn-sm btn-primary"
+                >
+                  수정
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="btn btn-sm btn-accent"
+                  >
+                    저장
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="btn btn-sm btn-secondary"
+                  >
+                    취소
+                  </button>
+                </>
+              )}
+              <button
+                onClick={handleDeleteUser}
+                className="btn btn-sm btn-secondary text-red-600 hover:bg-red-50"
+              >
+                삭제
+              </button>
             </div>
           </div>
 
-					<div className="flex justify-end items-center mt-6 gap-2">
-						<button
-							onClick={() => navigate(`/admin/userInfo/${userPhone}/edit`)}
-							className="btn btn-accent"
-						>
-							회원정보수정
-						</button>
-						<button
-							onClick={handleGoBack}
-							className="btn btn-secondary"
-						>
-							회원삭제
-						</button>
-					</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-600">이름</label>
+              {!isEditing ? (
+                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+                  {userInfo.userName}
+                </div>
+              ) : (
+                <div>
+                  <input
+                    type="text"
+                    value={editedUserName}
+                    onChange={(e) => setEditedUserName(e.target.value)}
+                    className={`input w-full ${
+                      !editedUserName.trim() || editedUserName.trim().length < 2
+                        ? 'border-red-300 focus:border-red-500'
+                        : 'border-gray-300 focus:border-blue-500'
+                    }`}
+                    placeholder="이름을 입력하세요 (2글자 이상)"
+                  />
+                  {(!editedUserName.trim() || editedUserName.trim().length < 2) && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {!editedUserName.trim() ? '이름을 입력해주세요.' : '이름은 2글자 이상 입력해주세요.'}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-600">아이디(휴대폰번호)</label>
+              <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+                {userInfo.userPhone}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-600">가입날짜</label>
+              <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+                {userInfo.joinedAt}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 농장 추가 버튼 */}
         <div className="flex justify-end mb-4">
-          <button className="btn btn-primary">
+          <button
+            onClick={handleAddFarm}
+            className="btn btn-primary"
+          >
             농장 추가
           </button>
         </div>
@@ -160,31 +316,36 @@ export default function AdminUserInfo() {
               <thead>
                 <tr>
                   <th>번호</th>
-                  <th>농장 구분</th>
+                  <th>재배 작물</th>
                   <th>농장 이름</th>
                   <th>농장 주소</th>
                   <th>농장 번호</th>
-                  <th>농장 번호</th>
-                  <th>수정</th>
                 </tr>
               </thead>
               <tbody>
-                {userDetailList.map((farm, index) => (
-                  <tr key={farm.farmIdx}>
-                    <td>{index + 1}</td>
-                    <td>{farm.farmCrops}</td>
-                    <td>{farm.farmName}</td>
-                    <td>{farm.farmAddr}</td>
-                    <td>{farm.farmPhone}</td>
-                    <td>{farm.farmPhone}</td>
-                    <td>
-                      <div className="flex gap-1">
-                        <button className="btn btn-sm btn-accent">수정</button>
-                        <button className="btn btn-sm btn-secondary">삭제</button>
-                      </div>
+                {userDetailList.length > 0 && userDetailList.some(farm => farm.farmName) ? (
+                  userDetailList
+                    .filter(farm => farm.farmName) // 농장 이름이 있는 것만 필터링
+                    .map((farm, index) => (
+                      <tr
+                        key={farm.farmIdx || `farm-${index}`}
+                        onClick={() => handleFarmClick(farm.farmIdx)}
+                        className="cursor-pointer hover:bg-gray-50 transition-colors"
+                      >
+                        <td data-farm-idx={farm.farmIdx}>{index + 1}</td>
+                        <td>{farm.farmCrops || '-'}</td>
+                        <td>{farm.farmName}</td>
+                        <td>{farm.farmAddr || '-'}</td>
+                        <td>{farm.farmPhone || '-'}</td>
+                      </tr>
+                    ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center text-gray-500 py-8">
+                      등록된 농장 정보가 없습니다.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
