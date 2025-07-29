@@ -18,7 +18,8 @@
         CREATED_AT,
         IMG_X,
         IMG_Y,
-        IMG_URL
+        IMG_URL,
+        GH_IDX
     ) VALUES (
         #{imgIdx},
         #{imgName},
@@ -27,7 +28,8 @@
         TO_TIMESTAMP(#{createdAt}, 'YYYY-MM-DD HH24:MI:SS'),
         #{imgX},
         #{imgY},
-        #{imgUrl}
+        #{imgUrl},
+        #{ghIdx}
     )
 </insert>
     

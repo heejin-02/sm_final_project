@@ -12,4 +12,5 @@ public class QcImageDTO {
     private Double imgX;
     private Double imgY;
     private String imgUrl;
+    private Long ghIdx;
 }

@@ -30,7 +30,7 @@ public class QcImageController {
    
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> uploadVideo(@RequestParam("video") MultipartFile file, @RequestParam("classId") int classId) {
+    public ResponseEntity<Map<String, Object>> uploadVideo(@RequestParam("video") MultipartFile file, @RequestParam("classId") int classId, @RequestParam("ghIdx") Long ghIdx) {
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -66,7 +66,7 @@ public class QcImageController {
             image.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             image.setImgX(0.0);  // 필요 시 설정
             image.setImgY(0.0);  // 필요 시 설정
-
+            image.setGhIdx(ghIdx);
             // 4. DB 저장
             imageMapper.insertImage(image);  // imgIdx 자동 주입됨 (keyProperty)
 
