@@ -33,6 +33,7 @@ export default function NotiDetail() {
   const handleFeedbackSubmit = (feedbackData) => {
     console.log('피드백 데이터:', feedbackData);
     // TODO: 실제 API로 피드백 전송
+    // axios.post('/api/feedback', feedbackData, { withCredentials: true })
     // 중복 팝업 제거 - DetectionFeedback 컴포넌트에서 이미 완료 메시지 표시
   };
 

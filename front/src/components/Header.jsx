@@ -3,35 +3,49 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 import logo from '/images/logo-horizon.svg';
 import Weather from './Weather';
+import { LuLogOut } from "react-icons/lu";
 
 export default function Header() {
-  const { user } = useAuth(); // 전역에서 로그인된 사용자 정보 가져옴
+  const { user, logout } = useAuth(); // logout 함수도 가져옴
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout(); // AuthContext의 logout 함수 호출
+    navigate('/', { replace: true }); // home.jsx로 이동
+  };
   
   return (
-    <header className="header flex align-center justify-between p-4 fixed">
-     
+    <header className="header">
       <div className="logo-area cursor-pointer" onClick={() => navigate('/')}>
         <img src={logo} alt="로고" className="logo" />
       </div>
 
       <div className="user-area">
-        {user?.name && (
+        {user?.userName && user.role !== 'admin' && (
           !user.selectedFarm?.name ? (
-            <span className="text-2xl">{user.name}님 환영합니다</span>
+            <span className="text-2xl">{user.userName}님 환영합니다</span>
           ) : (
             <span className="text-2xl">
-              {user.name}님의&nbsp;
+              {user.userName}님의&nbsp;
               <span className="font-semibold">{user.selectedFarm.name}</span>
             </span>
           )
         )}
       </div>
 
-      <div className="">
-        <Weather />
+      <div className="flex items-center gap-4">
+        {user?.role !== 'admin' ? (
+          <>
+            <Weather />
+            {/* <button className="btn btn-sm" onClick={handleLogout}>로그아웃</button> */}
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="">관리자 모드</span>
+            <LuLogOut size={24} onClick={handleLogout} className="cursor-pointer"/>
+          </div>
+        )}
       </div>
-
     </header>
   );
 }

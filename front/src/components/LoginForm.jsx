@@ -1,9 +1,7 @@
 // src/components/LoginForm.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginCheck } from '../api/auth'; // 서버 요청용 login
-import { useAuth } from '../contexts/AuthContext'; // 상태 저장용 login
-import { DUMMY_USERS } from '../mocks/users';
+import { useAuth } from '../contexts/AuthContext';
  
 
 export default function LoginForm() {
@@ -15,15 +13,8 @@ export default function LoginForm() {
 	const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const { data } = await loginCheck(id.trim(), pw);
-      const userData = {
-        phone: data.userPhone,
-        name:  data.userName,
-        role:  data.role,
-        farms: [],           // 필요하면 추가 API로 farm 목록 불러오기
-        selectedFarm: null
-      };
-      login(userData);
+      const response = await login(id.trim(), pw);  // AuthContext의 login 사용
+      const userData = response.data;
       navigate(userData.role === 'admin' ? '/admin' : '/select-farm', { replace: true });
     } catch (err) {
       console.error(err);

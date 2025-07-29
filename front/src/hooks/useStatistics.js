@@ -1,5 +1,6 @@
 // src/hooks/useStatistics.js
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -22,8 +23,11 @@ export function useStatistics(period) {
       
       try {
         // TODO: 실제 API 호출로 교체
-        // const response = await fetch(`/api/statistics/${period}?farmId=${user.selectedFarm.id}`);
-        // const result = await response.json();
+        // const response = await axios.get(`/api/statistics/${period}`, {
+        //   params: { farmId: user.selectedFarm.id },
+        //   withCredentials: true
+        // });
+        // const result = response.data;
         
         // 임시 더미 데이터
         const dummyData = generateDummyData(period);
