@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserFarms } from '../api/auth';
-import bgImg from '/images/bg_home.jpg';
 
 export default function SelectFarm() {
 
@@ -16,10 +15,10 @@ export default function SelectFarm() {
   const [loading, setLoading] = useState(true); // 로딩 플래그  
 
   useEffect(() => {
-  if (!user?.phone) return;
+  if (!user?.userPhone) return;
 
   setLoading(true);
-  getUserFarms(user.phone)
+  getUserFarms(user.userPhone)
     .then(res => {
       setFarms(res.data);
     })
@@ -30,7 +29,7 @@ export default function SelectFarm() {
     .finally(() => {
       setLoading(false);
     });
-  }, [user?.phone]);
+  }, [user?.userPhone]);
 
   // 농장이 1개 이하라면 자동 선택 & 네비게이트
   useEffect(() => {
@@ -51,7 +50,7 @@ export default function SelectFarm() {
         {farms.length === 0 ? (
           <p>등록된 농장이 없습니다.</p>
         ) : (
-          <ul className="flex flex-wrap justify-center gap-2">
+          <ul className="farmList">
             {farms.map(farm => (
               <li
                 key={farm.id}

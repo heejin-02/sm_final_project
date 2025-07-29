@@ -1,3 +1,5 @@
+※Node.js가 깔려있어야 합니다
+
 # 1) front 디렉토리로 이동
 cd front
 
@@ -17,7 +19,7 @@ npm install \
   react-router-dom \    # 라우팅  
   react-icons \         # SVG 아이콘  
   d3-scale \            # 스케일 계산  
-  d3-scale-chromatic    # 컬러 보간  
+  d3-color \            # 색상 계산 
 
 # 5) 개발 서버 기동 (Vite)
 npm run dev

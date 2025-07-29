@@ -15,5 +15,8 @@ public class QcClassificationDTO {
     private String createdAt;
     private int insectIdx;
     private int imgIdx;
+    private String notiCheck;
+    private int ghIdx;
+    private int anlsAcc;
 }
 

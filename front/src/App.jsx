@@ -1,16 +1,31 @@
 // src/App.jsx
-import React from 'react'
+import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext';
 
-import AdminPage from './pages/AdminPage'
+import AdminMain from './pages/AdminMain'
+import AddUser from './pages/AddUser'
 import Home from './pages/Home'
-import SelectFarm from './pages/SelectFarm' 
-import MainFarm from './pages/MainFarm'; 
+import SelectFarm from './pages/SelectFarm'
+import MainFarm from './pages/MainFarm';
+import Report from './pages/Report';
+import NotiDetail from './pages/NotiDetail';
 
 
 export default function App() {
   const { user } = useAuth();
+
+  // 최상위 #app div에 admin 클래스 추가/제거
+  useEffect(() => {
+    const appDiv = document.getElementById('app');
+    if (appDiv) {
+      if (user?.role === 'admin') {
+        appDiv.classList.add('admin');
+      } else {
+        appDiv.classList.remove('admin');
+      }
+    }
+  }, [user?.role]);
 
   return (
     <Routes>
@@ -24,13 +39,18 @@ export default function App() {
       />
 
       {user?.role === 'admin' && (
-        <Route path="/admin" element={<AdminPage />} />
+        <>
+          <Route path="/admin" element={<AdminMain />} />
+          <Route path="/admin/add-user" element={<AddUser />} />       
+        </>
       )}
 
       {user?.role && user.role !== 'admin' && (
         <>
           <Route path="/select-farm" element={<SelectFarm />} />
           <Route path="/mainfarm/:id" element={<MainFarm />} />
+          <Route path="/report/:period" element={<Report />} />
+          <Route path="/notifications/:id" element={<NotiDetail />} />
         </>
       )}
 
