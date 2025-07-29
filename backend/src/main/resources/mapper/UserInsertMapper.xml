@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.smhrd.web.admin.UserInsertMapper">
+<mapper namespace="com.smhrd.web.admin.userInsert.UserInsertMapper">
 
     <!-- 회원 존재 여부 체크 -->
     <select id="checkUserExists" parameterType="string" resultType="int">
@@ -10,7 +10,7 @@
     </select>
 
     <!-- 회원 등록 -->
-    <insert id="insertUser" parameterType="com.smhrd.web.admin.UserInsertDTO">
+    <insert id="insertUser" parameterType="com.smhrd.web.admin.userInsert.UserInsertDTO">
         INSERT INTO QC_USER (USER_PHONE, USER_PW, USER_NAME, JOINED_AT)
         VALUES (
             #{userPhone},
