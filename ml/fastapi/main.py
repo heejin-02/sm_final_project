@@ -254,22 +254,36 @@ def twilio_voice_get(
     """
     return Response(content=xml.strip(), media_type="application/xml")
 
-# POST 방식 (Twilio가 호출할 때 사용)
-@app.post("/twilio/voice")
-async def twilio_voice_post(request: Request):
-    form = await request.form()
-    insect = form.get("insect", "알 수 없는 해충")
-    conf = form.get("conf")
+@app.post("/twilio-call")
+def twilio_call():
+    with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+        with conn.cursor() as cur:
+            # 가장 최근 탐지 기록 1건 가져오기
+            cur.execute("""
+            SELECT * FROM (
+                SELECT I.CREATED_AT, G.GH_NAME, N.INSECT_NAME
+                FROM QC_CLASSIFICATION C
+                JOIN QC_IMAGES I ON C.IMG_IDX = I.IMG_IDX
+                JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
+                JOIN QC_INSECT N ON C.INSECT_IDX = N.INSECT_IDX
+                ORDER BY I.CREATED_AT DESC
+            )
+            WHERE ROWNUM = 1
+        """)
+            row = cur.fetchone()
 
-    try:
-        conf = float(conf)
-        msg = f"주의하세요. {insect}가 {conf * 100:.1f} 퍼센트 신뢰도로 탐지되었습니다."
-    except:
-        msg = f"주의하세요. {insect}가 탐지되었습니다."
+    if not row:
+        msg = "최근 탐지된 해충 정보가 없습니다."
+    else:
+        _, gh_name, insect_name = row
 
-    xml = f"""
+        msg = f"{gh_name}에서 {insect_name}가 탐지되었습니다. 확인해 주세요."
+
+    # TwiML XML 구성
+    twiml = f"""
     <Response>
-        <Say language="ko-KR" voice="alice">{msg}</Say>
+        <Say language="ko-KR" voice="Polly.Seoyeon">{msg}</Say>
     </Response>
     """
-    return Response(content=xml.strip(), media_type="application/xml")
+
+    return Response(content=twiml.strip(), media_type="application/xml")

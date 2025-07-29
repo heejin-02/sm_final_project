@@ -17,7 +17,9 @@ from utils.general import (
 )
 from utils.torch_utils import select_device, smart_inference_mode
 from urllib.parse import quote
+from dotenv import load_dotenv
 
+load_dotenv()
 # 고정 GH_IDX
 gh_idx = 1
 
@@ -25,12 +27,12 @@ gh_idx = 1
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-USER_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")  # 수신자
+USER_PHONE_NUMBER = os.getenv("USER_PHONE_NUMBER")  # 수신자
 PUBLIC_FASTAPI_BASE = "https://d88304504349.ngrok-free.app"
 
 def make_call(insect_name: str, confidence: float):
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    url = f"{PUBLIC_FASTAPI_BASE}/twilio/voice?insect={quote(insect_name)}&conf={confidence}"
+    url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
     call = client.calls.create(
         to=USER_PHONE_NUMBER,
         from_=TWILIO_PHONE_NUMBER,
@@ -162,7 +164,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    # make_call(insect_name, best_conf)
+                    #make_call(insect_name, best_conf)
 
         if view_img:
             cv2.imshow("YOLOv5", annotated_frame)
