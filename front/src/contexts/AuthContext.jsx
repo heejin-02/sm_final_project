@@ -21,7 +21,9 @@ export function AuthProvider({ children }) {
       setUser({
         userName: response.data.userName,
         userPhone: response.data.userPhone,
-        role: response.data.role  // 여기에 role 추가!
+        role: response.data.role,
+        joinedAt: response.data.joinedAt,
+        selectedFarm: null,
       });
 
       setIsLoggedIn(true);
