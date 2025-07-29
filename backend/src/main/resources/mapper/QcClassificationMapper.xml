@@ -13,7 +13,11 @@
             ANLS_RESULT,
             CREATED_AT,
             INSECT_IDX,
-            IMG_IDX
+            IMG_IDX,
+            NOTI_CHECK,
+            GH_IDX,
+            ANLS_ACC
+            
         ) VALUES (
             QC_CLASSIFICATION_SEQ.NEXTVAL,
             #{anlsModel},
@@ -21,8 +25,18 @@
             #{anlsResult},
             TO_TIMESTAMP(#{createdAt}, 'YYYY-MM-DD HH24:MI:SS'),
             #{insectIdx},
-            #{imgIdx}
+            #{imgIdx},
+            #{notiCheck},
+            #{ghIdx},
+            #{anlsAcc}
         )
     </insert>
+    
+    <select id="findInsectNameByImgIdx" resultType="String">
+      	SELECT ANLS_RESULT
+    	FROM QC_CLASSIFICATION
+    	WHERE IMG_IDX = #{imgIdx}
+      	AND ROWNUM = 1
+	</select>
 
 </mapper>

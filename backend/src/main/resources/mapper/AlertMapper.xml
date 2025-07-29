@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.smhrd.web.farm.alert.AlertMapper">
+
+
+	<!-- 알림 목록 조회 -->
+	<select id="getAlertList" resultType="com.smhrd.web.farm.alert.dto.AlertDTO">
+		SELECT 
+		    c.ANLS_IDX,
+		    i.INSECT_NAME,
+		    g.GH_AREA AS GH_AREA,
+		    c.ANLS_ACC,
+		    TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+		    c.NOTI_CHECK
+		FROM QC_CLASSIFICATION c
+		JOIN QC_GREENHOUSE g ON c.GH_IDX = g.GH_IDX
+		JOIN QC_INSECT i ON c.INSECT_IDX = i.INSECT_IDX
+		WHERE g.FARM_IDX = #{farmIdx}
+		ORDER BY c.CREATED_AT DESC
+	</select>
+	
+
+
+	<!-- 알림 읽음처리, 클릭하면 N-> Y로 바뀌게  -->
+	<update id="updateNotiCheck" parameterType="long">
+	    UPDATE QC_CLASSIFICATION
+	    SET NOTI_CHECK = 'Y'
+	    WHERE ANLS_IDX = #{anlsIdx}
+	</update>
+	
+	<select id="getAlertDetail" resultType="com.smhrd.web.farm.alert.dto.AlertDTO">
+	    SELECT 
+	        c.ANLS_IDX,
+	        g.GH_AREA,
+	        i.INSECT_NAME,
+	        c.ANLS_ACC,
+	        c.CREATED_AT,
+	        q.USER_QES,
+	        q.GPT_CONTENT,
+	        q.CREATED_AT AS GPT_CREATED_AT
+	    FROM QC_CLASSIFICATION c
+	    JOIN QC_GREENHOUSE g ON c.GH_IDX = g.GH_IDX
+	    JOIN QC_INSECT i ON c.INSECT_IDX = i.INSECT_IDX
+	    LEFT JOIN QC_GPT q ON c.ANLS_IDX = q.ANLS_IDX
+	    WHERE c.ANLS_IDX = #{anlsIdx}
+	</select>
+		
+		
+
+	<select id="getGreenhouseInfo" resultType="com.smhrd.web.farm.alert.dto.GreenhouseInfoDTO">
+	    SELECT 
+	        c.ANLS_IDX,
+	        g.GH_AREA,
+	        i.INSECT_NAME,
+	        c.ANLS_ACC,
+	        TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+	        q.USER_QES,
+	        q.GPT_CONTENT,
+	        TO_CHAR(q.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS GPT_CREATED_AT,
+	        c.NOTI_CHECK,
+	        img.IMG_URL
+	    FROM QC_CLASSIFICATION c
+	    JOIN QC_GREENHOUSE g ON c.GH_IDX = g.GH_IDX
+	    JOIN QC_INSECT i ON c.INSECT_IDX = i.INSECT_IDX
+	    LEFT JOIN QC_GPT q ON c.ANLS_IDX = q.ANLS_IDX
+		LEFT JOIN QC_IMAGES img ON c.IMG_IDX = img.IMG_IDX
+	    WHERE c.ANLS_IDX = #{anlsIdx}
+	</select>
+
+
+	<select id="getImageList" parameterType="long" resultType="com.smhrd.web.farm.alert.dto.ImageInfoDTO">
+		SELECT 
+	    img.IMG_IDX,
+	    img.GH_IDX,
+	    img.IMG_URL,
+	    img.CREATED_AT,
+	    cls.ANLS_IDX,
+	    cls.INSECT_IDX
+	  FROM QC_IMAGES img
+	  INNER JOIN QC_CLASSIFICATION cls ON img.IMG_IDX = cls.IMG_IDX
+	  WHERE cls.ANLS_IDX = #{anlsIdx}
+	</select>
+	
+	<select id="getGptResult" parameterType="long" resultType="com.smhrd.web.farm.alert.dto.GptResultDTO">
+	    SELECT GPT_IDX, USER_QES, GPT_CONTENT, CREATED_AT
+	    FROM QC_GPT
+	    WHERE ANLS_IDX = #{anlsIdx}
+	</select>
+
+
+</mapper>

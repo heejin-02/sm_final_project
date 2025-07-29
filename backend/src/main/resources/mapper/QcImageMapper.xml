@@ -6,26 +6,33 @@
 <mapper namespace="com.smhrd.web.QcImage.QcImageMapper">
 
     <insert id="insertImage" parameterType="com.smhrd.web.QcImage.QcImageDTO">
-        INSERT INTO QC_IMAGES (
-            IMG_IDX,
-            CCTV_IDX,
-            IMG_NAME,
-            IMG_SIZE,
-            IMG_EXT,
-            CREATED_AT,
-            IMG_X,
-            IMG_Y
-        ) VALUES (
-            QC_IMAGES_SEQ.NEXTVAL,
-            #{cctvIdx},
-            #{imgName},
-            #{imgSize},
-            #{imgExt},
-            TO_TIMESTAMP(#{createdAt}, 'YYYY-MM-DD HH24:MI:SS'),
-            #{imgX},
-            #{imgY}
-        )
-    </insert>
+    <selectKey keyProperty="imgIdx" resultType="long" order="BEFORE">
+        SELECT QC_IMAGES_SEQ.NEXTVAL FROM DUAL
+    </selectKey>
+
+    INSERT INTO QC_IMAGES (
+        IMG_IDX,
+        IMG_NAME,
+        IMG_SIZE,
+        IMG_EXT,
+        CREATED_AT,
+        IMG_X,
+        IMG_Y,
+        IMG_URL,
+        GH_IDX
+    ) VALUES (
+        #{imgIdx},
+        #{imgName},
+        #{imgSize},
+        #{imgExt},
+        TO_TIMESTAMP(#{createdAt}, 'YYYY-MM-DD HH24:MI:SS'),
+        #{imgX},
+        #{imgY},
+        #{imgUrl},
+        #{ghIdx}
+    )
+</insert>
+    
 
     <select id="getLastInsertedIdx" resultType="int">
         SELECT MAX(IMG_IDX) FROM QC_IMAGES
