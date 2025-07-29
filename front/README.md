@@ -1,3 +1,5 @@
+※Node.js가 깔려있어야 합니다
+
 # 1) front 디렉토리로 이동
 cd front
 

@@ -39,35 +39,56 @@ export default function MainFarm() {
               rows={3}
               cols={3}
               gap={8}
-              onCellClick={id => navigate(`/regions/${id}`)}
+              // onCellClick={id => navigate(`/regions/${id}`)}
             />
           </div>
         </div>
-        <div className="flex gap-2 w-full h-[34%]">
-          <div className="flex flex-col gap-1">
-            <div className="bordered-box flex-row">
-              <span className="text-sm whitespace-nowrap w-[100px] flex-none">탐지 해충 수</span>
-              <span className="w-full">
-                <span className="text-xl font-semibold">10</span> 마리
+        <div className="stats-container">
+          <div className="stats-column">
+            <div className="stat-item">
+              <span className="stat-label">찾은 해충</span>
+              <span className="stat-content">
+                <span className="stat-number">10</span><span className="stat-unit"> 마리</span>
               </span>
-            </div>          
-            <div className="bordered-box flex-row">
-              <span className="text-sm whitespace-nowrap w-[100px] flex-none">탐지 해충 종류</span>
-              <span className="w-full">
-                <span className="text-xl font-semibold">5</span> 종
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">탐지 종류</span>
+              <span className="stat-content">
+                <span className="stat-number">5</span><span className="stat-unit"> 종</span>
               </span>
-            </div> 
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">발생 구역</span>
+              <span className="stat-content">
+                <span className="stat-number">5</span><span className="stat-unit"> 곳</span>
+              </span>
+            </div>
           </div>
 
-          <div className="bordered-box justify-start">
+          <div className="bordered-box justify-start overflow-y-auto scrl-custom">
             오늘은 어제 보다 벌레가 없네요! 다만 B 구역 에서만 4 마리의 벌레가 발견 되어 확인이 필요 합니다. 오후에 비가 내릴 예정 입니다. 습도 관리에 신경 써 주세요.
           </div>
 
           <div className='flex flex-col gap-1 btn-wrap'>
-            <div className="bordered-box">일간 통계</div>              
-            <div className="bordered-box">월간 통계</div>              
-            <div className="bordered-box">연간 통계</div>             
-          </div>                   
+            <div
+              className="bordered-box hvborder cursor-pointer bg-[#0066c5]"
+              onClick={() => navigate('/report/daily')}
+            >
+              일간 통계
+            </div>
+            <div
+              className="bordered-box hvborder cursor-pointer"
+              onClick={() => navigate('/report/monthly')}
+            >
+              월간 통계
+            </div>
+            <div
+              className="bordered-box hvborder cursor-pointer bg-[#00488a]"
+              onClick={() => navigate('/report/yearly')}
+            >
+              연간 통계
+            </div>
+          </div>
         </div>
       </div>
     </div>
