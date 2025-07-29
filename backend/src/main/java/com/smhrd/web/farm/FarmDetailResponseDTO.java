@@ -1,11 +1,9 @@
-// FarmDTO.java
-package com.smhrd.web.userDetailDTO;
+package com.smhrd.web.farm;
 
-import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class FarmDetailDTO {
+public class FarmDetailResponseDTO {
     private Long farmIdx;
     private String farmName;
     private String farmAddr;
@@ -13,5 +11,8 @@ public class FarmDetailDTO {
     private String farmCrops;
     private String farmArea;
     private String farmImg;
-    private LocalDateTime createdAt;
+    
+    // 유저 정보 포함 필요 시
+    private String userPhone;
+    private String userName;
 }

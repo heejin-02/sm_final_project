@@ -1,4 +1,4 @@
-package com.smhrd.web.admin;
+package com.smhrd.web.admin.userInsert;
 
 import lombok.Data;
 

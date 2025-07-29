@@ -1,4 +1,4 @@
-package com.smhrd.web.admin;
+package com.smhrd.web.admin.farmInsert;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("/api/farm")
 public class FarmInsertController {
@@ -16,6 +18,7 @@ public class FarmInsertController {
     @Autowired
     private FarmInsertService farmInsertService;
 
+	@Operation(summary = "농장 추가")
     @PostMapping(value = "/insertFarm", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> insertFarm(@ModelAttribute FarmInsertDTO dto) {
         MultipartFile file = dto.getFarmImg();

@@ -5,67 +5,22 @@
 
 <mapper namespace="com.smhrd.web.user.UserMapper">
 
-  <select id="selectFarmsByUserPhone" parameterType="string" resultType="com.smhrd.web.userDetailDTO.FarmDetailDTO">
-    SELECT FARM_IDX, FARM_NAME, FARM_ADDR, FARM_PHONE, FARM_CROPS, FARM_AREA, FARM_IMG, CREATED_AT
-    FROM QC_FARM
-    WHERE USER_PHONE = #{userPhone}
-  </select>
-
-  <select id="selectFarmByFarmIdx" parameterType="long" resultType="com.smhrd.web.userDetailDTO.FarmDetailDTO">
-    SELECT FARM_IDX, FARM_NAME, FARM_ADDR, FARM_PHONE, FARM_CROPS, FARM_AREA, FARM_IMG, CREATED_AT
-    FROM QC_FARM
-    WHERE FARM_IDX = #{farmIdx}
-  </select>
-
-  <select id="selectGreenhousesByFarmIdx" parameterType="long" resultType="com.smhrd.web.userDetailDTO.GreenhouseDTO">
-    SELECT GH_IDX, FARM_IDX, GH_NAME, GH_AREA, GH_CROPS, CREATED_AT
-    FROM QC_GREENHOUSE
-    WHERE FARM_IDX = #{farmIdx}
-  </select>
-
-  <select id="selectCctvsByFarmIdx" parameterType="long" resultType="com.smhrd.web.userDetailDTO.CCTVDTO">
-    SELECT c.CCTV_IDX, c.GH_IDX, c.CCTV_NM, c.CCTV_LOC, c.CCTV_X, c.CCTV_Y, c.CREATED_AT
-    FROM QC_CCTV c
-    JOIN QC_GREENHOUSE g ON c.GH_IDX = g.GH_IDX
-    WHERE g.FARM_IDX = #{farmIdx}
-  </select>
-
-  <select id="selectReportsByFarmIdx" parameterType="long" resultType="com.smhrd.web.userDetailDTO.ReportDTO">
-    SELECT REPORT_IDX, FARM_IDX, PERIOD_TYPE, PERIOD_MARK, REPORT, CREATED_AT
-    FROM QC_REPORT
-    WHERE FARM_IDX = #{farmIdx}
-  </select>
-
-	<select id="selectFeedbacksByFarmIdx" parameterType="long" resultType="com.smhrd.web.userDetailDTO.FeedbackDTO">
-	  SELECT 
-	    f.FEEDBACK_IDX, 
-	    f.ANLS_IDX, 
-	    f.FEEDBACK_CONTENT, 
-	    f.CREATED_AT
-	  FROM QC_FEEDBACK f
-	  JOIN QC_CLASSIFICATION c ON f.ANLS_IDX = c.ANLS_IDX
-	  JOIN QC_IMAGES i ON c.IMG_IDX = i.IMG_IDX
-	  JOIN QC_CCTV v ON i.CCTV_IDX = v.CCTV_IDX
-	  JOIN QC_GREENHOUSE g ON v.GH_IDX = g.GH_IDX
-	  WHERE g.FARM_IDX = #{farmIdx}
+	<select id="selectFarmsByUserPhone" parameterType="string" resultType="com.smhrd.web.user.UserDTO">
+	    SELECT 
+	        f.FARM_IDX     AS farmIdx,
+	        f.FARM_NAME    AS farmName,
+	        f.FARM_ADDR    AS farmAddr,
+	        f.FARM_PHONE   AS farmPhone,
+	        f.FARM_CROPS   AS farmCrops,
+	        f.FARM_AREA    AS farmArea,
+	        f.FARM_IMG     AS farmImg,
+	        f.USER_PHONE   AS userPhone,
+	        u.USER_NAME    AS userName
+	    FROM QC_FARM f
+	    JOIN QC_USER u ON f.USER_PHONE = u.USER_PHONE
+	    WHERE f.USER_PHONE = #{userPhone}
 	</select>
 
-
-	<select id="selectClassificationsByFarmIdx" parameterType="long" resultType="com.smhrd.web.userDetailDTO.FarmDetailDTO">
-	  SELECT 
-	    c.ANLS_IDX, 
-	    c.ANLS_MODEL, 
-	    c.ANLS_CONTENT, 
-	    c.ANLS_RESULT, 
-	    c.CREATED_AT, 
-	    c.INSECT_IDX, 
-	    c.IMG_IDX
-	  FROM QC_CLASSIFICATION c
-	  JOIN QC_IMAGES i ON c.IMG_IDX = i.IMG_IDX
-	  JOIN QC_CCTV v ON i.CCTV_IDX = v.CCTV_IDX
-	  JOIN QC_GREENHOUSE g ON v.GH_IDX = g.GH_IDX
-	  WHERE g.FARM_IDX = #{farmIdx}
-	</select>
 
 
 </mapper>

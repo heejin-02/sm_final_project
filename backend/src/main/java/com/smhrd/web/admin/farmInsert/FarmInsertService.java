@@ -1,4 +1,4 @@
-package com.smhrd.web.admin;
+package com.smhrd.web.admin.farmInsert;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

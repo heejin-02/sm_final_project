@@ -1,7 +1,6 @@
 package com.smhrd.web.admin;
 
 import java.util.Date;
-
 import lombok.Data;
 
 @Data
