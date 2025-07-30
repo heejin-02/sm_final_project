@@ -190,7 +190,7 @@ export default function AdminMain() {
       <div className="section p-6">
         <div className="inner">
           <h1 className="tit-head">전체 회원 정보</h1>
-          <div className="flex items-center justify-end mb-6">
+          <div className="flex items-center justify-between mb-6">
             <p className="text-gray-600 mt-1">
               총 {totalCount}명의 회원 (페이지당 {pageSize}개씩 표시)
             </p>
@@ -310,7 +310,7 @@ export default function AdminMain() {
                   <th>번호</th>
                   <th>이름</th>
                   <th>아이디(휴대폰번호)</th>
-                  <th>대표농장이름</th>
+                  <th>대표농장이름 / 하우스</th>
                   <th>대표농장주소</th>
                   <th>농장번호</th>
                   <th>가입날짜</th>

@@ -218,7 +218,7 @@ export default function AdminUserInfo() {
 				</div>		
 
         {/* 회원 기본 정보 카드 */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8 max-w-4xl mx-auto">
           <div className="flex justify-between items-start mb-6">
             <h3 className="text-xl font-semibold text-gray-800">회원 기본 정보</h3>
             <div className="flex gap-2">
@@ -254,8 +254,8 @@ export default function AdminUserInfo() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
+          <div className="flex gap-2 flex-wrap">
+            <div className="space-y-2 flex-[0.6] whitespace-nowrap">
               <label className="block text-sm font-medium text-gray-600">이름</label>
               {!isEditing ? (
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
@@ -283,14 +283,14 @@ export default function AdminUserInfo() {
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex-[0.8] whitespace-nowrap">
               <label className="block text-sm font-medium text-gray-600">아이디(휴대폰번호)</label>
               <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                 {userInfo.userPhone}
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex-[1] whitespace-nowrap">
               <label className="block text-sm font-medium text-gray-600">가입날짜</label>
               <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                 {userInfo.joinedAt}
@@ -298,57 +298,67 @@ export default function AdminUserInfo() {
             </div>
           </div>
         </div>
-
-        {/* 농장 추가 버튼 */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={handleAddFarm}
-            className="btn btn-primary"
-          >
-            농장 추가
-          </button>
-        </div>
-
-        {/* 농장 목록 테이블 */}
-        <div className="table-wrap">
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>번호</th>
-                  <th>재배 작물</th>
-                  <th>농장 이름</th>
-                  <th>농장 주소</th>
-                  <th>농장 번호</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userDetailList.length > 0 && userDetailList.some(farm => farm.farmName) ? (
-                  userDetailList
-                    .filter(farm => farm.farmName) // 농장 이름이 있는 것만 필터링
-                    .map((farm, index) => (
-                      <tr
-                        key={farm.farmIdx || `farm-${index}`}
-                        onClick={() => handleFarmClick(farm.farmIdx)}
-                        className="cursor-pointer hover:bg-gray-50 transition-colors"
-                      >
-                        <td data-farm-idx={farm.farmIdx}>{index + 1}</td>
-                        <td>{farm.farmCrops || '-'}</td>
-                        <td>{farm.farmName}</td>
-                        <td>{farm.farmAddr || '-'}</td>
-                        <td>{farm.farmPhone || '-'}</td>
-                      </tr>
-                    ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center text-gray-500 py-8">
-                      등록된 농장 정보가 없습니다.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        
+        <div className='max-w-5xl mx-auto'>
+          {/* 농장 추가 버튼 */}
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={handleAddFarm}
+              className="btn btn-primary"
+            >
+              농장 추가
+            </button>
           </div>
+
+          {/* 농장 목록 테이블 */}
+          <div className="table-wrap">
+            <div className="overflow-x-auto">
+              <table className="table">
+                <colgroup>
+                  <col width="10%"/>
+                  <col width="15%"/>
+                  <col width="20%"/>
+                  <col width="30%"/>
+                  <col width="25%"/>
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>번호</th>
+                    <th>재배 작물</th>
+                    <th>농장 이름 / 하우스</th>
+                    <th>농장 주소</th>
+                    <th>농장 번호</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userDetailList.length > 0 && userDetailList.some(farm => farm.farmName) ? (
+                    userDetailList
+                      .filter(farm => farm.farmName) // 농장 이름이 있는 것만 필터링
+                      .map((farm, index) => (
+                        <tr
+                          key={farm.farmIdx || `farm-${index}`}
+                          onClick={() => handleFarmClick(farm.farmIdx)}
+                          className="cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
+                          <td data-farm-idx={farm.farmIdx}>{index + 1}</td>
+                          <td>{farm.farmCrops || '-'}</td>
+                          <td>{farm.farmName}</td>
+                          <td>{farm.farmAddr || '-'}</td>
+                          <td>{farm.farmPhone || '-'}</td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center text-gray-500 py-8">
+                        등록된 농장 정보가 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
 
       </div>

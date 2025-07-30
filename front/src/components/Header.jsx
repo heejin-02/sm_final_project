@@ -22,14 +22,16 @@ export default function Header() {
 
       <div className="user-area">
         {user?.userName && user.role !== 'admin' && (
-          !user.selectedFarm?.name ? (
-            <span className="text-2xl">{user.userName}님 환영합니다</span>
-          ) : (
-            <span className="text-2xl">
-              {user.userName}님의&nbsp;
-              <span className="font-semibold">{user.selectedFarm.name}</span>
-            </span>
-          )
+          (() => {
+            return !user.selectedFarm?.farmName ? (
+              <span className="text-2xl">{user.userName}님 환영합니다</span>
+            ) : (
+              <span className="text-2xl">
+                {user.userName}님의&nbsp;
+                <span className="font-semibold">{user.selectedFarm.farmName}</span>
+              </span>
+            );
+          })()
         )}
       </div>
 

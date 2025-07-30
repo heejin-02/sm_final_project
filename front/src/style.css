@@ -110,7 +110,7 @@
   * {
     font-family: 'Pretendard','KoddiUD-OnGodi', sans-serif;
     /* font-weight: 500; */
-    line-height: 1.333;
+    line-height: 1.555 !important;
     letter-spacing: 0.7px;
     box-sizing: border-box;
   }
@@ -131,6 +131,7 @@
   }
   #app.admin{
     padding-top: var(--admin-header-h);
+    font-size: 16px;
   }
   .inner{
     width: 1440px;
@@ -198,6 +199,7 @@
     z-index: -1;
     content: '';
   }
+
   /* ===== 폼 관련 스타일 ===== */
 
   .login-form {
@@ -385,8 +387,8 @@
   }
 
   .btn-primary:hover {
-    background-color: #124600;
-    border-color: #124600;
+    background-color: #166534;
+    border-color: #166534;
   }
 
   .btn-accent {
@@ -561,6 +563,7 @@
     font-weight: 500;
     color: #666;
     border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
   }
 
   .table td {

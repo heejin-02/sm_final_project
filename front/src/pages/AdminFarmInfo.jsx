@@ -10,15 +10,6 @@ function AdminFarmInfo() {
   // 추가 모드인지 수정 모드인지 구분
   const { userInfo: passedUserInfo, farmInfo: passedFarmInfo, mode } = location.state || {};
   const isCreateMode = farmIdx === 'create' || mode === 'create';
-
-  // 디버깅용 console.log
-  console.log('🔍 Debug Info:');
-  console.log('farmIdx:', farmIdx);
-  console.log('mode:', mode);
-  console.log('isCreateMode:', isCreateMode);
-  console.log('location.state:', location.state);
-  console.log('passedUserInfo:', passedUserInfo);
-  console.log('passedFarmInfo:', passedFarmInfo);
   
   const [farmInfo, setFarmInfo] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
