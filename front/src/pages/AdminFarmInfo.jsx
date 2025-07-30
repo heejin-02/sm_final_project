@@ -224,26 +224,27 @@ function AdminFarmInfo() {
 
         {/* 농장주 정보 카드 (읽기 전용) */}
         {userInfo && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">농장주 정보</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">이름</label>
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+          <div className="admForm">
+            <h3>농장주 정보</h3>
+
+            <div className="admForm-ul">
+              <div className="input-group flex-06">
+                <label>이름</label>
+                <div className="input">
                   {userInfo.userName}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">아이디(휴대폰번호)</label>
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+              <div className="input-group flex-08">
+                <label>아이디(휴대폰번호)</label>
+                <div className="input">
                   {userInfo.userPhone}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">가입날짜</label>
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+              <div className="input-group flex-1">
+                <label>가입날짜</label>
+                <div className="input">
                   {userInfo.joinedAt}
                 </div>
               </div>
@@ -252,9 +253,9 @@ function AdminFarmInfo() {
         )}
 
         {/* 농장 기본 정보 카드 */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8">
+        <div className="admForm">
           <div className="flex justify-between items-start mb-6">
-            <h3 className="text-xl font-semibold text-gray-800">
+            <h3>
               {isCreateMode ? '농장 정보 입력' : '농장 기본 정보'}
             </h3>
             <div className="flex gap-2">
@@ -310,10 +311,10 @@ function AdminFarmInfo() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="admForm-ul">
             {/* 농장 이름 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 이름</label>
+            <div className="input-group">
+              <label>농장 이름</label>
               {!isEditing ? (
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                   {farmInfo?.farmName}
@@ -340,7 +341,7 @@ function AdminFarmInfo() {
             
             {/* 농장 주소 */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 주소</label>
+              <label>농장 주소</label>
               {!isEditing ? (
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                   {farmInfo?.farmAddr}
@@ -367,7 +368,7 @@ function AdminFarmInfo() {
             
             {/* 농장 전화번호 */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 전화번호</label>
+              <label>농장 전화번호</label>
               {!isEditing ? (
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                   {farmInfo?.farmPhone || '-'}
@@ -385,7 +386,7 @@ function AdminFarmInfo() {
             
             {/* 재배 작물 */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">재배 작물</label>
+              <label>재배 작물</label>
               {!isEditing ? (
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                   {farmInfo?.farmCrops || '-'}
@@ -403,7 +404,7 @@ function AdminFarmInfo() {
             
             {/* 농장 면적 */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 면적</label>
+              <label>농장 면적</label>
               {!isEditing ? (
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                   {farmInfo?.farmArea || '-'}
@@ -421,7 +422,7 @@ function AdminFarmInfo() {
 
             {/* 농장 이미지 */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 이미지</label>
+              <label>농장 이미지</label>
               {!isEditing ? (
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                   {farmInfo?.farmImg || '-'}
@@ -452,7 +453,7 @@ function AdminFarmInfo() {
             {/* 농장 인덱스 (읽기 전용) - 추가 모드에서는 숨김 */}
             {!isCreateMode && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">농장 ID</label>
+                <label>농장 ID</label>
                 <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
                   {farmInfo?.farmIdx}
                 </div>

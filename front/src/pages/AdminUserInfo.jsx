@@ -218,10 +218,10 @@ export default function AdminUserInfo() {
 				</div>		
 
         {/* 회원 기본 정보 카드 */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8 max-w-4xl mx-auto">
-          <div className="flex justify-between items-start mb-6">
-            <h3 className="text-xl font-semibold text-gray-800">회원 기본 정보</h3>
-            <div className="flex gap-2">
+        <div className="admForm">
+          <div className="admForm-header">
+            <h3>회원 기본 정보</h3>
+            <div className="btn-group">
               {!isEditing ? (
                 <button
                   onClick={handleStartEdit}
@@ -254,11 +254,11 @@ export default function AdminUserInfo() {
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <div className="space-y-2 flex-[0.6] whitespace-nowrap">
-              <label className="block text-sm font-medium text-gray-600">이름</label>
+          <div className="admForm-ul">
+            <div className="input-group flex-06">
+              <label>이름</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+                <div className="input">
                   {userInfo.userName}
                 </div>
               ) : (
@@ -283,16 +283,16 @@ export default function AdminUserInfo() {
               )}
             </div>
 
-            <div className="space-y-2 flex-[0.8] whitespace-nowrap">
-              <label className="block text-sm font-medium text-gray-600">아이디(휴대폰번호)</label>
-              <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+            <div className="input-group flex-08">
+              <label>아이디(휴대폰번호)</label>
+              <div className="input">
                 {userInfo.userPhone}
               </div>
             </div>
 
-            <div className="space-y-2 flex-[1] whitespace-nowrap">
-              <label className="block text-sm font-medium text-gray-600">가입날짜</label>
-              <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+            <div className="input-group flex-1">
+              <label>가입날짜</label>
+              <div className="input">
                 {userInfo.joinedAt}
               </div>
             </div>
