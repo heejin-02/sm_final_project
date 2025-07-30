@@ -24,8 +24,8 @@
 	  ORDER BY f.created_at DESC NULLS LAST
 	</select>
 	
-	<!-- 회원이름 누르면 상세보기 (회원별 첫 번째 농장만 조인) -->
-	<select id="selectUserByPhone" parameterType="String" resultType="com.smhrd.web.admin.AdminDTO">
+	<!-- 회원정보 전체보기 -->
+	<select id="selectAllUsers" resultType="com.smhrd.web.admin.AdminDTO">
 	  SELECT 
 	    NVL(f.farm_idx, 0) AS farmIdx,
 	    u.user_name AS userName,
@@ -39,12 +39,8 @@
 	    f.farm_area AS farmArea,
 	    TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
 	  FROM qc_user u
-	  LEFT JOIN qc_farm f 
-	    ON u.user_phone = f.user_phone
-	   AND f.farm_idx = (
-	     SELECT MIN(farm_idx) FROM qc_farm WHERE user_phone = u.user_phone
-	   )
-	  WHERE u.user_phone = #{userPhone}
+	  LEFT JOIN qc_farm f ON u.user_phone = f.user_phone
+	  ORDER BY f.created_at DESC NULLS LAST
 	</select>
 	
 	<!-- 농장정보 수정삭제 -->
