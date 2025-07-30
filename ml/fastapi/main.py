@@ -24,6 +24,8 @@ import time
 from fastapi import Query
 from fastapi.responses import Response
 from fastapi import Request
+from collections import Counter
+
 
 # FastAPI 초기화
 app = FastAPI()
@@ -56,10 +58,15 @@ chat = ChatOpenAI(model="gpt-4o-mini", openai_api_key=OPENAI_API_KEY)
 prompt = ChatPromptTemplate.from_messages([
     (
         "system",
-        "다음은 최근 탐지 기록이다. 문서와 이 탐지 기록을 종합해, 해당 해충의 위험성과 방제 방법을 사용자에게 친절히 설명하라. "
-        "탐지 기록이 없으면 최근에 탐지된 이력이 없다고 설명하라.\n\n{context}"
+        "다음은 최근 탐지된 해충 '{insect}'에 대한 기록입니다. "
+        "'{most_location}' 위치에서 자주 발견되었으니, 이 구역을 중심으로 해충 방제에 신경 써 주세요.\n\n"
+        "{context}\n\n"
+        "위의 탐지 기록을 바탕으로 이 해충의 특성과 위험성, 그리고 방제 방법을 자세히 알려주세요. "
+        "농사를 짓는 어르신도 쉽게 이해하실 수 있도록 부드러운 존댓말 구어체로 설명해 주세요. "
+        "인삿말은 생략하고, 문장은 2~3개 정도로 짧고 명확하게 해주시고, 해당 해충 이름을 꼭 포함해주세요."
     )
 ])
+
 
 document_chain = create_stuff_documents_chain(chat, prompt)
 rag_chain = create_retrieval_chain(retriever, document_chain)
@@ -76,46 +83,161 @@ INSECT_NAME_MAP = {
     4: "알락수염노린재"
 }
 
-
-# 📋 요청 스키마
 class InsectRequest(BaseModel):
     insect_name: str
 
-# 🐛 최근 탐지 내역 요약 함수
-def get_recent_analysis_text(insect_name: str) -> str:
-    logger = logging.getLogger("uvicorn.error")
+def get_img_info_by_filename(video_name: str):
     try:
-        time.sleep(1)
+        class_id = int(video_name.split("_")[0])
         with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
             with conn.cursor() as cur:
-                sql = """
+                sql = "SELECT I.IMG_IDX FROM QC_IMAGES I WHERE I.IMG_NAME = :1"
+                cur.execute(sql, [video_name])
+                result = cur.fetchone()
+                if result:
+                    return result[0], class_id
+    except Exception as e:
+        print("[DB ERROR]", e)
+
+    return None, None
+
+# ✅ 분석 텍스트 요약 함수 (단건)
+def get_analysis_text_by_img_idx(img_idx: int) -> str:
+    try:
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
                     SELECT 
-                        TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS TIME,
-                        ANLS_ACC || '%' AS CONFIDENCE,
-                        ANLS_RESULT
-                    FROM QC_CLASSIFICATION
-                    WHERE ANLS_RESULT = :1
-                      AND CREATED_AT >= SYSDATE - 3
-                    ORDER BY CREATED_AT DESC
-                """
-                cur.execute(sql, [insect_name])
-                rows = cur.fetchall()
-                print("[DEBUG] DB 쿼리 결과 개수 : ", len(rows))
-                print("[DEBUG] 첫 행 : ", rows[0] if rows else "없음")
+                        TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS TIME,
+                        C.ANLS_RESULT,
+                        C.ANLS_ACC
+                    FROM QC_CLASSIFICATION C
+                    WHERE C.IMG_IDX = :1
+                """, [img_idx])
+                result = cur.fetchone()
 
-                if not rows:
-                    return "최근 3일 내 탐지된 기록이 없습니다."
+        if not result:
+            return "해당 IMG_IDX에 대한 분석 기록이 없습니다."
 
-                summary_lines = [
-                    f"{time}에 {result}가 {confidence}의 신뢰도로 탐지되었습니다."
-                    for time, confidence, result in rows
-                ]
-                print("[DEBUG] FastAPI → GPT 요약에 넘길 텍스트:", summary_lines)
-                return "\n".join(summary_lines)
+        time, result_name, acc = result
+        return f"{time}에 {result_name}가 {int(acc)}%의 신뢰도로 탐지되었습니다."
 
     except Exception as e:
-        logger.error(f"[DB ERROR] {e}")
+        print("[FastAPI ERROR]", e)
         return "[DB 오류] 분석 데이터를 불러오는 중 문제가 발생했습니다."
+
+# ✅ 종합 분석 텍스트 함수 (최근 3일)
+def get_aggregated_analysis_text(insect_name: str) -> str:
+    try:
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        G.GH_NAME,
+                        TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS TIME,
+                        C.ANLS_ACC
+                    FROM QC_CLASSIFICATION C
+                    JOIN QC_IMAGES I ON C.IMG_IDX = I.IMG_IDX
+                    JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
+                    WHERE C.ANLS_RESULT = :1
+                      AND C.CREATED_AT >= SYSDATE - 3
+                    ORDER BY C.CREATED_AT DESC
+                """, [insect_name])
+                rows = cur.fetchall()
+
+        if not rows:
+            return "최근 3일간 탐지된 이력이 없습니다."
+
+        locations = [r[0] for r in rows]
+        most_common_location, loc_count = Counter(locations).most_common(1)[0]
+        avg_conf = sum(r[2] for r in rows) / len(rows)
+
+        summary = (
+            f"최근 3일간 '{insect_name}'는 총 {len(rows)}회 탐지되었습니다. "
+            f"그 중 '{most_common_location}' 위치에서 {loc_count}회 감지되었고, "
+            f"평균 신뢰도는 {avg_conf:.1f}%입니다."
+        )
+        print(f"[DEBUG] 생성된 문장 : {summary}")
+        return summary, most_common_location, insect_name
+
+    except Exception as e:
+        print("[FastAPI ERROR]", e)
+        return "[DB 오류] 탐지 요약 정보를 불러오는 중 문제가 발생했습니다."
+
+
+def insert_gpt_summary(anls_idx:int, user_qes:str, gpt_content:str):
+    try:
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO QC_GPT (
+                        GPT_IDX,
+                        USER_QES,
+                        GPT_CONTENT,
+                        CREATED_AT,
+                        ANLS_IDX
+                    ) VALUES (
+                        QC_GPT_SEQ.NEXTVAL,
+                        :1,
+                        :2,
+                        SYSDATE,
+                        :3
+                    )
+                """, [
+                    user_qes,
+                    gpt_content,
+                    anls_idx
+                ])
+                conn.commit()
+                print("[DB] GPT 응답 저장 완료")
+    except Exception as e:
+        print("[DB ERROR]", e)
+
+
+# ✅ API: GPT 요약 (imgIdx 기반 → 벌레 전체 요약)
+@app.get("/api/summary-by-imgidx")
+async def get_summary_by_imgidx(imgIdx: int):
+    try:
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT C.ANLS_RESULT, C.ANLS_IDX
+                    FROM QC_CLASSIFICATION C
+                    WHERE C.IMG_IDX = :1
+                """, [imgIdx])
+                result = cur.fetchone()
+
+        if not result:
+            return {"status": "error", "message": "해당 IMG_IDX에 대한 해충 정보가 없습니다."}
+
+        insect_name, anls_idx = result
+        print(f"[DEBUG] IMG_IDX {imgIdx} → 벌레 이름: {insect_name}")
+        
+        summary, most_common_location, insect_name = get_aggregated_analysis_text(insect_name)
+        print(f"[DEBUG] 가장 많이 나온 장소 : {most_common_location}")
+        response = rag_chain.invoke({
+        "insect":insect_name,
+        "most_location" : most_common_location,
+        "input": summary
+        
+        })
+
+        insert_gpt_summary(
+            anls_idx = anls_idx,
+            user_qes = "gpt 응답", 
+            gpt_content= response["answer"])
+        return {
+            "status": "success",
+            "anls_idx" : anls_idx,
+            "insect": insect_name,
+            "solution_summary": response["answer"]
+        }
+    
+
+    except Exception as e:
+        print("[FastAPI ERROR]", e)
+        return JSONResponse(status_code=500, content={"error": str(e)})
+   
 
 # 탐지 후 비디오 영상 업로드하기 
 @app.post("/api/upload")
@@ -214,26 +336,6 @@ def get_img_info_by_filename(video_name: str):
 
     return None, None
 
-
-# GH_IDX img_idx에서 가져오기
-# @app.get("/get_ghIdx")
-# def get_ghIdx(imgIdx: int):
-#     try:
-#         with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
-#             with conn.cursor() as cur:
-#                 sql = """
-#                 SELECT GH_IDX
-#                 FROM QC_IMAGES
-#                 WHERE IMG_IDX = :1
-#                 """
-#                 cur.execute(sql, [imgIdx])
-#                 result = cur.fetchone()
-#                 if result and result[0] is not None:
-#                     return {"ghIdx": result[0]}
-#                 else:
-#                     return {"ghIdx": None}
-#     except Exception as e:
-#         return {"error": str(e)}
 
 # Twilio API
 # GET 방식 
