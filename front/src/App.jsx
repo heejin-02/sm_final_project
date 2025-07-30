@@ -4,7 +4,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext';
 
 import AdminMain from './pages/AdminMain'
-import AddUser from './pages/AddUser'
+import AdminUserInfo from './pages/AdminUserInfo'
+import AdminFarmInfo from './pages/AdminFarmInfo'
 import Home from './pages/Home'
 import SelectFarm from './pages/SelectFarm'
 import MainFarm from './pages/MainFarm';
@@ -33,7 +34,7 @@ export default function App() {
         path="/"
         element={
           user
-            ? <Navigate to={user.role === 'admin' ? '/admin' : '/select-farm'} replace />
+            ? <Navigate to={user.role === 'admin' ? '/admin' : '/selectFarm'} replace />
             : <Home />
         }
       />
@@ -41,13 +42,15 @@ export default function App() {
       {user?.role === 'admin' && (
         <>
           <Route path="/admin" element={<AdminMain />} />
-          <Route path="/admin/add-user" element={<AddUser />} />       
+          <Route path="/admin/userInfo/:userPhone" element={<AdminUserInfo />} />
+          <Route path="/admin/farm/create" element={<AdminFarmInfo />} />
+          <Route path="/admin/farm/:farmIdx" element={<AdminFarmInfo />} />
         </>
       )}
 
       {user?.role && user.role !== 'admin' && (
         <>
-          <Route path="/select-farm" element={<SelectFarm />} />
+          <Route path="/selectFarm" element={<SelectFarm />} />
           <Route path="/mainfarm/:id" element={<MainFarm />} />
           <Route path="/report/:period" element={<Report />} />
           <Route path="/notifications/:id" element={<NotiDetail />} />

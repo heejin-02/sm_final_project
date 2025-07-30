@@ -15,7 +15,7 @@ export default function LoginForm() {
     try {
       const response = await login(id.trim(), pw);  // AuthContext의 login 사용
       const userData = response.data;
-      navigate(userData.role === 'admin' ? '/admin' : '/select-farm', { replace: true });
+      navigate(userData.role === 'admin' ? '/admin' : '/selectFarm', { replace: true });
     } catch (err) {
       console.error(err);
       alert('로그인 실패: 아이디/비밀번호를 확인하세요.');
