@@ -4,69 +4,63 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.smhrd.web.admin.AdminMapper">
-
-  <!-- 회원정보 전체보기 (회원별 첫 번째 농장만 조인) -->
-  <select id="selectAllUsers" resultType="com.smhrd.web.admin.AdminDTO">
-	WITH first_farms AS (
-	  SELECT user_phone, MIN(farm_idx) AS min_farm_idx
-	  FROM qc_farm
-	  GROUP BY user_phone
-	)
-	SELECT 
-	  NVL(f.farm_idx, 0) AS farmIdx,
-	  u.user_name AS userName,
-	  u.user_phone AS userPhone,
-	  u.user_pw AS userPw,
-	  TO_CHAR(u.joined_at, 'YYYY-MM-DD HH24:MI:SS') AS joinedAt,
-	  f.farm_name AS farmName,
-	  f.farm_addr AS farmAddr,
-	  f.farm_phone AS farmPhone,
-	  f.farm_crops AS farmCrops,
-	  f.farm_area AS farmArea,
-	  TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
-	FROM qc_user u
-	LEFT JOIN first_farms ff ON u.user_phone = ff.user_phone
-	LEFT JOIN qc_farm f ON f.farm_idx = ff.min_farm_idx
-	ORDER BY f.created_at DESC NULLS LAST
+	
+		<!-- 회원정보 전체보기 -->
+	<select id="selectAllUsers" resultType="com.smhrd.web.admin.AdminDTO">
+	  SELECT 
+	    NVL(f.farm_idx, 0) AS farmIdx,
+	    u.user_name AS userName,
+	    u.user_phone AS userPhone,
+	    u.user_pw AS userPw,
+	    TO_CHAR(u.joined_at, 'YYYY-MM-DD HH24:MI:SS') AS joinedAt,
+	    f.farm_name AS farmName,
+	    f.farm_addr AS farmAddr,
+	    f.farm_phone AS farmPhone,
+	    f.farm_crops AS farmCrops,
+	    f.farm_area AS farmArea,
+	    TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+	  FROM qc_user u
+	  LEFT JOIN qc_farm f ON u.user_phone = f.user_phone
+	  ORDER BY f.created_at DESC NULLS LAST
 	</select>
-
-
-  <!-- 회원이름 누르면 상세보기 (회원별 첫 번째 농장만 조인) -->
-  <select id="selectUserByPhone" parameterType="String" resultType="com.smhrd.web.admin.AdminDTO">
-    SELECT 
-      NVL(f.farm_idx, 0) AS farmIdx,
-      u.user_name AS userName,
-      u.user_phone AS userPhone,
-      u.user_pw AS userPw,
-      TO_CHAR(u.joined_at, 'YYYY-MM-DD HH24:MI:SS') AS joinedAt,
-      f.farm_name AS farmName,
-      f.farm_addr AS farmAddr,
-      f.farm_phone AS farmPhone,
-      f.farm_crops AS farmCrops,
-      f.farm_area AS farmArea,
-      TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
-    FROM qc_user u
-    LEFT JOIN qc_farm f 
-      ON u.user_phone = f.user_phone
-     AND f.farm_idx = (
-       SELECT MIN(farm_idx) FROM qc_farm WHERE user_phone = u.user_phone
-     )
-    WHERE u.user_phone = #{userPhone}
-  </select>
-
-  <!-- 농장정보 수정삭제 -->
-  <update id="updateFarmInfo" parameterType="com.smhrd.web.admin.AdminDTO">
-    UPDATE qc_farm
-    SET farm_name = #{farmName},
-        farm_addr = #{farmAddr},
-        farm_phone = #{farmPhone},
-        farm_crops = #{farmCrops},
-        farm_area = #{farmArea}
-    WHERE farm_idx = #{farmIdx}
-  </update>
-  
-  <delete id="deleteFarm" parameterType="long">
-      DELETE FROM qc_farm WHERE farm_idx = #{farmIdx}
-  </delete>
+	
+	<!-- 회원이름 누르면 상세보기 (회원별 첫 번째 농장만 조인) -->
+	<select id="selectUserByPhone" parameterType="String" resultType="com.smhrd.web.admin.AdminDTO">
+	  SELECT 
+	    NVL(f.farm_idx, 0) AS farmIdx,
+	    u.user_name AS userName,
+	    u.user_phone AS userPhone,
+	    u.user_pw AS userPw,
+	    TO_CHAR(u.joined_at, 'YYYY-MM-DD HH24:MI:SS') AS joinedAt,
+	    f.farm_name AS farmName,
+	    f.farm_addr AS farmAddr,
+	    f.farm_phone AS farmPhone,
+	    f.farm_crops AS farmCrops,
+	    f.farm_area AS farmArea,
+	    TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+	  FROM qc_user u
+	  LEFT JOIN qc_farm f 
+	    ON u.user_phone = f.user_phone
+	   AND f.farm_idx = (
+	     SELECT MIN(farm_idx) FROM qc_farm WHERE user_phone = u.user_phone
+	   )
+	  WHERE u.user_phone = #{userPhone}
+	</select>
+	
+	<!-- 농장정보 수정삭제 -->
+	<update id="updateFarmInfo" parameterType="com.smhrd.web.admin.AdminDTO">
+	  UPDATE qc_farm
+	  SET farm_name = #{farmName},
+	      farm_addr = #{farmAddr},
+	      farm_phone = #{farmPhone},
+	      farm_crops = #{farmCrops},
+	      farm_area = #{farmArea}
+	  WHERE farm_idx = #{farmIdx}
+	</update>
+	
+	<delete id="deleteFarm" parameterType="long">
+	    DELETE FROM qc_farm WHERE farm_idx = #{farmIdx}
+	</delete>
+	
 
 </mapper>
