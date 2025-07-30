@@ -117,7 +117,7 @@ export default function AdminUserInfo() {
 
     try {
       // TODO: 실제 API 호출로 회원 이름 수정
-      // console.log('회원 이름 수정:', editedUserName.trim());
+      console.log('회원 이름 수정:', editedUserName.trim());
 
       // 임시로 로컬 상태 업데이트
       const updatedList = userDetailList.map(user => ({
@@ -151,7 +151,7 @@ export default function AdminUserInfo() {
   if (error) {
     return (
       <div className="section">
-        <div className="inner">
+        <div className="inner inner_1080">
           <h1 className="tit-head">회원 상세 정보</h1>
           <div className="flex items-center justify-end mb-6">
             <button
@@ -182,7 +182,7 @@ export default function AdminUserInfo() {
   if (!userDetailList || userDetailList.length === 0) {
     return (
       <div className="section">
-        <div className="inner">
+        <div className="inner inner_1080">
           <h1 className="tit-head">회원 상세 정보</h1>
           <div className="flex justify-between items-center mb-4">
             <h2 className="tit">회원 정보를 찾을 수 없습니다</h2>
@@ -206,7 +206,7 @@ export default function AdminUserInfo() {
 
   return (
     <div className="section">
-      <div className="inner">
+      <div className="inner inner_1080">
         <h1 className="tit-head">회원 상세 정보</h1>
 				<div className="flex items-center justify-end mb-6">
 					<button
@@ -258,16 +258,19 @@ export default function AdminUserInfo() {
             <div className="input-group flex-06">
               <label>이름</label>
               {!isEditing ? (
-                <div className="input">
-                  {userInfo.userName}
-                </div>
+                <input
+                  className="input"
+                  value={userInfo.userName || ''}
+                  readOnly
+                />
+
               ) : (
                 <div>
                   <input
                     type="text"
                     value={editedUserName}
                     onChange={(e) => setEditedUserName(e.target.value)}
-                    className={`input w-full ${
+                    className={`input ${
                       !editedUserName.trim() || editedUserName.trim().length < 2
                         ? 'border-red-300 focus:border-red-500'
                         : 'border-gray-300 focus:border-blue-500'
@@ -285,16 +288,20 @@ export default function AdminUserInfo() {
 
             <div className="input-group flex-08">
               <label>아이디(휴대폰번호)</label>
-              <div className="input">
-                {userInfo.userPhone}
-              </div>
+              <input
+                className="input"
+                value={userInfo.userPhone || ''}
+                readOnly
+              />
             </div>
 
             <div className="input-group flex-1">
               <label>가입날짜</label>
-              <div className="input">
-                {userInfo.joinedAt}
-              </div>
+              <input
+                className="input"
+                value={userInfo.joinedAt || ''}
+                readOnly
+              />
             </div>
           </div>
         </div>
@@ -334,6 +341,7 @@ export default function AdminUserInfo() {
                   {userDetailList.length > 0 && userDetailList.some(farm => farm.farmName) ? (
                     userDetailList
                       .filter(farm => farm.farmName) // 농장 이름이 있는 것만 필터링
+                      .sort((a, b) => a.farmIdx - b.farmIdx) // farmIdx 낮은 순으로 정렬
                       .map((farm, index) => (
                         <tr
                           key={farm.farmIdx || `farm-${index}`}

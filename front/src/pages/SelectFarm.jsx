@@ -63,8 +63,10 @@ export default function SelectFarm() {
             <p className='text-2xl font-semibold'>관리자 번호 : 010-109-1009</p>
           </div>
         ) : (
-          <ul className="flex justify-center flex-wrap gap-2 w-full max-w-[1200px]">
-            {farms.map(farm => (
+          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-[1200px] mx-auto">
+            {farms
+              .sort((a, b) => a.farmIdx - b.farmIdx) // farmIdx 낮은 순으로 정렬
+              .map(farm => (
               <li
                 key={farm.farmIdx}
                 className="farmList-item cursor-pointer"
