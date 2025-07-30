@@ -667,8 +667,12 @@
 
   .admForm-ul {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.8rem;
     flex-wrap: wrap;
+  }
+
+  .admForm-ul.flex-wrap-3 .input-group{
+    flex: calc(33.33% - 0.8rem);
   }
 
   .admForm-ul .input-group {
@@ -757,6 +761,11 @@
     padding: 0.4rem 0.8rem;
     border-radius: 0.4rem;
     cursor: pointer;
+  }
+
+  .noti-item:not(.unread){
+    background: #efefef;
+    color: #666;
   }
 
   .noti-item.active {

@@ -1,6 +1,7 @@
 import React from "react";
 import { scaleLinear } from "d3-scale";
 import { rgb } from "d3-color";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function FarmMap({
   data,        // [{ id, count }, …]
@@ -9,6 +10,8 @@ export default function FarmMap({
   gap = 4,          // 셀 사이격(px)
   onCellClick,      // 클릭 시 호출(id)
 }) {
+  const { user } = useAuth();
+  const farmIdx = user?.selectedFarm?.farmIdx;
   if (!data || data.length === 0) return null;
 
   // 색상 스케일 설정
@@ -32,20 +35,23 @@ export default function FarmMap({
         height: "100%",
       }}
     >
-      {data.map((r, i) => {
+      {data.map((r) => {
         const c = rgb(colorScale(r.count));          // d3-color 로 파싱
         c.opacity = 0.5;              // α = 0.6 (60%)
         const bg = c.formatRgb();     // "rgba(r,g,b,0.6)"
         return (
           <div
-            key={r.id ?? i}
-            className="flex items-center justify-center text-white font-bold text-3xl rounded cursor-pointer"
+            data-farm-idx={farmIdx || r.farm_idx || ''}
+            data-gh-idx={r.gh_idx || ''}
+            key={r.gh_idx}
+            className="flex flex-col items-center justify-center text-white font-bold text-lg rounded cursor-pointer"
             style={{
               backgroundColor: bg,
             }}
-            onClick={() => onCellClick?.(r.id)}
+            onClick={() => onCellClick?.(r.gh_idx)}
           >
-            {r.count}
+            <span className="text-sm mb-1">{r.gh_name}</span>
+            <span className="text-2xl">{r.count}</span>
           </div>
         );
       })}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { getRegionsByFarmIdx, updateRegionsForFarm } from '../mock/greenHouse';
 
 function AdminFarmInfo() {
   const { farmIdx } = useParams();
@@ -30,6 +31,139 @@ function AdminFarmInfo() {
   // 파일 업로드용 상태 (추가 모드에서만 사용)
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // 구역 관리 상태 - GH_DUMMY에서 가져오기
+  const [regions, setRegions] = useState([]);
+
+  // 구역 추가 (주석처리 - 고정 9개 구역 사용)
+  /*
+  const addRegion = () => {
+    const newRegionNumber = regions.length + 1;
+    setRegions(prev => [...prev, {
+      id: Date.now(),
+      name: `${newRegionNumber}번 온실`
+    }]);
+  };
+  */
+
+  // 구역 삭제 (주석처리 - 고정 9개 구역 사용)
+  /*
+  const removeRegion = (id) => {
+    if (regions.length > 1) { // 최소 1개는 유지
+      setRegions(prev => {
+        const filtered = prev.filter(region => region.id !== id);
+        // 삭제 후 번호 재정렬
+        return filtered.map((region, index) => ({
+          ...region,
+          name: region.name.includes('번 온실') ? `${index + 1}번 온실` : region.name
+        }));
+      });
+    }
+  };
+  */
+
+  // 구역 정보 로드 (GH_DUMMY에서)
+  const loadRegionData = (farmIdx) => {
+    if (!farmIdx) return;
+
+    try {
+      // GH_DUMMY에서 해당 농장의 구역 정보 가져오기
+      const farmRegions = getRegionsByFarmIdx(parseInt(farmIdx));
+
+      // AdminFarmInfo에서 사용할 형태로 변환
+      const regionsForAdmin = farmRegions.map(region => ({
+        id: region.ghIdx, // ghIdx를 id로 사용
+        name: region.ghName,
+        ghIdx: region.ghIdx,
+        farmIdx: region.farmIdx,
+        ghArea: region.ghArea,
+        ghCrops: region.ghCrops
+      }));
+
+      setRegions(regionsForAdmin);
+      console.log('로드된 구역 정보:', regionsForAdmin);
+    } catch (error) {
+      console.error('구역 정보 로드 실패:', error);
+      // 오류 시 기본 구역 생성
+      const defaultRegions = [];
+      for (let i = 1; i <= 9; i++) {
+        defaultRegions.push({
+          id: i,
+          name: `${i}번 온실`,
+          ghIdx: i,
+          farmIdx: parseInt(farmIdx),
+          ghArea: '100m',
+          ghCrops: '토마토'
+        });
+      }
+      setRegions(defaultRegions);
+    }
+  };
+
+  // 구역 이름 변경
+  const updateRegionName = (id, name) => {
+    setRegions(prev => prev.map(region =>
+      region.id === id ? { ...region, name } : region
+    ));
+  };
+
+  // 구역 DB 저장/수정 (GH_DUMMY 업데이트)
+  const handleRegionSubmit = async () => {
+    try {
+      if (!farmInfo?.farmIdx && !isCreateMode) {
+        alert('농장 정보가 없습니다.');
+        return;
+      }
+
+      const targetFarmIdx = farmInfo?.farmIdx || parseInt(farmIdx);
+
+      // 구역 데이터 구성
+      const regionData = regions.map((region) => ({
+        farmIdx: targetFarmIdx,
+        ghIdx: region.ghIdx || region.id,
+        ghName: region.name,
+        ghArea: region.ghArea || '100m',
+        ghCrops: region.ghCrops || '토마토',
+        createdAt: new Date().toISOString()
+      }));
+
+      // GH_DUMMY 업데이트 (실제로는 백엔드 API 호출)
+      updateRegionsForFarm(targetFarmIdx, regionData);
+
+      console.log('저장된 구역 데이터:', regionData);
+
+      // TODO: 실제 백엔드 연동 시
+      // const response = await axios.post(`/api/regions/${targetFarmIdx}`, regionData);
+
+      alert(`${regions.length}개 구역이 저장되었습니다.`);
+    } catch (error) {
+      console.error('구역 저장 실패:', error);
+      alert('구역 저장에 실패했습니다.');
+    }
+  };
+
+  // TODO: 백엔드 연동 시 구역 정보 조회 함수
+  /*
+  const fetchRegionData = async (farmIdx) => {
+    try {
+      const response = await axios.get(`/api/regions/${farmIdx}`);
+      const existingRegions = response.data;
+
+      // 기존 데이터가 있으면 해당 정보로 업데이트, 없으면 기본값 유지
+      const updatedRegions = regions.map((region, index) => {
+        const existingRegion = existingRegions.find(r => r.ghIdx === index + 1);
+        return existingRegion ? {
+          ...region,
+          name: existingRegion.ghName
+        } : region;
+      });
+
+      setRegions(updatedRegions);
+    } catch (error) {
+      console.log('기존 구역 정보 없음 - 기본값 사용');
+    }
+  };
+  */
+
   // 농장 정보 조회
   useEffect(() => {
     const fetchFarmInfo = async () => {
@@ -44,6 +178,20 @@ function AdminFarmInfo() {
           // 농장 정보는 빈 상태로 시작
           setFarmInfo(null);
           setIsEditing(true); // 추가 모드에서는 처음부터 편집 모드
+
+          // 기본 구역 생성 (새 농장이므로 기본값 사용)
+          const defaultRegions = [];
+          for (let i = 1; i <= 9; i++) {
+            defaultRegions.push({
+              id: i,
+              name: `${i}번 온실`,
+              ghIdx: i,
+              farmIdx: null, // 농장 생성 후 설정
+              ghArea: '100m',
+              ghCrops: '토마토'
+            });
+          }
+          setRegions(defaultRegions);
         } else {
           // 수정 모드: 기존 로직
           if (passedFarmInfo && passedUserInfo) {
@@ -58,6 +206,8 @@ function AdminFarmInfo() {
               farmArea: passedFarmInfo.farmArea || '',
               farmImg: passedFarmInfo.farmImg || ''
             });
+            // 구역 정보 로드
+            loadRegionData(passedFarmInfo.farmIdx);
           } else {
             // 수정 모드이고 전달받은 데이터가 없으면 API 호출
             const response = await axios.get(`http://localhost:8095/api/farms/${farmIdx}/detail`);
@@ -70,6 +220,8 @@ function AdminFarmInfo() {
               farmArea: response.data.farmArea || '',
               farmImg: response.data.farmImg || ''
             });
+            // 구역 정보 로드
+            loadRegionData(farmIdx);
           }
         }
       } catch (error) {
@@ -474,6 +626,56 @@ function AdminFarmInfo() {
               )}
             </div>
 
+          </div>
+        </div>
+
+        <div className="admForm">
+          <div className="admForm-header">
+            <h3>구역 관리</h3>
+            {/* 추가/삭제 버튼 주석처리 - 고정 9개 구역 사용
+            <button
+              onClick={addRegion}
+              className="btn btn-sm btn-primary"
+            >
+              구역 추가
+            </button>
+            */}
+          </div>
+
+          <div className="admForm-ul flex-wrap flex-wrap-3">
+            {regions.map((region, index) => (
+              <div key={region.id} className="input-group">
+                <div className="flex items-center gap-2">
+                  <label className="flex-shrink-0">구역 {index + 1}</label>
+                  {/* 삭제 버튼 주석처리 - 고정 9개 구역 사용
+                  {regions.length > 1 && (
+                    <button
+                      onClick={() => removeRegion(region.id)}
+                      className="btn btn-sm btn-secondary text-red-600 hover:bg-red-50"
+                    >
+                      삭제
+                    </button>
+                  )}
+                  */}
+                </div>
+                <input
+                  type="text"
+                  className="input"
+                  value={region.name}
+                  onChange={(e) => updateRegionName(region.id, e.target.value)}
+                  placeholder="구역 이름을 입력하세요"
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={handleRegionSubmit}
+              className="btn btn-accent"
+            >
+              구역 등록/수정
+            </button>
           </div>
         </div>
 

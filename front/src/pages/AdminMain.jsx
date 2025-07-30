@@ -45,11 +45,18 @@ export default function AdminMain() {
 
       // console.log('🔍 admin 제외 후:', filteredList.length, '건');
 
-      // 회원별로 중복 제거 (userPhone 기준으로 첫 번째 농장만 대표로 사용)
+      // 회원별로 중복 제거 (userPhone 기준으로 farmIdx가 가장 낮은 농장을 대표로 사용)
       const uniqueUserMap = new Map();
       filteredList.forEach(user => {
-        if (!uniqueUserMap.has(user.userPhone)) {
+        const existingUser = uniqueUserMap.get(user.userPhone);
+        if (!existingUser) {
+          // 첫 번째 회원 정보 저장
           uniqueUserMap.set(user.userPhone, user);
+        } else {
+          // 기존 회원이 있으면 farmIdx가 더 낮은 농장으로 업데이트
+          if (user.farmIdx && existingUser.farmIdx && user.farmIdx < existingUser.farmIdx) {
+            uniqueUserMap.set(user.userPhone, user);
+          }
         }
       });
 
@@ -310,9 +317,9 @@ export default function AdminMain() {
                   <th>번호</th>
                   <th>이름</th>
                   <th>아이디(휴대폰번호)</th>
-                  <th>대표농장이름 / 하우스</th>
-                  <th>대표농장주소</th>
-                  <th>농장번호</th>
+                  <th>대표농장 이름 / 하우스명</th>
+                  <th>대표농장 주소</th>
+                  <th>대표농장 번호</th>
                   <th>가입날짜</th>
                 </tr>
               </thead>
