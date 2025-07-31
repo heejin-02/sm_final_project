@@ -19,18 +19,17 @@ from utils.torch_utils import select_device, smart_inference_mode
 from urllib.parse import quote
 from signalwire.rest import Client as SignalWireClient
 from dotenv import load_dotenv
-import oracledb
 
 load_dotenv()
 # 고정 GH_IDX
 gh_idx = 1
-oracledb.init_oracle_client(lib_dir=None)
+
 # Twilio 설정
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 USER_PHONE_NUMBER = os.getenv("USER_PHONE_NUMBER")  # 수신자
-PUBLIC_FASTAPI_BASE = "https://2d0389019b88.ngrok-free.app"
+PUBLIC_FASTAPI_BASE = "https://6d5a02fc8d0b.ngrok-free.app"
 
 # SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
 # SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
@@ -38,7 +37,7 @@ PUBLIC_FASTAPI_BASE = "https://2d0389019b88.ngrok-free.app"
 # SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
 
 # # 테스트용 수신자 번호
-# TEST_PHONE_NUMBER = "+821039104864"  # ← 테스트할 실제 전화번호로 바꿔주세요
+# TEST_PHONE_NUMBER = "+821085849748"  # ← 테스트할 실제 전화번호로 바꿔주세요
 
 # def make_call(insect_name: str, confidence: float):
 #     client = SignalWireClient(
@@ -60,15 +59,15 @@ PUBLIC_FASTAPI_BASE = "https://2d0389019b88.ngrok-free.app"
 #         print("[전화 발신 실패]", e)
 
 
-# def make_call(insect_name: str, confidence: float):
-#     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-#     url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
-#     call = client.calls.create(
-#         to=USER_PHONE_NUMBER,
-#         from_=TWILIO_PHONE_NUMBER,
-#         url=url
-#     )
-#     print(f"[전화 발신] Call SID: {call.sid}")
+def make_call(insect_name: str, confidence: float):
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+    call = client.calls.create(
+        to=USER_PHONE_NUMBER,
+        from_=TWILIO_PHONE_NUMBER,
+        url=url
+    )
+    print(f"[전화 발신] Call SID: {call.sid}")
 
 def get_insect_idx(name):
     return {
@@ -102,35 +101,6 @@ def send_detection_to_api(insect_name, confidence, img_idx):
         print("[전송 실패]", e)
 
 
-def get_anls_idx_by_img_idx(img_idx: int):
-    try:
-        for _ in range(5):  # 최대 5회 재시도
-            with oracledb.connect(user=os.getenv("DB_USER"), password=os.getenv("DB_PASS"), dsn=os.getenv("DB_DSN")) as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT ANLS_IDX
-                        FROM QC_CLASSIFICATION
-                        WHERE IMG_IDX = :1
-                        ORDER BY CREATED_AT DESC
-                    """, [img_idx])
-                    result = cur.fetchone()
-                    if result:
-                        return result[0]
-            time.sleep(0.5)
-    except Exception as e:
-        print("[ANLS_IDX 조회 오류]", e)
-    return None
-
-def generate_gpt_summary(anls_idx):
-    try:
-        url = f"http://localhost:8000/api/summary?anls_idx={anls_idx}"
-        res = requests.get(url)
-        if res.status_code == 200:
-            print("[GPT 요약 생성 완료]")
-        else:
-            print("[GPT 요약 생성 실패]", res.status_code, res.text)
-    except Exception as e:
-        print("[GPT 요청 오류]", e)
 
 # 🎥 영상 업로드 함수
 def upload_video(file_path, class_id, gh_idx):
@@ -225,10 +195,16 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    #make_call(insect_name, best_conf)
-                    anls_idx = get_anls_idx_by_img_idx(img_idx)
-                    if anls_idx:
-                        generate_gpt_summary(anls_idx)
+                    make_call(insect_name, best_conf)
+
+                    try:
+                        gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")
+                        if gpt_res.status_code == 200:
+                            print("[GPT] 요약 응답 저장 완료")
+                        else:
+                            print("[GPT] 요약 요청 실패", gpt_res.text)
+                    except Exception as e:
+                        print("[GPT] 요청 중 오류 발생:", e)
 
         if view_img:
             cv2.imshow("YOLOv5", annotated_frame)
