@@ -19,7 +19,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 from urllib.parse import quote
 from signalwire.rest import Client as SignalWireClient
 from dotenv import load_dotenv
-
+import subprocess
 load_dotenv()
 # 고정 GH_IDX
 gh_idx = 1
@@ -29,7 +29,11 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 USER_PHONE_NUMBER = os.getenv("USER_PHONE_NUMBER")  # 수신자
-PUBLIC_FASTAPI_BASE = "https://6d5a02fc8d0b.ngrok-free.app"
+PUBLIC_FASTAPI_BASE = "https://a42af3bf7b23.ngrok-free.app"
+
+# 전화 쿨다운
+last_call_time = 0
+CALL_COOLDOWN = 60 #초단위 실사용시 10분으로 변경
 
 # SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
 # SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
@@ -60,14 +64,23 @@ PUBLIC_FASTAPI_BASE = "https://6d5a02fc8d0b.ngrok-free.app"
 
 
 def make_call(insect_name: str, confidence: float):
-    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
-    call = client.calls.create(
-        to=USER_PHONE_NUMBER,
-        from_=TWILIO_PHONE_NUMBER,
-        url=url
-    )
-    print(f"[전화 발신] Call SID: {call.sid}")
+    global last_call_time
+    now = time.time()
+    if now - last_call_time < CALL_COOLDOWN:
+        print(f"[전화 건너뜀] 최근에 발신됨 ({now-last_call_time:.1f}s 전)")
+        return
+    try:
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+        call = client.calls.create(
+            to=USER_PHONE_NUMBER,
+            from_=TWILIO_PHONE_NUMBER,
+            url=url
+        )
+        last_call_time = now
+        print(f"[전화 발신] Call SID: {call.sid}")
+    except Exception as e:
+        print("[전화 오류]", e)
 
 def get_insect_idx(name):
     return {
@@ -99,8 +112,6 @@ def send_detection_to_api(insect_name, confidence, img_idx):
         print(f"[전송] {insect_name} 저장 완료 | 신뢰도: {confidence:.2f} | 상태코드: {res.status_code}")
     except Exception as e:
         print("[전송 실패]", e)
-
-
 
 # 🎥 영상 업로드 함수
 def upload_video(file_path, class_id, gh_idx):
@@ -143,6 +154,10 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
     best_conf = 0
     video_path = ""
 
+    # 벌레 탐지 쿨다운
+    last_detection_time = 0
+    DETECTION_COOLDOWN = 30 # 초 단위 
+
     for path, im, im0s, vid_cap, s in dataset:
         im = torch.from_numpy(im).to(model.device).float() / 255.0
         if im.ndim == 3:
@@ -160,6 +175,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
             if len(det):
                 det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
                 for *xyxy, conf, cls in reversed(det):
+                    print(f"[탐지 로그] 클래스: {names[int(cls)]}, 신뢰도: {conf:.2f}, 좌표: {xyxy}")
                     cls_id = int(cls)
                     insect_name = names[cls_id]
                     confidence = float(conf)
@@ -167,7 +183,9 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                     annotator.box_label(xyxy, label, color=colors(cls_id, True))
                     detected = True
 
-                    if not recording:
+                    now = time.time()
+                    if not recording and (now - last_detection_time) > DETECTION_COOLDOWN:
+                        last_detection_time = now
                         start_time = time.time()
                         video_name = f"{insect_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
                         video_path = str(save_dir / video_name)
@@ -186,7 +204,19 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 print("[녹화 종료]")
 
                 converted_path = video_path.replace(".mp4", "_h264.mp4")
-                os.system(f'ffmpeg -y -i "{video_path}" -vcodec libx264 -acodec aac "{converted_path}"')
+                 # 🔇 ffmpeg 로그 숨기기
+                with open(os.devnull, 'w') as devnull:
+                    subprocess.run(
+                [
+                    'ffmpeg', '-y',
+                    '-i', video_path,
+                    '-vcodec', 'libx264',
+                    '-acodec', 'aac',
+                    converted_path
+                ],
+                stdout=devnull,
+                stderr=devnull
+            )
                 os.remove(video_path)
                 video_path = converted_path
 
