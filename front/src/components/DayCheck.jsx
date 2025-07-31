@@ -24,7 +24,7 @@ export default function DayCheck() {
   };
 
   return (
-    <div className="day-check scrl-custom">
+    <div className="day-check">
       {/* 오늘의 해충 타이틀 */}
       <div className="day-check-header">
         <h3 className="tit">오늘 찾은 해충</h3>
@@ -47,7 +47,7 @@ export default function DayCheck() {
         </div>
         
         <div className="stat-box">
-          <div className="stat-label">발생 구역</div>
+          <div className="stat-label">발견 구역</div>
           <div className="stat-unit">
               <span className="stat-value">{todayStats.types}</span> 곳
           </div>
@@ -57,19 +57,19 @@ export default function DayCheck() {
       {/* 통계 버튼들 */}
       <div className="day-check-buttons">
         <button
-          className={`btn stat-button hvborder ${currentPeriod === 'daily' ? 'active' : ''}`}
+          className={`btn stat-button ${currentPeriod === 'daily' ? 'active' : ''}`}
           onClick={() => navigate('/report/daily')}
         >
           일간 통계
         </button>
         <button
-          className={`btn stat-button hvborder ${currentPeriod === 'monthly' ? 'active' : ''}`}
+          className={`btn stat-button ${currentPeriod === 'monthly' ? 'active' : ''}`}
           onClick={() => navigate('/report/monthly')}
         >
           월간 통계
         </button>
         <button
-          className={`btn stat-button hvborder ${currentPeriod === 'yearly' ? 'active' : ''}`}
+          className={`btn stat-button ${currentPeriod === 'yearly' ? 'active' : ''}`}
           onClick={() => navigate('/report/yearly')}
         >
           연간 통계

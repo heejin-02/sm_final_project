@@ -24,6 +24,7 @@
 	  ORDER BY f.created_at DESC NULLS LAST
 	</select>
 	
+<<<<<<< HEAD
 	<!-- 회원이름 누르면 상세보기 -->
 	<select id="selectUserByPhone" parameterType="String" resultType="com.smhrd.web.admin.AdminDTO">
 	  SELECT 
@@ -42,6 +43,26 @@
 	  LEFT JOIN qc_farm f ON u.user_phone = f.user_phone
 	  WHERE u.user_phone = #{userPhone}
 	</select>
+=======
+   <!-- 회원이름 누르면 상세보기 -->
+   <select id="selectUserByPhone" parameterType="String" resultType="com.smhrd.web.admin.AdminDTO">
+     SELECT 
+       NVL(f.farm_idx, 0) AS farmIdx,
+       u.user_name AS userName,
+       u.user_phone AS userPhone,
+       u.user_pw AS userPw,
+       TO_CHAR(u.joined_at, 'YYYY-MM-DD HH24:MI:SS') AS joinedAt,
+       f.farm_name AS farmName,
+       f.farm_addr AS farmAddr,
+       f.farm_phone AS farmPhone,
+       f.farm_crops AS farmCrops,
+       f.farm_area AS farmArea,
+       TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+     FROM qc_user u
+     LEFT JOIN qc_farm f ON u.user_phone = f.user_phone
+     WHERE u.user_phone = #{userPhone}
+   </select>
+>>>>>>> be041586ce9256a609a9e8382a8b23a755e56192
 	
 	<!-- 농장정보 수정삭제 -->
 	<update id="updateFarmInfo" parameterType="com.smhrd.web.admin.AdminDTO">

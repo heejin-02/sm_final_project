@@ -6,13 +6,15 @@ import { useStatistics } from '../hooks/useStatistics';
 import Loader from '../components/Loader';
 import LeftPanel from '../components/LeftPanel';
 import DateNavigation from '../components/DateNavigation';
+import GroupedDetailList from '../components/GroupedDetailList';
+import StatisticsChart from '../components/StatisticsChart';
 
 export default function Report() {
   const { period } = useParams(); // 'daily', 'monthly', 'yearly'
   const { user } = useAuth();
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const { data, loading, error } = useStatistics(period);
+  const { data, loading, error } = useStatistics(period, currentDate);
 
   const farm = user?.selectedFarm;
 
@@ -67,12 +69,12 @@ export default function Report() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="section flex">
       {/* 왼쪽 패널 */}
       <LeftPanel />
 
       {/* 오른쪽 컨텐츠 영역 */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="right-section flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {/* 헤더 */}
           <div className="r-sec-top">
@@ -95,26 +97,13 @@ export default function Report() {
           onDateChange={handleDateChange}
         />
 
-        {/* 기간 선택 탭 */}
-        <div className="flex gap-2 mb-6">
-          <button 
-            onClick={() => navigate('/report/daily')}
-            className={`px-4 py-2 rounded ${period === 'daily' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200'}`}
-          >
-            일간
-          </button>
-          <button 
-            onClick={() => navigate('/report/monthly')}
-            className={`px-4 py-2 rounded ${period === 'monthly' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200'}`}
-          >
-            월간
-          </button>
-          <button 
-            onClick={() => navigate('/report/yearly')}
-            className={`px-4 py-2 rounded ${period === 'yearly' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200'}`}
-          >
-            연간
-          </button>
+
+        {/* gpt 분석 내용 */}
+        <div className="baekgu-msg-wrap mt-8">
+          <div className="thumb">
+            <img src="/images/talk_109.png" alt="" />
+          </div>
+          <div className="baekgu-msg w-full">통계 내용을 토대로 분석 중입니다. 잠시만 기다려 주세요.</div>
         </div>
 
         {/* 통계 내용 */}
@@ -144,44 +133,13 @@ export default function Report() {
           </div>
         </div>
 
-        {/* 상세 통계 테이블 */}
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">상세 현황</h2>
-          <div className="bordered-box">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2">날짜/시간</th>
-                    <th className="text-left p-2">구역</th>
-                    <th className="text-left p-2">해충 종류</th>
-                    <th className="text-left p-2">탐지 수</th>
-                    <th className="text-left p-2">정확도</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data?.detailList?.length > 0 ? (
-                    data.detailList.map((item) => (
-                      <tr key={item.id} className="border-b">
-                        <td className="p-2">{item.datetime}</td>
-                        <td className="p-2">{item.region}</td>
-                        <td className="p-2">{item.bugType}</td>
-                        <td className="p-2">{item.count}마리</td>
-                        <td className="p-2">{item.accuracy}%</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="p-4 text-center text-gray-500">
-                        데이터가 없습니다.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+        {/* 차트 영역 (나중에 추가 가능) */}
+        {/* <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">시간별 탐지 추이</h2>
+          <div className="bordered-box h-64 flex items-center justify-center">
+            <p className="text-gray-500">차트 영역 (추후 구현)</p>
           </div>
-        </div>
+        </div> */}
 
         {/* 계절별 비교 (연간 통계에만 표시) */}
         {period === 'yearly' && (
@@ -219,13 +177,17 @@ export default function Report() {
           </div>
         )}
 
-        {/* 차트 영역 (나중에 추가 가능) */}
+
+        {/* 차트 영역 */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">시간별 탐지 추이</h2>
-          <div className="bordered-box h-64 flex items-center justify-center">
-            <p className="text-gray-500">차트 영역 (추후 구현)</p>
-          </div>
+          <StatisticsChart data={data} period={period} />
         </div>
+
+        {/* 상세 통계 - 토글 형태 */}
+        <div className="mt-8">
+          <GroupedDetailList data={data} period={period} />
+        </div>
+
         </div>
       </div>
     </div>

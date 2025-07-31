@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { loginCheck } from '../api/auth';
 
 // 1. Context 생성
@@ -21,7 +21,9 @@ export function AuthProvider({ children }) {
       setUser({
         userName: response.data.userName,
         userPhone: response.data.userPhone,
-        role: response.data.role  // 여기에 role 추가!
+        role: response.data.role,
+        joinedAt: response.data.joinedAt,
+        selectedFarm: null,
       });
 
       setIsLoggedIn(true);
@@ -36,11 +38,11 @@ export function AuthProvider({ children }) {
     setUser(null);
     setIsLoggedIn(false);
   };
-  
-  const selectFarm = (farm) => { 
+
+  const selectFarm = (farm) => {
     // 농장정보 받아오기
     setUser((prev) => ({ ...prev, selectedFarm: farm }));
-  };  
+  };
 
   return (
     <AuthContext.Provider value={{ user, isLoggedIn, login, logout, selectFarm }}>

@@ -20,6 +20,7 @@ npm install \
   react-icons \         # SVG 아이콘  
   d3-scale \            # 스케일 계산  
   d3-color \            # 색상 계산 
+  recharts \           # 차트 라이브러리
 
 # 5) 개발 서버 기동 (Vite)
 npm run dev

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllUsers } from '../api/admin';
 import Loader from '../components/Loader';
-import AddUser from './AddUser';
 import AddUserModal from '../components/AddUserModal';
 
 export default function AdminMain() {
@@ -25,7 +24,7 @@ export default function AdminMain() {
   const [searchedField, setSearchedField] = useState(''); // 실제 검색된 필드
   const [showAddUserModal, setShowAddUserModal] = useState(false);
 
-  // 회원 추가 성공 시 리스트 새로고침
+  // 회원 등록 성공 시 리스트 새로고침
   const handleAddUserSuccess = () => {
     fetchAllUsers();
   };
@@ -39,10 +38,32 @@ export default function AdminMain() {
       const response = await getAllUsers();
       const rawUserList = response.data || [];
 
-      // admin 계정 제외 및 가입일자 최신순 정렬
-      const userList = rawUserList
-        .filter(user => user.userPhone !== 'admin') // admin 계정 제외
+      // console.log('🔍 백엔드에서 받은 원본 데이터:', rawUserList.length, '건');
+
+      // admin 계정 제외
+      const filteredList = rawUserList.filter(user => user.userPhone !== 'admin');
+
+      // console.log('🔍 admin 제외 후:', filteredList.length, '건');
+
+      // 회원별로 중복 제거 (userPhone 기준으로 farmIdx가 가장 낮은 농장을 대표로 사용)
+      const uniqueUserMap = new Map();
+      filteredList.forEach(user => {
+        const existingUser = uniqueUserMap.get(user.userPhone);
+        if (!existingUser) {
+          // 첫 번째 회원 정보 저장
+          uniqueUserMap.set(user.userPhone, user);
+        } else {
+          // 기존 회원이 있으면 farmIdx가 더 낮은 농장으로 업데이트
+          if (user.farmIdx && existingUser.farmIdx && user.farmIdx < existingUser.farmIdx) {
+            uniqueUserMap.set(user.userPhone, user);
+          }
+        }
+      });
+
+      const userList = Array.from(uniqueUserMap.values())
         .sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt)); // 가입일자 최신순
+
+      // console.log('중복 제거 후 최종 회원 수:', userList.length, '명');
 
       setAllUserList(userList);
       setFilteredUserList(userList);
@@ -51,9 +72,9 @@ export default function AdminMain() {
       const duplicatePhones = userList
         .map(user => user.userPhone)
         .filter((v, i, arr) => arr.indexOf(v) !== i);
-      if (duplicatePhones.length) {
-        console.warn('⚠️ 중복된 userPhone 있음:', duplicatePhones);
-      }
+      // if (duplicatePhones.length) {
+      //   console.warn('중복된 userPhone 있음:', duplicatePhones);
+      // }
 
       // 첫 페이지 데이터 설정
       updateDisplayedData(userList, 1);
@@ -78,6 +99,11 @@ export default function AdminMain() {
     const endIndex = startIndex + pageSize;
     const pageData = dataList.slice(startIndex, endIndex);
 
+    // console.log('페이지 데이터 업데이트 - 페이지:', page);
+    // console.log('전체 데이터:', dataList.length, '건');
+    // console.log('표시할 데이터:', pageData.length, '건');
+    // console.log('표시할 회원들:', pageData.map(u => u.userName));
+
     setDisplayedUserList(pageData);
     setCurrentPage(page);
     setTotalPages(Math.ceil(dataList.length / pageSize));
@@ -86,6 +112,9 @@ export default function AdminMain() {
   // 검색 처리
   const handleSearch = (e) => {
     e.preventDefault();
+
+    // console.log('검색 시작 - 검색어:', keyword, '검색 필드:', searchField);
+    // console.log('전체 데이터 수:', allUserList.length);
 
     if (!keyword.trim()) {
       // 검색어가 없으면 전체 데이터 표시
@@ -101,13 +130,24 @@ export default function AdminMain() {
 
       switch (searchField) {
         case 'user_name':
-          return user.userName?.toLowerCase().includes(searchValue);
+          const matches = user.userName?.toLowerCase().includes(searchValue);
+          // if (matches) {
+          //   console.log('매칭된 회원:', user.userName, user.userPhone);
+          // }
+          return matches;
         case 'farm_name':
-          return user.farmName?.toLowerCase().includes(searchValue);
+          const farmMatches = user.farmName?.toLowerCase().includes(searchValue);
+          // if (farmMatches) {
+          //   console.log('매칭된 농장:', user.farmName, user.userName);
+          // }
+          return farmMatches;
         default:
           return false;
       }
     });
+
+    // console.log('검색 결과:', filtered.length, '건');
+    // console.log('검색된 회원들:', filtered.map(u => u.userName));
 
     setFilteredUserList(filtered);
     setTotalCount(filtered.length);
@@ -137,7 +177,7 @@ export default function AdminMain() {
 
   // 회원 수정 페이지로 이동
   const handleEditUser = (userPhone) => {
-    navigate(`/admin/edit-user/${userPhone}`);
+    navigate(`/admin/userInfo/${userPhone}`);
   };
 
   useEffect(() => {
@@ -155,14 +195,17 @@ export default function AdminMain() {
   if (error) {
     return (
       <div className="section p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="inner">
           <h1 className="tit-head">전체 회원 정보</h1>
-          <div className="flex items-center justify-end mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-gray-600 mt-1">
+              총 {totalCount}명의 회원 (페이지당 {pageSize}개씩 표시)
+            </p>
             <button 
               onClick={() => setShowAddUserModal(true)}
               className="btn btn-primary"
             >
-              회원 추가
+              회원 등록
             </button>
           </div>
 
@@ -186,15 +229,17 @@ export default function AdminMain() {
   return (
     <div className="section">
       <div className="inner">
-        <h1 className="tit-head">관리자 페이지</h1>
+        <h1 className="tit-head">전체 회원 정보</h1>
         
         <div className="flex justify-between items-center mb-4">
-          <h2 className="tit">전체 회원 정보</h2>
+          <p className="text-gray-600 mt-1">
+            총 {totalCount}명의 회원 (페이지당 {pageSize}개씩 표시)
+          </p>
           <button 
             onClick={() => setShowAddUserModal(true)}
             className="btn btn-primary"
           >
-            회원 추가
+            회원 등록
           </button>
         </div>
 
@@ -272,9 +317,9 @@ export default function AdminMain() {
                   <th>번호</th>
                   <th>이름</th>
                   <th>아이디(휴대폰번호)</th>
-                  <th>대표농장이름</th>
-                  <th>대표농장주소</th>
-                  <th>농장번호</th>
+                  <th>대표농장 이름 / 하우스명</th>
+                  <th>대표농장 주소</th>
+                  <th>대표농장 번호</th>
                   <th>가입날짜</th>
                 </tr>
               </thead>
@@ -282,7 +327,7 @@ export default function AdminMain() {
                 {displayedUserList.length > 0 ? (
                   displayedUserList.map((user, index) => (
                     <tr
-                      key={user.userPhone}
+                      key={`${user.userPhone}-${user.farmIdx || index}`}
                       className="clickable"
                       onClick={() => handleEditUser(user.userPhone)}
                       data-farm-idx={user.farmIdx}
