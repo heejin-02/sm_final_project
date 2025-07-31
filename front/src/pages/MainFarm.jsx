@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import NotiList from '../components/NotiList';
 
 import { useRegionCounts } from "../hooks/useRegionCounts";
-import FarmMap from "../components/FarmMap";
+import BaseFarmMap from "../components/BaseFarmMap";
 import Legend from "../components/Legend";
 import Loader from "../components/Loader";
 
@@ -26,45 +26,56 @@ export default function MainFarm() {
   const min = Math.min(...counts), max = Math.max(...counts);
   
   return (
-    <div className="main_farm p-4 flex gap-2 overflow-hidden">
+    <div className="main-farm p-4 flex gap-4 overflow-hidden">
       <NotiList/>
-      <div className="right flex-1 w-full">
-        <div className="farm_map">
-          <Legend min={min} max={max} />
-          <div className="h-full">
-            <FarmMap
+      <div className="right flex-1 w-full space-y-4">
+        <div className="flex gap-4 h-[60%]">
+          <div className="farm_map flex-[1]">
+            <Legend min={min} max={max} />            
+            <BaseFarmMap
+              mode="overview"
               data={data}
               rows={3}
               cols={3}
               gap={8}
+              showHeatmap={true}
+              interactive={false}
               // onCellClick={id => navigate(`/regions/${id}`)}
             />
           </div>
+          <div className="stats-container">
+            <div className="stats-column">
+              <div className="stat-item">
+                <span className="stat-label">찾은 해충 수</span>
+                <div className="stat-content">
+                  <span className="stat-number">10</span><span className="stat-unit"> 마리</span>
+                </div>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">발견된 해충 종류</span>
+                <div className="stat-content">
+                  <span className="stat-number">5</span><span className="stat-unit"> 종</span>
+                </div>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">해충 발견 구역</span>
+                <div className="stat-content">
+                  <span className="stat-number">5</span><span className="stat-unit"> 곳</span>
+                </div>
+              </div>
+            </div>
         </div>
-        <div className="stats-container">
-          <div className="stats-column">
-            <div className="stat-item">
-              <span className="stat-label">찾은 해충</span>
-              <span className="stat-content">
-                <span className="stat-number">10</span><span className="stat-unit"> 마리</span>
-              </span>
+        </div>
+        <div className="flex gap-4 h-[36%]">
+          <div className="baekgu-msg-wrap">
+            <div className="thumb">
+              <img src="/images/talk_109.png" alt="" />
             </div>
-            <div className="stat-item">
-              <span className="stat-label">탐지 종류</span>
-              <span className="stat-content">
-                <span className="stat-number">5</span><span className="stat-unit"> 종</span>
-              </span>
+            <div className="baekgu-msg">
+              <div className="scrl-custom overflow-y-auto h-full">
+                오늘은 어제 보다 벌레가 없네요! 다만 B 구역 에서만 4 마리의 벌레가 발견 되어 확인이 필요 합니다. 오후에 비가 내릴 예정 입니다. 습도 관리에 신경 써 주세요.
+              </div>
             </div>
-            <div className="stat-item">
-              <span className="stat-label">발생 구역</span>
-              <span className="stat-content">
-                <span className="stat-number">5</span><span className="stat-unit"> 곳</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="bordered-box justify-start overflow-y-auto scrl-custom">
-            오늘은 어제 보다 벌레가 없네요! 다만 B 구역 에서만 4 마리의 벌레가 발견 되어 확인이 필요 합니다. 오후에 비가 내릴 예정 입니다. 습도 관리에 신경 써 주세요.
           </div>
 
           <div className='flex flex-col gap-1 btn-wrap'>

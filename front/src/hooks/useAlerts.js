@@ -43,10 +43,10 @@ export const useAlertList = (farmIdx) => {
   const markAsRead = async (anlsIdx) => {
     try {
       await markAlertAsRead(anlsIdx);
-      // 로컬 상태 업데이트
-      setAlerts(prev => prev.map(alert => 
-        alert.anlsIdx === anlsIdx 
-          ? { ...alert, isRead: true }
+      // 로컬 상태 업데이트 (notiCheck를 Y로 변경)
+      setAlerts(prev => prev.map(alert =>
+        alert.anlsIdx === anlsIdx
+          ? { ...alert, notiCheck: "Y" }
           : alert
       ));
     } catch (err) {
@@ -122,7 +122,7 @@ export const useUnreadAlertCount = (farmIdx) => {
       try {
         setLoading(true);
         const alerts = await fetchAlertList(farmIdx);
-        const count = alerts.filter(alert => !alert.isRead).length;
+        const count = alerts.filter(alert => alert.notiCheck !== "Y").length;
         setUnreadCount(count);
       } catch (err) {
         console.error('읽지 않은 알림 개수 로딩 실패:', err);
