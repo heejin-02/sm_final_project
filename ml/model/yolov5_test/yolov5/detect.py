@@ -29,7 +29,7 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 USER_PHONE_NUMBER = os.getenv("USER_PHONE_NUMBER")  # 수신자
-PUBLIC_FASTAPI_BASE = "https://2d0389019b88.ngrok-free.app"
+PUBLIC_FASTAPI_BASE = "https://6d5a02fc8d0b.ngrok-free.app"
 
 # SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
 # SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
@@ -59,15 +59,15 @@ PUBLIC_FASTAPI_BASE = "https://2d0389019b88.ngrok-free.app"
 #         print("[전화 발신 실패]", e)
 
 
-# def make_call(insect_name: str, confidence: float):
-#     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-#     url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
-#     call = client.calls.create(
-#         to=USER_PHONE_NUMBER,
-#         from_=TWILIO_PHONE_NUMBER,
-#         url=url
-#     )
-#     print(f"[전화 발신] Call SID: {call.sid}")
+def make_call(insect_name: str, confidence: float):
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+    call = client.calls.create(
+        to=USER_PHONE_NUMBER,
+        from_=TWILIO_PHONE_NUMBER,
+        url=url
+    )
+    print(f"[전화 발신] Call SID: {call.sid}")
 
 def get_insect_idx(name):
     return {
@@ -195,7 +195,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    #make_call(insect_name, best_conf)
+                    make_call(insect_name, best_conf)
 
                     try:
                         gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")
