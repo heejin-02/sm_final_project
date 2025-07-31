@@ -7,6 +7,7 @@ import Loader from '../components/Loader';
 import LeftPanel from '../components/LeftPanel';
 import DateNavigation from '../components/DateNavigation';
 import GroupedDetailList from '../components/GroupedDetailList';
+import StatisticsChart from '../components/StatisticsChart';
 
 export default function Report() {
   const { period } = useParams(); // 'daily', 'monthly', 'yearly'
@@ -68,12 +69,12 @@ export default function Report() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="section flex">
       {/* 왼쪽 패널 */}
       <LeftPanel />
 
       {/* 오른쪽 컨텐츠 영역 */}
-      <div className="right-section flex-1 overflow-y-auto p-4">
+      <div className="right-section flex-1 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {/* 헤더 */}
           <div className="r-sec-top">
@@ -95,6 +96,15 @@ export default function Report() {
           currentDate={currentDate}
           onDateChange={handleDateChange}
         />
+
+
+        {/* gpt 분석 내용 */}
+        <div className="baekgu-msg-wrap mt-8">
+          <div className="thumb">
+            <img src="/images/talk_109.png" alt="" />
+          </div>
+          <div className="baekgu-msg w-full">통계 내용을 토대로 분석 중입니다. 잠시만 기다려 주세요.</div>
+        </div>
 
         {/* 통계 내용 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -123,10 +133,13 @@ export default function Report() {
           </div>
         </div>
 
-        {/* 상세 통계 - 토글 형태 */}
-        <div className="mt-8">
-          <GroupedDetailList data={data} period={period} />
-        </div>
+        {/* 차트 영역 (나중에 추가 가능) */}
+        {/* <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">시간별 탐지 추이</h2>
+          <div className="bordered-box h-64 flex items-center justify-center">
+            <p className="text-gray-500">차트 영역 (추후 구현)</p>
+          </div>
+        </div> */}
 
         {/* 계절별 비교 (연간 통계에만 표시) */}
         {period === 'yearly' && (
@@ -164,13 +177,17 @@ export default function Report() {
           </div>
         )}
 
-        {/* 차트 영역 (나중에 추가 가능) */}
+
+        {/* 차트 영역 */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">시간별 탐지 추이</h2>
-          <div className="bordered-box h-64 flex items-center justify-center">
-            <p className="text-gray-500">차트 영역 (추후 구현)</p>
-          </div>
+          <StatisticsChart data={data} period={period} />
         </div>
+
+        {/* 상세 통계 - 토글 형태 */}
+        <div className="mt-8">
+          <GroupedDetailList data={data} period={period} />
+        </div>
+
         </div>
       </div>
     </div>

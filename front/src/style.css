@@ -1275,6 +1275,7 @@
     color: #333;
     width: 70%;
     max-width: 100%;
+    min-height: 100px;
   }
 
   .baekgu-msg.is-tri{
@@ -1903,6 +1904,35 @@
   /* ===== 커스텀 스크롤바 ===== */
   .scrl-custom{
     padding-right: 4px;
+  }
+
+  /* ===== 차트 스타일 ===== */
+  .statistics-charts {
+    width: 100%;
+  }
+
+  .statistics-charts .bordered-box {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .statistics-charts h3 {
+    margin-bottom: 1rem;
+    color: #374151;
+  }
+
+  /* Recharts 툴팁 커스터마이징 */
+  .recharts-tooltip-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .recharts-tooltip-content {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
   }
   .scrl-custom::-webkit-scrollbar {
     background: transparent;
