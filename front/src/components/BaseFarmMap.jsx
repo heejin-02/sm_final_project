@@ -35,15 +35,15 @@ export default function BaseFarmMap({
     const counts = data.map(r => r.count || 0);
     const max = Math.max(...counts, 1);
 
-    console.log(`🔥 BaseFarmMap: mode=${mode}, showHeatmap=${showHeatmap}, data.length=${data.length}`);
-    console.log(`📊 Counts:`, counts, `Max: ${max}`);
+    //console.log(`BaseFarmMap: mode=${mode}, showHeatmap=${showHeatmap}, data.length=${data.length}`);
+    //console.log(`Counts:`, counts, `Max: ${max}`);
 
     colorScale = scaleLinear()
       .domain([0, max / 2, max])
       .range(["#00AA00", "#FFFF00", "#FF0000"])
       .clamp(true);
 
-    console.log(`🎨 ColorScale created:`, colorScale(0), colorScale(max/2), colorScale(max));
+    //console.log(`ColorScale created:`, colorScale(0), colorScale(max/2), colorScale(max));
   }
 
   // 셀 데이터 준비
@@ -90,13 +90,13 @@ export default function BaseFarmMap({
     if (mode === "overview" && showHeatmap && colorScale) {
       // 히트맵 색상 적용 (opacity 추가로 가독성 향상)
       const originalColor = colorScale(cell.count);
-      console.log(`🎨 Cell ${cell.id}: count=${cell.count}, color=${originalColor}`);
+      //console.log(`Cell ${cell.id}: count=${cell.count}, color=${originalColor}`);
 
       // rgb를 rgba로 변환 (50% opacity)
       let backgroundColor = originalColor;
       if (typeof originalColor === 'string' && originalColor.startsWith('rgb(')) {
         // rgb(255, 102, 0) → rgba(255, 102, 0, 0.5)
-        backgroundColor = originalColor.replace('rgb(', 'rgba(').replace(')', ', 0.5)');
+        backgroundColor = originalColor.replace('rgb(', 'rgba(').replace(')', ', 0.6)');
       } else if (typeof originalColor === 'string' && originalColor.startsWith('#')) {
         // hex인 경우 alpha 추가
         backgroundColor = originalColor + '80';
@@ -105,14 +105,14 @@ export default function BaseFarmMap({
       baseStyle.backgroundColor = backgroundColor;
       baseStyle.color = cell.count > 0 ? '#000' : '#333';
       baseStyle.fontWeight = '600';
-      baseStyle.textShadow = '0 1px 2px rgba(255, 255, 255, 0.8)';
+      // baseStyle.textShadow = '0 1px 2px rgba(255, 255, 255, 0.8)';
     } else if (mode === "highlight" && cell.isHighlighted) {
       // 하이라이트 색상 적용 (opacity 추가)
       baseStyle.backgroundColor = '#ef444480'; // 50% opacity
       baseStyle.color = '#000';
       baseStyle.fontWeight = '700';
       baseStyle.border = '2px solid #dc2626';
-      baseStyle.textShadow = '0 1px 2px rgba(255, 255, 255, 0.9)';
+      // baseStyle.textShadow = '0 1px 2px rgba(255, 255, 255, 0.9)';
     } else {
       // 기본 색상
       baseStyle.backgroundColor = '#f3f4f6';
@@ -161,7 +161,7 @@ export default function BaseFarmMap({
               {/* 하이라이트 모드: 알림 표시 */}
               {mode === "highlight" && cell.isHighlighted && (
                 <div className="alert-indicator">
-                  <span className="alert-icon">⚠️</span>
+                  {/* <span className="alert-icon">⚠️</span> */}
                   <span className="alert-text">탐지됨</span>
                 </div>
               )}

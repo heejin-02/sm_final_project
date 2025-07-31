@@ -108,7 +108,7 @@ export default function NotiList(){
 					sortedAlerts.map((alert, index) => (
 						<li
 							key={alert.anlsIdx}
-							className={`noti-item hvborder ${currentNotiId === alert.anlsIdx ? 'active' : ''} ${alert.notiCheck !== "Y" ? 'unread' : ''}`}
+							className={`noti-item ${currentNotiId === alert.anlsIdx ? 'active' : ''} ${alert.notiCheck !== "Y" ? 'unread' : ''}`}
 							onClick={() => handleSelect(alert)}
               data-anls-idx={alert.anlsIdx}
 						>
