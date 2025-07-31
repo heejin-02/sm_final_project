@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { getRegionsByFarmIdx, updateRegionsForFarm } from '../mock/greenHouse';
 
 function AdminFarmInfo() {
   const { farmIdx } = useParams();
@@ -10,15 +11,6 @@ function AdminFarmInfo() {
   // 추가 모드인지 수정 모드인지 구분
   const { userInfo: passedUserInfo, farmInfo: passedFarmInfo, mode } = location.state || {};
   const isCreateMode = farmIdx === 'create' || mode === 'create';
-
-  // 디버깅용 console.log
-  console.log('🔍 Debug Info:');
-  console.log('farmIdx:', farmIdx);
-  console.log('mode:', mode);
-  console.log('isCreateMode:', isCreateMode);
-  console.log('location.state:', location.state);
-  console.log('passedUserInfo:', passedUserInfo);
-  console.log('passedFarmInfo:', passedFarmInfo);
   
   const [farmInfo, setFarmInfo] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
@@ -39,18 +31,146 @@ function AdminFarmInfo() {
   // 파일 업로드용 상태 (추가 모드에서만 사용)
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // 구역 관리 상태 - GH_DUMMY에서 가져오기
+  const [regions, setRegions] = useState([]);
+
+  // 구역 추가 (주석처리 - 고정 9개 구역 사용)
+  /*
+  const addRegion = () => {
+    const newRegionNumber = regions.length + 1;
+    setRegions(prev => [...prev, {
+      id: Date.now(),
+      name: `${newRegionNumber}번 온실`
+    }]);
+  };
+  */
+
+  // 구역 삭제 (주석처리 - 고정 9개 구역 사용)
+  /*
+  const removeRegion = (id) => {
+    if (regions.length > 1) { // 최소 1개는 유지
+      setRegions(prev => {
+        const filtered = prev.filter(region => region.id !== id);
+        // 삭제 후 번호 재정렬
+        return filtered.map((region, index) => ({
+          ...region,
+          name: region.name.includes('번 온실') ? `${index + 1}번 온실` : region.name
+        }));
+      });
+    }
+  };
+  */
+
+  // 구역 정보 로드 (GH_DUMMY에서)
+  const loadRegionData = (farmIdx) => {
+    if (!farmIdx) return;
+
+    try {
+      // GH_DUMMY에서 해당 농장의 구역 정보 가져오기
+      const farmRegions = getRegionsByFarmIdx(parseInt(farmIdx));
+
+      // AdminFarmInfo에서 사용할 형태로 변환
+      const regionsForAdmin = farmRegions.map(region => ({
+        id: region.ghIdx, // ghIdx를 id로 사용
+        name: region.ghName,
+        ghIdx: region.ghIdx,
+        farmIdx: region.farmIdx,
+        ghArea: region.ghArea,
+        ghCrops: region.ghCrops
+      }));
+
+      setRegions(regionsForAdmin);
+      console.log('로드된 구역 정보:', regionsForAdmin);
+    } catch (error) {
+      console.error('구역 정보 로드 실패:', error);
+      // 오류 시 기본 구역 생성
+      const defaultRegions = [];
+      for (let i = 1; i <= 9; i++) {
+        defaultRegions.push({
+          id: i,
+          name: `${i}번 온실`,
+          ghIdx: i,
+          farmIdx: parseInt(farmIdx),
+          ghArea: '100m',
+          ghCrops: '토마토'
+        });
+      }
+      setRegions(defaultRegions);
+    }
+  };
+
+  // 구역 이름 변경
+  const updateRegionName = (id, name) => {
+    setRegions(prev => prev.map(region =>
+      region.id === id ? { ...region, name } : region
+    ));
+  };
+
+  // 구역 DB 저장/수정 (GH_DUMMY 업데이트)
+  const handleRegionSubmit = async () => {
+    try {
+      if (!farmInfo?.farmIdx && !isCreateMode) {
+        alert('농장 정보가 없습니다.');
+        return;
+      }
+
+      const targetFarmIdx = farmInfo?.farmIdx || parseInt(farmIdx);
+
+      // 구역 데이터 구성
+      const regionData = regions.map((region) => ({
+        farmIdx: targetFarmIdx,
+        ghIdx: region.ghIdx || region.id,
+        ghName: region.name,
+        ghArea: region.ghArea || '100m',
+        ghCrops: region.ghCrops || '토마토',
+        createdAt: new Date().toISOString()
+      }));
+
+      // GH_DUMMY 업데이트 (실제로는 백엔드 API 호출)
+      updateRegionsForFarm(targetFarmIdx, regionData);
+
+      console.log('저장된 구역 데이터:', regionData);
+
+      // TODO: 실제 백엔드 연동 시
+      // const response = await axios.post(`/api/regions/${targetFarmIdx}`, regionData);
+
+      alert(`${regions.length}개 구역이 저장되었습니다.`);
+    } catch (error) {
+      console.error('구역 저장 실패:', error);
+      alert('구역 저장에 실패했습니다.');
+    }
+  };
+
+  // TODO: 백엔드 연동 시 구역 정보 조회 함수
+  /*
+  const fetchRegionData = async (farmIdx) => {
+    try {
+      const response = await axios.get(`/api/regions/${farmIdx}`);
+      const existingRegions = response.data;
+
+      // 기존 데이터가 있으면 해당 정보로 업데이트, 없으면 기본값 유지
+      const updatedRegions = regions.map((region, index) => {
+        const existingRegion = existingRegions.find(r => r.ghIdx === index + 1);
+        return existingRegion ? {
+          ...region,
+          name: existingRegion.ghName
+        } : region;
+      });
+
+      setRegions(updatedRegions);
+    } catch (error) {
+      console.log('기존 구역 정보 없음 - 기본값 사용');
+    }
+  };
+  */
+
   // 농장 정보 조회
   useEffect(() => {
     const fetchFarmInfo = async () => {
       try {
         setLoading(true);
 
-        console.log('🚀 useEffect 실행됨');
-        console.log('isCreateMode:', isCreateMode);
-        console.log('farmIdx:', farmIdx);
-
         if (isCreateMode) {
-          console.log('✅ 추가 모드 - API 호출 안함');
           // 추가 모드: 회원 정보만 설정
           if (passedUserInfo) {
             setUserInfo(passedUserInfo);
@@ -58,8 +178,21 @@ function AdminFarmInfo() {
           // 농장 정보는 빈 상태로 시작
           setFarmInfo(null);
           setIsEditing(true); // 추가 모드에서는 처음부터 편집 모드
+
+          // 기본 구역 생성 (새 농장이므로 기본값 사용)
+          const defaultRegions = [];
+          for (let i = 1; i <= 9; i++) {
+            defaultRegions.push({
+              id: i,
+              name: `${i}번 온실`,
+              ghIdx: i,
+              farmIdx: null, // 농장 생성 후 설정
+              ghArea: '100m',
+              ghCrops: '토마토'
+            });
+          }
+          setRegions(defaultRegions);
         } else {
-          console.log('📝 수정 모드');
           // 수정 모드: 기존 로직
           if (passedFarmInfo && passedUserInfo) {
             // 전달받은 데이터가 있으면 사용
@@ -73,8 +206,9 @@ function AdminFarmInfo() {
               farmArea: passedFarmInfo.farmArea || '',
               farmImg: passedFarmInfo.farmImg || ''
             });
+            // 구역 정보 로드
+            loadRegionData(passedFarmInfo.farmIdx);
           } else {
-            console.log('🌐 API 호출 시작 - farmIdx:', farmIdx);
             // 수정 모드이고 전달받은 데이터가 없으면 API 호출
             const response = await axios.get(`http://localhost:8095/api/farms/${farmIdx}/detail`);
             setFarmInfo(response.data);
@@ -86,6 +220,8 @@ function AdminFarmInfo() {
               farmArea: response.data.farmArea || '',
               farmImg: response.data.farmImg || ''
             });
+            // 구역 정보 로드
+            loadRegionData(farmIdx);
           }
         }
       } catch (error) {
@@ -144,7 +280,7 @@ function AdminFarmInfo() {
           formData.append('farmImg', selectedFile);
         }
 
-        const response = await axios.post('http://localhost:8095/api/admin/users/insertFarm', formData, {
+        const response = await axios.post('http://localhost:8095/api/farm/insertFarm', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -218,7 +354,7 @@ function AdminFarmInfo() {
 
   return (
     <div className="section">
-      <div className="inner">
+      <div className="inner inner_1080">
         <h1 className="tit-head">{isCreateMode ? '농장 추가' : '농장 상세 정보'}</h1>
       
         {/* 상단 네비게이션 */}
@@ -233,26 +369,27 @@ function AdminFarmInfo() {
 
         {/* 농장주 정보 카드 (읽기 전용) */}
         {userInfo && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">농장주 정보</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">이름</label>
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+          <div className="admForm">
+            <h3>농장주 정보</h3>
+
+            <div className="admForm-ul">
+              <div className="input-group flex-06">
+                <label>이름</label>
+                <div className="input">
                   {userInfo.userName}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">아이디(휴대폰번호)</label>
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+              <div className="input-group flex-08">
+                <label>아이디(휴대폰번호)</label>
+                <div className="input">
                   {userInfo.userPhone}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">가입날짜</label>
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+              <div className="input-group flex-1">
+                <label>가입날짜</label>
+                <div className="input">
                   {userInfo.joinedAt}
                 </div>
               </div>
@@ -261,9 +398,9 @@ function AdminFarmInfo() {
         )}
 
         {/* 농장 기본 정보 카드 */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8">
+        <div className="admForm">
           <div className="flex justify-between items-start mb-6">
-            <h3 className="text-xl font-semibold text-gray-800">
+            <h3>
               {isCreateMode ? '농장 정보 입력' : '농장 기본 정보'}
             </h3>
             <div className="flex gap-2">
@@ -318,24 +455,40 @@ function AdminFarmInfo() {
               )}
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <div className="admForm-ul flex-col">
+
+            {/* 농장 인덱스 (읽기 전용) - 추가 모드에서는 숨김 */}
+            {!isCreateMode && (
+              <div className="input-group">
+                <label>농장 ID</label>
+                <input
+                  className="input"
+                  value={farmInfo?.farmIdx || ''}
+                  readOnly
+                />
+              </div>
+            )}
+
             {/* 농장 이름 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 이름</label>
+            <div className="input-group">
+              <label>농장 이름</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {farmInfo?.farmName}
-                </div>
+                <input
+                  className="input"
+                  value={farmInfo?.farmName || ''}
+                  readOnly
+                />
+
               ) : (
                 <div>
                   <input
                     type="text"
                     value={editedFarmInfo.farmName}
                     onChange={(e) => setEditedFarmInfo({...editedFarmInfo, farmName: e.target.value})}
-                    className={`input w-full ${
-                      !editedFarmInfo.farmName.trim() 
-                        ? 'border-red-300 focus:border-red-500' 
+                    className={`input ${
+                      !editedFarmInfo.farmName.trim()
+                        ? 'border-red-300 focus:border-red-500'
                         : 'border-gray-300 focus:border-blue-500'
                     }`}
                     placeholder="농장 이름을 입력하세요"
@@ -348,21 +501,24 @@ function AdminFarmInfo() {
             </div>
             
             {/* 농장 주소 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 주소</label>
+            <div className="input-group">
+              <label>농장 주소</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {farmInfo?.farmAddr}
-                </div>
+                <input
+                  className="input"
+                  value={farmInfo?.farmAddr || ''}
+                  readOnly
+                />
+
               ) : (
                 <div>
                   <input
                     type="text"
                     value={editedFarmInfo.farmAddr}
                     onChange={(e) => setEditedFarmInfo({...editedFarmInfo, farmAddr: e.target.value})}
-                    className={`input w-full ${
-                      !editedFarmInfo.farmAddr.trim() 
-                        ? 'border-red-300 focus:border-red-500' 
+                    className={`input ${
+                      !editedFarmInfo.farmAddr.trim()
+                        ? 'border-red-300 focus:border-red-500'
                         : 'border-gray-300 focus:border-blue-500'
                     }`}
                     placeholder="농장 주소를 입력하세요"
@@ -373,68 +529,80 @@ function AdminFarmInfo() {
                 </div>
               )}
             </div>
-            
+
             {/* 농장 전화번호 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 전화번호</label>
+            <div className="input-group">
+              <label>농장 전화번호</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {farmInfo?.farmPhone || '-'}
-                </div>
+                <input
+                  className="input"
+                  value={farmInfo?.farmPhone || '-'}
+                  readOnly
+                />
+
               ) : (
                 <input
                   type="text"
                   value={editedFarmInfo.farmPhone}
                   onChange={(e) => setEditedFarmInfo({...editedFarmInfo, farmPhone: e.target.value})}
-                  className="input w-full"
+                  className="input"
                   placeholder="농장 전화번호를 입력하세요"
                 />
               )}
             </div>
-            
+
             {/* 재배 작물 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">재배 작물</label>
+            <div className="input-group">
+              <label>재배 작물</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {farmInfo?.farmCrops || '-'}
-                </div>
+                <input
+                  className="input"
+                  value={farmInfo?.farmCrops || '-'}
+                  readOnly
+                />
+
               ) : (
                 <input
                   type="text"
                   value={editedFarmInfo.farmCrops}
                   onChange={(e) => setEditedFarmInfo({...editedFarmInfo, farmCrops: e.target.value})}
-                  className="input w-full"
+                  className="input"
                   placeholder="재배 작물을 입력하세요"
                 />
               )}
             </div>
-            
+
             {/* 농장 면적 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 면적</label>
+            <div className="input-group">
+              <label>농장 면적</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {farmInfo?.farmArea || '-'}
-                </div>
+                <input
+                  className="input"
+                  value={farmInfo?.farmArea || '-'}
+                  readOnly
+                />
+
               ) : (
                 <input
                   type="text"
                   value={editedFarmInfo.farmArea}
                   onChange={(e) => setEditedFarmInfo({...editedFarmInfo, farmArea: e.target.value})}
-                  className="input w-full"
+                  className="input"
                   placeholder="농장 면적을 입력하세요"
                 />
               )}
             </div>
 
             {/* 농장 이미지 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">농장 이미지</label>
+            <div className="input-group">
+              <label>농장 이미지</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {farmInfo?.farmImg || '-'}
-                </div>
+                <input
+                  className="input"
+                  value={farmInfo?.farmImg || '-'}
+                  readOnly
+                />
+
               ) : isCreateMode ? (
                 // 추가 모드: 파일 업로드
                 <div>
@@ -442,7 +610,7 @@ function AdminFarmInfo() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setSelectedFile(e.target.files[0])}
-                    className="input w-full"
+                    className="input"
                   />
                   {selectedFile && (
                     <p className="text-sm text-gray-600 mt-1">
@@ -451,22 +619,63 @@ function AdminFarmInfo() {
                   )}
                 </div>
               ) : (
-                // 수정 모드: URL 입력 (이미지 수정은 지원하지 않음)
-                <div className="text-lg font-medium text-gray-500 bg-gray-100 px-4 py-3 rounded-lg">
-                  이미지 수정은 지원하지 않습니다.
+                // 수정 모드: 등록된 이미지 정보 표시
+                <div className="input text-gray-500 bg-gray-100">
+                  {farmInfo?.farmImg ? farmInfo.farmImg : '등록된 이미지가 없습니다'}
                 </div>
               )}
             </div>
 
-            {/* 농장 인덱스 (읽기 전용) - 추가 모드에서는 숨김 */}
-            {!isCreateMode && (
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-600">농장 ID</label>
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {farmInfo?.farmIdx}
+          </div>
+        </div>
+
+        <div className="admForm">
+          <div className="admForm-header">
+            <h3>구역 관리</h3>
+            {/* 추가/삭제 버튼 주석처리 - 고정 9개 구역 사용
+            <button
+              onClick={addRegion}
+              className="btn btn-sm btn-primary"
+            >
+              구역 추가
+            </button>
+            */}
+          </div>
+
+          <div className="admForm-ul flex-wrap flex-wrap-3">
+            {regions.map((region, index) => (
+              <div key={region.id} className="input-group">
+                <div className="flex items-center gap-2">
+                  <label className="flex-shrink-0">구역 {index + 1}</label>
+                  {/* 삭제 버튼 주석처리 - 고정 9개 구역 사용
+                  {regions.length > 1 && (
+                    <button
+                      onClick={() => removeRegion(region.id)}
+                      className="btn btn-sm btn-secondary text-red-600 hover:bg-red-50"
+                    >
+                      삭제
+                    </button>
+                  )}
+                  */}
                 </div>
+                <input
+                  type="text"
+                  className="input"
+                  value={region.name}
+                  onChange={(e) => updateRegionName(region.id, e.target.value)}
+                  placeholder="구역 이름을 입력하세요"
+                />
               </div>
-            )}
+            ))}
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={handleRegionSubmit}
+              className="btn btn-accent"
+            >
+              구역 등록/수정
+            </button>
           </div>
         </div>
 

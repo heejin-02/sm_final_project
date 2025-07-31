@@ -18,12 +18,8 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
-
     "@tailwindcss/vite": "^4.1.10",
-<<<<<<< HEAD
     "axios": "^1.10.0",
-=======
->>>>>>> ce0d75f60cb8c95fffaef6400f5634dbd9cc211e
     "d3-color": "^3.1.0",
     "d3-scale": "^4.0.2",
     "d3-scale-chromatic": "^3.1.0",

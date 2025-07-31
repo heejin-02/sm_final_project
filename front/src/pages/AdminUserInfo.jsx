@@ -117,7 +117,7 @@ export default function AdminUserInfo() {
 
     try {
       // TODO: 실제 API 호출로 회원 이름 수정
-      // console.log('회원 이름 수정:', editedUserName.trim());
+      console.log('회원 이름 수정:', editedUserName.trim());
 
       // 임시로 로컬 상태 업데이트
       const updatedList = userDetailList.map(user => ({
@@ -151,7 +151,7 @@ export default function AdminUserInfo() {
   if (error) {
     return (
       <div className="section">
-        <div className="inner">
+        <div className="inner inner_1080">
           <h1 className="tit-head">회원 상세 정보</h1>
           <div className="flex items-center justify-end mb-6">
             <button
@@ -182,7 +182,7 @@ export default function AdminUserInfo() {
   if (!userDetailList || userDetailList.length === 0) {
     return (
       <div className="section">
-        <div className="inner">
+        <div className="inner inner_1080">
           <h1 className="tit-head">회원 상세 정보</h1>
           <div className="flex justify-between items-center mb-4">
             <h2 className="tit">회원 정보를 찾을 수 없습니다</h2>
@@ -206,7 +206,7 @@ export default function AdminUserInfo() {
 
   return (
     <div className="section">
-      <div className="inner">
+      <div className="inner inner_1080">
         <h1 className="tit-head">회원 상세 정보</h1>
 				<div className="flex items-center justify-end mb-6">
 					<button
@@ -218,10 +218,10 @@ export default function AdminUserInfo() {
 				</div>		
 
         {/* 회원 기본 정보 카드 */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-8">
-          <div className="flex justify-between items-start mb-6">
-            <h3 className="text-xl font-semibold text-gray-800">회원 기본 정보</h3>
-            <div className="flex gap-2">
+        <div className="admForm">
+          <div className="admForm-header">
+            <h3>회원 기본 정보</h3>
+            <div className="btn-group">
               {!isEditing ? (
                 <button
                   onClick={handleStartEdit}
@@ -254,20 +254,23 @@ export default function AdminUserInfo() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">이름</label>
+          <div className="admForm-ul">
+            <div className="input-group flex-06">
+              <label>이름</label>
               {!isEditing ? (
-                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                  {userInfo.userName}
-                </div>
+                <input
+                  className="input"
+                  value={userInfo.userName || ''}
+                  readOnly
+                />
+
               ) : (
                 <div>
                   <input
                     type="text"
                     value={editedUserName}
                     onChange={(e) => setEditedUserName(e.target.value)}
-                    className={`input w-full ${
+                    className={`input ${
                       !editedUserName.trim() || editedUserName.trim().length < 2
                         ? 'border-red-300 focus:border-red-500'
                         : 'border-gray-300 focus:border-blue-500'
@@ -283,72 +286,87 @@ export default function AdminUserInfo() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">아이디(휴대폰번호)</label>
-              <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                {userInfo.userPhone}
-              </div>
+            <div className="input-group flex-08">
+              <label>아이디(휴대폰번호)</label>
+              <input
+                className="input"
+                value={userInfo.userPhone || ''}
+                readOnly
+              />
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600">가입날짜</label>
-              <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
-                {userInfo.joinedAt}
-              </div>
+            <div className="input-group flex-1">
+              <label>가입날짜</label>
+              <input
+                className="input"
+                value={userInfo.joinedAt || ''}
+                readOnly
+              />
             </div>
           </div>
         </div>
+        
+        <div className='max-w-5xl mx-auto'>
+          {/* 농장 추가 버튼 */}
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={handleAddFarm}
+              className="btn btn-primary"
+            >
+              농장 추가
+            </button>
+          </div>
 
-        {/* 농장 추가 버튼 */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={handleAddFarm}
-            className="btn btn-primary"
-          >
-            농장 추가
-          </button>
-        </div>
-
-        {/* 농장 목록 테이블 */}
-        <div className="table-wrap">
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>번호</th>
-                  <th>재배 작물</th>
-                  <th>농장 이름</th>
-                  <th>농장 주소</th>
-                  <th>농장 번호</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userDetailList.length > 0 && userDetailList.some(farm => farm.farmName) ? (
-                  userDetailList
-                    .filter(farm => farm.farmName) // 농장 이름이 있는 것만 필터링
-                    .map((farm, index) => (
-                      <tr
-                        key={farm.farmIdx || `farm-${index}`}
-                        onClick={() => handleFarmClick(farm.farmIdx)}
-                        className="cursor-pointer hover:bg-gray-50 transition-colors"
-                      >
-                        <td data-farm-idx={farm.farmIdx}>{index + 1}</td>
-                        <td>{farm.farmCrops || '-'}</td>
-                        <td>{farm.farmName}</td>
-                        <td>{farm.farmAddr || '-'}</td>
-                        <td>{farm.farmPhone || '-'}</td>
-                      </tr>
-                    ))
-                ) : (
+          {/* 농장 목록 테이블 */}
+          <div className="table-wrap">
+            <div className="overflow-x-auto">
+              <table className="table">
+                <colgroup>
+                  <col width="10%"/>
+                  <col width="15%"/>
+                  <col width="20%"/>
+                  <col width="30%"/>
+                  <col width="25%"/>
+                </colgroup>
+                <thead>
                   <tr>
-                    <td colSpan="7" className="text-center text-gray-500 py-8">
-                      등록된 농장 정보가 없습니다.
-                    </td>
+                    <th>번호</th>
+                    <th>재배 작물</th>
+                    <th>농장 이름 / 하우스</th>
+                    <th>농장 주소</th>
+                    <th>농장 번호</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {userDetailList.length > 0 && userDetailList.some(farm => farm.farmName) ? (
+                    userDetailList
+                      .filter(farm => farm.farmName) // 농장 이름이 있는 것만 필터링
+                      .sort((a, b) => a.farmIdx - b.farmIdx) // farmIdx 낮은 순으로 정렬
+                      .map((farm, index) => (
+                        <tr
+                          key={farm.farmIdx || `farm-${index}`}
+                          onClick={() => handleFarmClick(farm.farmIdx)}
+                          className="cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
+                          <td data-farm-idx={farm.farmIdx}>{index + 1}</td>
+                          <td>{farm.farmCrops || '-'}</td>
+                          <td>{farm.farmName}</td>
+                          <td>{farm.farmAddr || '-'}</td>
+                          <td>{farm.farmPhone || '-'}</td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="text-center text-gray-500 py-8">
+                        등록된 농장 정보가 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
         </div>
 
       </div>

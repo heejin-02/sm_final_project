@@ -1,7 +1,7 @@
 // src/components/DetectionFeedback.jsx
 import { useState } from 'react';
 
-export default function DetectionFeedback({ notification, onFeedbackSubmit, onMarkAsRead }) {
+export default function DetectionFeedback({ alertDetail, onFeedbackSubmit, onMarkAsRead }) {
   const [step, setStep] = useState(1);
   const [feedback, setFeedback] = useState({
     accuracy: null,
@@ -32,7 +32,7 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
 
   // 나중에 확인하기
   const handleMarkAsRead = () => {
-    onMarkAsRead?.(notification.id);
+    onMarkAsRead?.(alertDetail?.anlsIdx);
   };
 
 
@@ -64,8 +64,8 @@ export default function DetectionFeedback({ notification, onFeedbackSubmit, onMa
             </div>
 
             <p className="question-text">
-              <strong>{notification.bugName}</strong>을(를) <strong>{notification.location}</strong>에서 탐지했다고 하는데, 맞나요?
-            </p>            
+              <strong>{alertDetail?.insectName}</strong>을(를) <strong>{alertDetail?.gh_name || "구역"}</strong>에서 탐지했다고 하는데, 맞나요?
+            </p>
 
           </div>
           

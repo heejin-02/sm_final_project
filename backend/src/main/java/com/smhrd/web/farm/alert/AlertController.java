@@ -17,13 +17,6 @@ public class AlertController {
 
     @Autowired
     private AlertService alertService;
-    
-    @GetMapping("/detail/{anlsIdx}")
-    public ResponseEntity<AlertDetailDTO> getAlertDetail(@PathVariable Long anlsIdx) {
-        AlertDetailDTO detail = alertService.getFullAlertDetail(anlsIdx);
-        return ResponseEntity.ok(detail);
-    }
-
 
     @Operation(summary = "알림 목록 조회")
     @GetMapping("/list/{farmIdx}")
@@ -43,6 +36,13 @@ public class AlertController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+    
+    @Operation(summary = "알림 눌렀을떄 해충 정보 상세 (구역확인, 동영상확인, GPT확인)")
+    @GetMapping("/detail/{anlsIdx}")
+    public ResponseEntity<AlertDetailDTO> getAlertDetail(@PathVariable Long anlsIdx) {
+        AlertDetailDTO detail = alertService.getFullAlertDetail(anlsIdx);
+        return ResponseEntity.ok(detail);
     }
 
 }

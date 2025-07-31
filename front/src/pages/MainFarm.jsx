@@ -1,6 +1,5 @@
 // src/pages/MainFarm.jsx
-import React from 'react';
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 import NotiList from '../components/NotiList';
 
@@ -8,7 +7,6 @@ import { useRegionCounts } from "../hooks/useRegionCounts";
 import FarmMap from "../components/FarmMap";
 import Legend from "../components/Legend";
 import Loader from "../components/Loader";
-import bgImg from '/images/bg_home.jpg';
 
 export default function MainFarm() {
   
@@ -17,8 +15,8 @@ export default function MainFarm() {
 
   if (!farm) return <p>선택된 농장이 없습니다. 다시 선택해주세요.</p>;
 
-  const { farmId } = useParams();
-  const data = useRegionCounts(farmId);
+  const farmIdx = farm.farmIdx; // AuthContext에서 farmIdx 가져오기
+  const data = useRegionCounts(farmIdx);
   const navigate = useNavigate();
 
   if (!data) return <Loader message="구역별 탐지 내용을 불러오는 중입니다.." />;
