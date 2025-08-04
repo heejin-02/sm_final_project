@@ -35,9 +35,31 @@ public class AdminService {
     }
     // 삭제
     public void deleteFarm(Long farmIdx) {
-        // 자식 테이블 삭제 쿼리 없이 부모 테이블 삭제만 호출
         adminMapper.deleteFarm(farmIdx);
     }
+    
+    // 회원 수정
+    public boolean updateUserInfo(AdminDTO user) {
+        try {
+            adminMapper.updateUserInfo(user);
+            return true;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 회원 삭제
+    public boolean deleteUser(String userPhone) {
+        try {
+            adminMapper.deleteUser(userPhone);
+            return true;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 
 }
