@@ -24,24 +24,24 @@
 	  ORDER BY f.created_at DESC NULLS LAST
 	</select>
 	
-   <!-- 회원이름 누르면 상세보기 -->
-   <select id="selectUserByPhone" parameterType="String" resultType="com.smhrd.web.admin.AdminDTO">
-     SELECT 
-       NVL(f.farm_idx, 0) AS farmIdx,
-       u.user_name AS userName,
-       u.user_phone AS userPhone,
-       u.user_pw AS userPw,
-       TO_CHAR(u.joined_at, 'YYYY-MM-DD HH24:MI:SS') AS joinedAt,
-       f.farm_name AS farmName,
-       f.farm_addr AS farmAddr,
-       f.farm_phone AS farmPhone,
-       f.farm_crops AS farmCrops,
-       f.farm_area AS farmArea,
-       TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
-     FROM qc_user u
-     LEFT JOIN qc_farm f ON u.user_phone = f.user_phone
-     WHERE u.user_phone = #{userPhone}
-   </select>
+	<!-- 회원이름 누르면 상세보기 -->
+	<select id="selectUserByPhone" parameterType="String" resultType="com.smhrd.web.admin.AdminDTO">
+	  SELECT 
+	    NVL(f.farm_idx, 0) AS farmIdx,
+	    u.user_name AS userName,
+	    u.user_phone AS userPhone,
+	    u.user_pw AS userPw,
+	    TO_CHAR(u.joined_at, 'YYYY-MM-DD HH24:MI:SS') AS joinedAt,
+	    f.farm_name AS farmName,
+	    f.farm_addr AS farmAddr,
+	    f.farm_phone AS farmPhone,
+	    f.farm_crops AS farmCrops,
+	    f.farm_area AS farmArea,
+	    TO_CHAR(f.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+	  FROM qc_user u
+	  LEFT JOIN qc_farm f ON u.user_phone = f.user_phone
+	  WHERE u.user_phone = #{userPhone}
+	</select>
 	
 	<!-- 농장정보 수정삭제 -->
 	<update id="updateFarmInfo" parameterType="com.smhrd.web.admin.AdminDTO">
@@ -58,5 +58,18 @@
 	    DELETE FROM qc_farm WHERE farm_idx = #{farmIdx}
 	</delete>
 	
+	<!-- 회원정보 수정 -->
+	<update id="updateUserInfo" parameterType="com.smhrd.web.admin.AdminDTO">
+	    UPDATE qc_user
+	    SET user_name = #{userName},
+	        user_pw = #{userPw}
+	    WHERE user_phone = #{userPhone}
+	</update>
+	
+	<!-- 회원 삭제 -->
+	<delete id="deleteUser" parameterType="String">
+	    DELETE FROM qc_user WHERE user_phone = #{userPhone}
+	</delete>
+
 
 </mapper>

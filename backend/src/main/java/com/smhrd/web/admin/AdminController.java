@@ -65,6 +65,26 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
         }
     }
+    
+    // 회원 수정
+    @Operation(summary = "회원 정보 수정", description = "userPhone 기준으로 회원 이름, 비밀번호 수정")
+    @PutMapping("/{userPhone}")
+    public ResponseEntity<String> updateUser(@PathVariable String userPhone, @RequestBody AdminDTO user) {
+        user.setUserPhone(userPhone);
+        boolean success = adminService.updateUserInfo(user);
+        if(success) return ResponseEntity.ok("회원 정보 수정 완료");
+        else return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 정보 수정 실패");
+    }
+
+    // 회원 삭제
+    @Operation(summary = "회원 삭제", description = "userPhone 기준으로 회원 정보 삭제")
+    @DeleteMapping("/{userPhone}")
+    public ResponseEntity<String> deleteUser(@PathVariable String userPhone) {
+        boolean success = adminService.deleteUser(userPhone);
+        if(success) return ResponseEntity.ok("회원 삭제 완료");
+        else return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 삭제 실패");
+    }
+
 
 
 

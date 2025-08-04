@@ -56,10 +56,10 @@ export default function SelectFarm() {
   return(
     <div className="section bg home bg-[url('/images/bg_home.jpg')] bg-center bg-cover">
       <div className="cont-wrap text-center flex flex-col justify-center gap-6">
-        <h2 className="font-semibold text-3xl mb-2">관리할 하우스를 선택해주세요</h2>
+        <h2 className="font-semibold text-3xl mb-2">관리할 농장을 선택해주세요</h2>
         {farms.length === 0 ? (
           <div className="mt-4 space-y-4">
-            <p className='text-2xl '>등록된 하우스가 없습니다. <br/>관리자에게 문의하세요.</p>
+            <p className='text-2xl '>등록된 농장이 없습니다. <br/>관리자에게 문의하세요.</p>
             <p className='text-2xl font-semibold'>관리자 번호 : 010-109-1009</p>
           </div>
         ) : (

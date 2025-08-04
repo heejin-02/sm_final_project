@@ -65,10 +65,9 @@ const DUMMY_ALERTS = [
     ghArea: "100㎡",
     anlsAcc: 85,
     createdAt: "2025-01-30 14:30:00",
-    notiCheck: null,
+    notiCheck: "N", // N: 안읽음, Y: 읽음
     userQes: "gpt 응답",
-    gptContent: "알락수염노린재가 탐지되었습니다. 즉시 방제 조치가 필요합니다.",
-    isRead: false // 프론트엔드용 추가 필드
+    gptContent: "알락수염노린재가 탐지되었습니다. 즉시 방제 조치가 필요합니다."
   },
   {
     anlsIdx: 999999992,
@@ -76,10 +75,9 @@ const DUMMY_ALERTS = [
     ghArea: "100㎡",
     anlsAcc: 92,
     createdAt: "2025-01-30 13:15:00",
-    notiCheck: null,
+    notiCheck: "N", // N: 안읽음, Y: 읽음
     userQes: "gpt 응답",
-    gptContent: "꽃노랑총채벌레가 탐지되었습니다. 주의 깊은 관찰이 필요합니다.",
-    isRead: false
+    gptContent: "꽃노랑총채벌레가 탐지되었습니다. 주의 깊은 관찰이 필요합니다."
   },
   {
     anlsIdx: 999999993,
@@ -87,10 +85,9 @@ const DUMMY_ALERTS = [
     ghArea: "100㎡",
     anlsAcc: 78,
     createdAt: "2025-01-30 11:45:00",
-    notiCheck: null,
+    notiCheck: "Y", // N: 안읽음, Y: 읽음 (이미 읽은 알림)
     userQes: "gpt 응답",
-    gptContent: "담배가루이가 탐지되었습니다. 환경 관리가 필요합니다.",
-    isRead: true
+    gptContent: "담배가루이가 탐지되었습니다. 환경 관리가 필요합니다."
   }
 ];
 
@@ -147,7 +144,7 @@ export const markDummyAsRead = async (anlsIdx) => {
 };
 
 // 개발 모드 여부에 따라 실제 API 또는 더미 데이터 사용
-const isDevelopment = true; // true: 더미 데이터 사용, false: 실제 API 사용 (일단 테스트용)
+const isDevelopment = false; // true: 더미 데이터 사용, false: 실제 API 사용
 
 
 

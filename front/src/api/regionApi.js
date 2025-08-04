@@ -14,10 +14,26 @@ export async function fetchRegionCounts(farmId) {
   // API 호출 시뮬레이션을 위한 딜레이
   await new Promise(resolve => setTimeout(resolve, 300));
 
-  return regions.map(region => ({
-    farm_idx: region.farmIdx,
-    gh_idx: region.ghIdx,
-    gh_name: region.gh_name,
-    count: region.count
-  }));
+  // 9개 구역 보장 (1~9번)
+  const result = [];
+  for (let i = 1; i <= 9; i++) {
+    const existingRegion = regions.find(r => r.ghIdx === i);
+    if (existingRegion) {
+      // 실제 데이터가 있으면 사용
+      result.push({
+        id: existingRegion.ghIdx,
+        name: existingRegion.gh_name,
+        count: existingRegion.count || 0
+      });
+    } else {
+      // 없으면 기본 구역 생성
+      result.push({
+        id: i,
+        name: `${i}번 구역`,
+        count: Math.floor(Math.random() * 3) // 0~2 랜덤 더미 카운트
+      });
+    }
+  }
+
+  return result;
 }

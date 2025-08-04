@@ -40,7 +40,7 @@ function AdminFarmInfo() {
     const newRegionNumber = regions.length + 1;
     setRegions(prev => [...prev, {
       id: Date.now(),
-      name: `${newRegionNumber}번 온실`
+      name: `${newRegionNumber}번 구역`
     }]);
   };
   */
@@ -54,7 +54,7 @@ function AdminFarmInfo() {
         // 삭제 후 번호 재정렬
         return filtered.map((region, index) => ({
           ...region,
-          name: region.name.includes('번 온실') ? `${index + 1}번 온실` : region.name
+          name: region.name.includes('번 구역') ? `${index + 1}번 구역` : region.name
         }));
       });
     }
@@ -88,7 +88,7 @@ function AdminFarmInfo() {
       for (let i = 1; i <= 9; i++) {
         defaultRegions.push({
           id: i,
-          name: `${i}번 온실`,
+          name: `${i}번 구역`,
           ghIdx: i,
           farmIdx: parseInt(farmIdx),
           ghArea: '100m',
@@ -184,7 +184,7 @@ function AdminFarmInfo() {
           for (let i = 1; i <= 9; i++) {
             defaultRegions.push({
               id: i,
-              name: `${i}번 온실`,
+              name: `${i}번 구역`,
               ghIdx: i,
               farmIdx: null, // 농장 생성 후 설정
               ghArea: '100m',
