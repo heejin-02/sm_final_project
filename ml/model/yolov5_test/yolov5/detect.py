@@ -21,66 +21,99 @@ from signalwire.rest import Client as SignalWireClient
 from dotenv import load_dotenv
 import subprocess
 load_dotenv()
+import re
+
 # 고정 GH_IDX
-gh_idx = 1
+gh_idx = 2
 
 # Twilio 설정
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-USER_PHONE_NUMBER = os.getenv("USER_PHONE_NUMBER")  # 수신자
-PUBLIC_FASTAPI_BASE = "https://a42af3bf7b23.ngrok-free.app"
+# TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+# TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+# TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+# USER_PHONE_NUMBER = os.getenv("USER_PHONE_NUMBER")  # 수신자
+
+# def make_call(insect_name: str, confidence: float):
+#     global last_call_time
+#     now = time.time()
+#     if now - last_call_time < CALL_COOLDOWN:
+#         print(f"[전화 건너뜀] 최근에 발신됨 ({now-last_call_time:.1f}s 전)")
+#         return
+#     try:
+#         client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+#         url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+#         call = client.calls.create(
+#             to=USER_PHONE_NUMBER,
+#             from_=TWILIO_PHONE_NUMBER,
+#             url=url
+#         )
+#         last_call_time = now
+#         print(f"[전화 발신] Call SID: {call.sid}")
+#     except Exception as e:
+#         print("[전화 오류]", e)
+PUBLIC_FASTAPI_BASE = "https://92452ce99257.ngrok-free.app"
+
+# 전화번호 포맷 정규화 함수
+def normalize_phone(phone: str) -> str:
+    digits_only = re.sub(r"[^0-9]", "", phone)  # 숫자만 남김
+    if digits_only.startswith("0"):
+        digits_only = digits_only[1:]  # 0 제거
+    return f"+82{digits_only}"
+
+# GH_IDX로 사용자 전화번호 가져오기 (QC_USER까지 조인)
+def get_user_phone_by_gh_idx(gh_idx: int) -> str | None:
+    try:
+        res = requests.get(f"http://localhost:8000/api/get-phone?gh_idx={gh_idx}")
+        if res.status_code == 200:
+            raw_phone = res.json().get("phone")
+            return normalize_phone(raw_phone)
+        else:
+            print("[전화번호 조회 실패]", res.status_code, res.text)
+    except Exception as e:
+        print("[전화번호 요청 오류]", e)
+    return None
 
 # 전화 쿨다운
 last_call_time = 0
 CALL_COOLDOWN = 60 #초단위 실사용시 10분으로 변경
 
-# SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
-# SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
-# SIGNALWIRE_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER")
-# SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
-
-# # 테스트용 수신자 번호
-# TEST_PHONE_NUMBER = "+821085849748"  # ← 테스트할 실제 전화번호로 바꿔주세요
-
-# def make_call(insect_name: str, confidence: float):
-#     client = SignalWireClient(
-#         SIGNALWIRE_PROJECT_ID,
-#         SIGNALWIRE_AUTH_TOKEN,
-#         signalwire_space_url=SIGNALWIRE_SPACE_URL
-#     )
-
-#     url = f"{PUBLIC_FASTAPI_BASE}/twilio-call?insect={quote(insect_name)}"
-
-#     try:
-#         call = client.calls.create(
-#             from_=SIGNALWIRE_PHONE_NUMBER,
-#             to=TEST_PHONE_NUMBER,
-#             url=url
-#         )
-#         print(f"[테스트 전화 발신] Call SID: {call.sid} | 대상: {TEST_PHONE_NUMBER}")
-#     except Exception as e:
-#         print("[전화 발신 실패]", e)
+SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
+SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
+SIGNALWIRE_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER")
+SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
+PUBLIC_FASTAPI_BASE = "https://92452ce99257.ngrok-free.app"
 
 
-def make_call(insect_name: str, confidence: float):
+def make_call_by_gh_idx(gh_idx: int):
     global last_call_time
     now = time.time()
     if now - last_call_time < CALL_COOLDOWN:
-        print(f"[전화 건너뜀] 최근에 발신됨 ({now-last_call_time:.1f}s 전)")
+        print(f"[전화 건너뜀] 최근에 발신됨 ({now - last_call_time:.1f}s 전)")
         return
+
+    user_phone = get_user_phone_by_gh_idx(gh_idx)
+    if not user_phone:
+        print(f"[오류] gh_idx={gh_idx}에 해당하는 사용자 전화번호가 없습니다.")
+        return
+
     try:
-        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        client = SignalWireClient(
+            SIGNALWIRE_PROJECT_ID,
+            SIGNALWIRE_AUTH_TOKEN,
+            signalwire_space_url=SIGNALWIRE_SPACE_URL
+        )
+
         url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+
         call = client.calls.create(
-            to=USER_PHONE_NUMBER,
-            from_=TWILIO_PHONE_NUMBER,
+            from_=SIGNALWIRE_PHONE_NUMBER,
+            to=user_phone,
             url=url
         )
         last_call_time = now
-        print(f"[전화 발신] Call SID: {call.sid}")
+        print(f"[전화 발신] 대상: {user_phone} | Call SID: {call.sid}")
     except Exception as e:
-        print("[전화 오류]", e)
+        print("[전화 발신 실패]", e)
+
 
 def get_insect_idx(name):
     return {
@@ -225,7 +258,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    make_call(insect_name, best_conf)
+                    make_call_by_gh_idx(gh_idx)
 
                     try:
                         gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")

@@ -336,8 +336,27 @@ def get_img_info_by_filename(video_name: str):
 
     return None, None
 
+@app.get("/api/get-phone")
+def get_user_phone(gh_idx: int):
+    try:
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT U.USER_PHONE
+                    FROM QC_USER U
+                    JOIN QC_FARM F ON U.USER_PHONE = F.USER_PHONE
+                    JOIN QC_GREENHOUSE G ON F.FARM_IDX = G.FARM_IDX
+                    WHERE G.GH_IDX = :gh_idx
+                """, [gh_idx])
+                row = cur.fetchone()
+                if row:
+                    return {"phone": row[0]}
+        return JSONResponse(status_code=404, content={"message": "전화번호 없음"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
-# Twilio API
+
+# Twilio/Signalwire API
 # GET 방식 
 @app.get("/twilio/voice")
 def twilio_voice_get(
