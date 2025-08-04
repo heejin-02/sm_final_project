@@ -25,7 +25,7 @@ export default function StatisticsChart({ data, period }) {
       // 일간: 시간별 라인 차트
       return data.detailList?.map(item => ({
         time: item.datetime.split(' ')[1] || item.datetime, // 시간만 추출
-        count: item.count || 1,
+        count: item.count || 0, // 실제 count 값 사용
         bugType: item.bugType,
         region: item.region
       })) || [];
@@ -146,31 +146,72 @@ export default function StatisticsChart({ data, period }) {
         </div>
 
         {/* 구역별 히트맵 차트 (일간만) */}
-        {period === 'daily' && (
-          <div className="bordered-box lg:col-span-2">
-            <h3 className="text-lg font-bold mb-4">🏠 구역별 탐지 현황</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart 
-                data={chartData.reduce((acc, item) => {
-                  const existing = acc.find(a => a.region === item.region);
-                  if (existing) {
-                    existing.count += item.count;
-                  } else {
-                    acc.push({ region: item.region, count: item.count });
-                  }
-                  return acc;
-                }, [])}
-                layout="horizontal"
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="region" type="category" width={80} />
-                <Tooltip formatter={(value) => [value, '탐지 수']} />
-                <Bar dataKey="count" fill="#22c55e" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+        {period === 'daily' && (() => {
+          // 구역별 데이터 집계
+          const regionData = chartData.reduce((acc, item) => {
+            const existing = acc.find(a => a.region === item.region);
+            if (existing) {
+              existing.count += item.count;
+              existing.incidents += 1; // 탐지 횟수
+            } else {
+              acc.push({
+                region: item.region,
+                count: item.count,
+                incidents: 1
+              });
+            }
+            return acc;
+          }, []);
+
+          console.log('🏠 구역별 데이터:', regionData);
+
+          return (
+            <div className="bordered-box lg:col-span-2">
+              <h3 className="text-lg font-bold mb-4">🏠 구역별 탐지 현황</h3>
+              {regionData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart
+                    data={regionData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="region"
+                      tick={{ fontSize: 12, angle: -45, textAnchor: 'end' }}
+                      height={60}
+                    />
+                    <YAxis
+                      tickFormatter={(value) => `${value}건`}
+                    />
+                    <Tooltip
+                      formatter={(value, name) => [
+                        `${value}건`,
+                        '탐지 수'
+                      ]}
+                      labelFormatter={(label) => `${label}`}
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px'
+                      }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill="#22c55e"
+                      radius={[4, 4, 0, 0]}
+                      stroke="#16a34a"
+                      strokeWidth={1}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-48 text-gray-500">
+                  구역별 데이터가 없습니다.
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

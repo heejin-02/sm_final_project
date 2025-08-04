@@ -1,14 +1,14 @@
 // mock/greenHouse.js
 // 구역(온실) 더미 데이터
 
-// 기본 구역 생성 함수 (1~9번 온실)
+// 기본 구역 생성 함수 (1~9번 구역)
 export const generateDefaultRegions = (farmIdx) => {
   const regions = [];
   for (let i = 1; i <= 9; i++) {
     regions.push({
       ghIdx: i,
       farmIdx: farmIdx,
-      ghName: `${i}번 온실`,
+      ghName: `${i}번 구역`,
       ghArea: '1000',
       ghCrops: '토마토',
       createdAt: new Date().toISOString()
@@ -20,31 +20,31 @@ export const generateDefaultRegions = (farmIdx) => {
 // 구역 더미 데이터 (여러 농장용)
 export const GH_DUMMY = [
   // 농장 1의 구역들
-  { ghIdx: 1, farmIdx: 1, ghName: '1번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-21 01:56:35' },
-  { ghIdx: 2, farmIdx: 1, ghName: '2번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-20 01:56:35' },
-  { ghIdx: 3, farmIdx: 1, ghName: '3번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-19 01:56:35' },
-  { ghIdx: 4, farmIdx: 1, ghName: '4번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-18 01:56:35' },
-  { ghIdx: 5, farmIdx: 1, ghName: '5번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-17 01:56:35' },
-  { ghIdx: 6, farmIdx: 1, ghName: '6번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-16 01:56:35' },
-  { ghIdx: 7, farmIdx: 1, ghName: '7번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-15 01:56:35' },
-  { ghIdx: 8, farmIdx: 1, ghName: '8번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-14 01:56:35' },
-  { ghIdx: 9, farmIdx: 1, ghName: '9번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-13 01:56:35' },
+  { ghIdx: 1, farmIdx: 1, ghName: '1번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-21 01:56:35' },
+  { ghIdx: 2, farmIdx: 1, ghName: '2번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-20 01:56:35' },
+  { ghIdx: 3, farmIdx: 1, ghName: '3번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-19 01:56:35' },
+  { ghIdx: 4, farmIdx: 1, ghName: '4번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-18 01:56:35' },
+  { ghIdx: 5, farmIdx: 1, ghName: '5번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-17 01:56:35' },
+  { ghIdx: 6, farmIdx: 1, ghName: '6번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-16 01:56:35' },
+  { ghIdx: 7, farmIdx: 1, ghName: '7번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-15 01:56:35' },
+  { ghIdx: 8, farmIdx: 1, ghName: '8번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-14 01:56:35' },
+  { ghIdx: 9, farmIdx: 1, ghName: '9번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-13 01:56:35' },
 
   // 농장 2의 구역들 (DB 데이터 예시)
-  { ghIdx: 1, farmIdx: 2, ghName: '1번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-21 01:56:35' },
-  { ghIdx: 2, farmIdx: 2, ghName: '2번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-20 01:56:35' },
-  { ghIdx: 3, farmIdx: 2, ghName: '3번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-19 01:56:35' },
-  { ghIdx: 4, farmIdx: 2, ghName: '4번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-18 01:56:35' },
-  { ghIdx: 5, farmIdx: 2, ghName: '5번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-17 01:56:35' },
-  { ghIdx: 6, farmIdx: 2, ghName: '6번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-16 01:56:35' },
-  { ghIdx: 7, farmIdx: 2, ghName: '7번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-15 01:56:35' },
-  { ghIdx: 8, farmIdx: 2, ghName: '8번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-14 01:56:35' },
-  { ghIdx: 9, farmIdx: 2, ghName: '9번 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-13 01:56:35' },
+  { ghIdx: 1, farmIdx: 2, ghName: '1번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-21 01:56:35' },
+  { ghIdx: 2, farmIdx: 2, ghName: '2번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-20 01:56:35' },
+  { ghIdx: 3, farmIdx: 2, ghName: '3번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-19 01:56:35' },
+  { ghIdx: 4, farmIdx: 2, ghName: '4번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-18 01:56:35' },
+  { ghIdx: 5, farmIdx: 2, ghName: '5번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-17 01:56:35' },
+  { ghIdx: 6, farmIdx: 2, ghName: '6번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-16 01:56:35' },
+  { ghIdx: 7, farmIdx: 2, ghName: '7번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-15 01:56:35' },
+  { ghIdx: 8, farmIdx: 2, ghName: '8번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-14 01:56:35' },
+  { ghIdx: 9, farmIdx: 2, ghName: '9번 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-13 01:56:35' },
 
   // 농장 3의 구역들 (일부만 DB에 있는 경우 예시)
-  { ghIdx: 1, farmIdx: 3, ghName: '메인 온실', ghArea: '1000', ghCrops: '오이', createdAt: '2025-07-21 01:56:35' },
-  { ghIdx: 3, farmIdx: 3, ghName: '실험 온실', ghArea: '1000', ghCrops: '상추', createdAt: '2025-07-19 01:56:35' },
-  { ghIdx: 5, farmIdx: 3, ghName: '육묘 온실', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-17 01:56:35' },
+  { ghIdx: 1, farmIdx: 3, ghName: '메인 구역', ghArea: '1000', ghCrops: '오이', createdAt: '2025-07-21 01:56:35' },
+  { ghIdx: 3, farmIdx: 3, ghName: '실험 구역', ghArea: '1000', ghCrops: '상추', createdAt: '2025-07-19 01:56:35' },
+  { ghIdx: 5, farmIdx: 3, ghName: '육묘 구역', ghArea: '1000', ghCrops: '토마토', createdAt: '2025-07-17 01:56:35' },
 ];
 
 // 특정 농장의 구역 정보 조회 (DB + 기본값 병합)
@@ -65,7 +65,7 @@ export const getRegionsByFarmIdx = (farmIdx) => {
       allRegions.push({
         ghIdx: i,
         farmIdx: farmIdx,
-        ghName: `${i}번 온실`,
+        ghName: `${i}번 구역`,
         ghArea: '1000',
         ghCrops: '토마토',
         createdAt: new Date().toISOString()

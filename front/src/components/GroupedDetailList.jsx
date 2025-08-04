@@ -94,10 +94,10 @@ export default function GroupedDetailList({ data, period }) {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="text-left p-3 text-sm">시간</th>
-                        <th className="text-left p-3 text-sm">구역</th>
-                        <th className="text-left p-3 text-sm">해충</th>
-                        <th className="text-left p-3 text-sm">정확도</th>
+                        <th className="text-left p-3 text-sm">탐지 시간</th>
+                        <th className="text-left p-3 text-sm">탐지 구역</th>
+                        <th className="text-left p-3 text-sm">해충 이름</th>
+                        <th className="text-left p-3 text-sm">탐지 정확도</th>
                       </tr>
                     </thead>
                     <tbody>
