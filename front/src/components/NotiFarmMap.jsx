@@ -49,7 +49,7 @@ export default function NotiFarmMap({
             <span className="region-label">{region.name}</span>
             {region.isHighlighted && (
               <div className="alert-indicator">
-                <span className="alert-icon">⚠️</span>
+                {/* <span className="alert-icon">⚠️</span> */}
                 <span className="alert-text">탐지됨</span>
               </div>
             )}

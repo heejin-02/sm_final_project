@@ -6,7 +6,6 @@ import Loader from './Loader';
 import { useAuth } from '../contexts/AuthContext';
 import {
   WiHumidity,
-  WiStrongWind,
   WiRaindrops,
 } from 'react-icons/wi';
 
@@ -81,13 +80,81 @@ const getCoordinatesFromAddress = async (address) => {
     }
     return null;
   } catch (error) {
-    console.error('주소 좌표 변환 실패:', error);
+    // console.error('주소 좌표 변환 실패:', error);
+    return null;
+  }
+};
+
+// 풍향을 텍스트로 변환하는 함수
+const getWindDirection = (degrees) => {
+  if (degrees === undefined || degrees === null) return '정보 없음';
+
+  const directions = [
+    { min: 0, max: 11.25, text: '북풍' },
+    { min: 11.25, max: 33.75, text: '북북동풍' },
+    { min: 33.75, max: 56.25, text: '북동풍' },
+    { min: 56.25, max: 78.75, text: '동북동풍' },
+    { min: 78.75, max: 101.25, text: '동풍' },
+    { min: 101.25, max: 123.75, text: '동남동풍' },
+    { min: 123.75, max: 146.25, text: '남동풍' },
+    { min: 146.25, max: 168.75, text: '남남동풍' },
+    { min: 168.75, max: 191.25, text: '남풍' },
+    { min: 191.25, max: 213.75, text: '남남서풍' },
+    { min: 213.75, max: 236.25, text: '남서풍' },
+    { min: 236.25, max: 258.75, text: '서남서풍' },
+    { min: 258.75, max: 281.25, text: '서풍' },
+    { min: 281.25, max: 303.75, text: '서북서풍' },
+    { min: 303.75, max: 326.25, text: '북서풍' },
+    { min: 326.25, max: 348.75, text: '북북서풍' },
+    { min: 348.75, max: 360, text: '북풍' }
+  ];
+
+  const direction = directions.find(dir => degrees >= dir.min && degrees < dir.max);
+  return direction ? direction.text : '북풍';
+};
+
+// 좌표를 주소로 변환하는 함수 (Reverse Geocoding)
+const getAddressFromCoordinates = async (lat, lon) => {
+  try {
+    const response = await axios.get(
+      `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
+    );
+
+    if (response.data && response.data.length > 0) {
+      const location = response.data[0];
+      // 한국어 도시명 매핑
+      const cityMapping = {
+        'Seoul': '서울',
+        'Busan': '부산',
+        'Incheon': '인천',
+        'Daegu': '대구',
+        'Daejeon': '대전',
+        'Gwangju': '광주',
+        'Ulsan': '울산',
+        'Suwon': '수원',
+        'Goyang': '고양',
+        'Yongin': '용인',
+        'Seongnam': '성남'
+      };
+
+      const cityName = location.name;
+      const koreanCity = cityMapping[cityName] || cityName;
+
+      return {
+        cityName: cityName,
+        cityKorean: koreanCity,
+        locationName: koreanCity
+      };
+    }
+    return null;
+  } catch (error) {
+    // console.error('좌표 → 주소 변환 실패:', error);
     return null;
   }
 };
 
 // 사용자 현재 위치를 가져오는 함수
-const getCurrentLocation = () => {
+const getCurrentLocation = async () => {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       reject(new Error('Geolocation이 지원되지 않습니다.'));
@@ -95,12 +162,18 @@ const getCurrentLocation = () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
+
+        // 좌표를 주소로 변환 시도
+        const addressInfo = await getAddressFromCoordinates(latitude, longitude);
+
         resolve({
           lat: latitude,
           lon: longitude,
-          locationName: '현재 위치'
+          locationName: addressInfo?.locationName || '현재 위치',
+          cityName: addressInfo?.cityName || 'Current Location',
+          cityKorean: addressInfo?.cityKorean || '현재 위치'
         });
       },
       (error) => {
@@ -120,12 +193,13 @@ function WeatherBox() {
   const { user } = useAuth();
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isFolded, setIsFolded] = useState(false);
 
   useEffect(() => {
     let timeoutId;
 
     const fetchWeather = async () => {
-      console.log('날씨 데이터 요청:', new Date().toLocaleTimeString());
+      // console.log('날씨 데이터 요청:', new Date().toLocaleTimeString());
       setLoading(true);
 
       try {
@@ -152,6 +226,8 @@ function WeatherBox() {
               weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${currentLocation.lat}&lon=${currentLocation.lon}&units=metric&appid=${API_KEY}`;
               currentWeatherUrl = weatherUrl;
               locationName = currentLocation.locationName;
+              // 현재 위치 정보를 저장해서 나중에 사용
+              window.currentLocationInfo = currentLocation;
               //console.log('현재 위치 사용:', currentLocation);
             } catch (locationError) {
               //console.log('현재 위치 실패, 기본 서울 날씨 사용');
@@ -168,6 +244,8 @@ function WeatherBox() {
             weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${currentLocation.lat}&lon=${currentLocation.lon}&units=metric&appid=${API_KEY}`;
             currentWeatherUrl = weatherUrl;
             locationName = currentLocation.locationName;
+            // 현재 위치 정보를 저장해서 나중에 사용
+            window.currentLocationInfo = currentLocation;
             //console.log('현재 위치 사용:', currentLocation);
           } catch (locationError) {
             //console.log('현재 위치 실패:', locationError.message);
@@ -195,11 +273,16 @@ function WeatherBox() {
 
         let tempMin = currentData.main.temp;
         let tempMax = currentData.main.temp;
+        let precipitationProbability = 0; // 강수 확률
 
         if (todayForecasts.length > 0) {
           const temps = todayForecasts.map(item => item.main.temp);
           tempMin = Math.min(...temps, currentData.main.temp);
           tempMax = Math.max(...temps, currentData.main.temp);
+
+          // 가장 가까운 시간의 강수 확률 가져오기
+          const nextForecast = todayForecasts[0]; // 가장 가까운 예보
+          precipitationProbability = nextForecast.pop ? Math.round(nextForecast.pop * 100) : 0;
         }
 
         const englishCondition = currentData.weather[0].main;
@@ -207,7 +290,12 @@ function WeatherBox() {
           weatherKoreanMap[englishCondition] || englishCondition;
 
         const cityName = currentData.name;
-        const cityKorean = cityKoreanMap[cityName] || locationName;
+        let cityKorean = cityKoreanMap[cityName] || locationName;
+
+        // 현재 위치 기반인 경우 저장된 정보 사용
+        if (window.currentLocationInfo && window.currentLocationInfo.cityKorean) {
+          cityKorean = window.currentLocationInfo.cityKorean;
+        }
 
         setWeather({
           cityName,
@@ -218,7 +306,9 @@ function WeatherBox() {
           tempMax: tempMax,
           humidity: currentData.main.humidity,
           wind: currentData.wind.speed,
+          windDirection: getWindDirection(currentData.wind.deg),
           rain: currentData.rain?.['1h'] || 0,
+          precipitationProbability: precipitationProbability,
           condition: koreanCondition,
           iconCode: currentData.weather[0].icon,
           iconUrl: getWeatherIcon(currentData.weather[0].icon),
@@ -245,13 +335,14 @@ function WeatherBox() {
             tempMax: data.main.temp_max,
             humidity: data.main.humidity,
             wind: data.wind.speed,
+            windDirection: getWindDirection(data.wind.deg),
             rain: data.rain?.['1h'] || 0,
             condition: koreanCondition,
             iconCode: data.weather[0].icon,
             iconUrl: getWeatherIcon(data.weather[0].icon),
           });
         } catch (fallbackErr) {
-          console.error('기본 날씨 정보도 가져오기 실패:', fallbackErr);
+          // console.error('기본 날씨 정보도 가져오기 실패:', fallbackErr);
           // 완전 실패 시 기본 정보 표시
           setWeather({
             cityKorean: '날씨 정보 없음',
@@ -277,7 +368,7 @@ function WeatherBox() {
 
   if (loading || !weather)
     return (
-      <div className="flex items-center justify-center h-16">
+      <div className="weather-box">
         <Loader size="text-lg" message="날씨 불러오는 중..." />
       </div>
     );
@@ -300,58 +391,67 @@ function WeatherBox() {
     return `${weather.cityKorean}`; // 기본값
   };
 
+  // weather-arrow 클릭 핸들러
+  const handleArrowClick = () => {
+    setIsFolded(!isFolded);
+  };
+
   return (
-    <div className="">
-      <div className="font-bold mb-2">
-        {getLocationDisplay()}
-      </div>
+    <div className={`weather-box ${isFolded ? 'fold' : ''}`}>
+      <div className="weather-top">
+        <div className="weather-location">
+          {getLocationDisplay()}
+        </div>
 
-      <div className="flex items-center gap-1">
-        {weather.iconUrl && (
-          <img
-            src={weather.iconUrl}
-            alt={weather.condition}
-            className="w-8 h-8"
-          />
+        <div className="weather-condition">
+          {weather.iconUrl && (
+            <img src={weather.iconUrl} alt={weather.condition} className="w-6 h-6" />
+          )}
+          <span>{weather.condition}</span>
+          <span>·</span>
+          <span>{typeof weather.temp === 'number' ? `${Math.round(weather.temp)}°` : weather.temp}</span>
+        </div>
+
+        <div className="weather-arrow" onClick={handleArrowClick}>
+          <img src="/images/arrow_up.svg" alt="" />
+        </div>
+      </div>
+      
+      <div className="weather-btm">
+        {typeof weather.tempMin === 'number' && typeof weather.tempMax === 'number' && (
+          <div className="weather-range">
+            최저 {Math.round(weather.tempMin)}° · 최고 {Math.round(weather.tempMax)}°
+          </div>
         )}
-        <span>
-          {weather.condition} · {typeof weather.temp === 'number' ? `${Math.round(weather.temp)}°C` : weather.temp}
-        </span>
+
+        {(weather.humidity || weather.wind || weather.rain !== undefined) && (
+          <div className="weather-details flex gap-1">
+            {weather.rain !== undefined && (
+              <div className="flex items-center gap-1">
+                강수
+                <span className="flex-none">
+                  {weather.precipitationProbability}% / {weather.rain} mm
+                </span>
+              </div>
+            )}          
+            <span>·</span>
+            {weather.humidity && (
+              <div className="flex items-center gap-1">
+                <span>습도</span>
+                <span className="flex-none">{weather.humidity}%</span>
+              </div>
+            )}
+            <span>·</span>
+            {weather.wind && (
+              <div className="flex items-center gap-1">
+                <span className="flex-none">
+                  {weather.windDirection} {Math.round(weather.wind * 10) / 10} m/s
+                </span>
+              </div>
+            )}
+          </div>
+         )}
       </div>
-
-      {typeof weather.tempMin === 'number' && typeof weather.tempMax === 'number' && (
-        <div className="text-sm text-gray-600 mb-1">
-          최저 {Math.round(weather.tempMin)}°C · 최고 {Math.round(weather.tempMax)}°C
-        </div>
-      )}
-
-      {(weather.humidity || weather.wind || weather.rain !== undefined) && (
-        <div className="flex items-center">
-          {weather.humidity && (
-            <div className="flex items-center gap-1">
-              {/* 습도 */}
-              <WiHumidity size={22} />
-              <span className="flex-none">{weather.humidity}%</span>
-            </div>
-          )}
-
-          {weather.wind && (
-            <div className="flex items-center gap-1">
-              {/* 풍속 */}
-              <WiStrongWind size={22} />
-              <span className="flex-none">{Math.round(weather.wind * 10) / 10} m/s</span>
-            </div>
-          )}
-
-          {weather.rain !== undefined && (
-            <div className="flex items-center gap-1">
-              {/* 강수량 */}
-              <WiRaindrops size={22} />
-              <span className="flex-none">{weather.rain} mm</span>
-            </div>
-          )}
-        </div>
-      )}
 
     </div>
   );

@@ -40,7 +40,7 @@ export default function BaseFarmMap({
 
     colorScale = scaleLinear()
       .domain([0, max / 2, max])
-      .range(["#00AA00", "#FFFF00", "#FF0000"])
+      .range(["#4CAF50", "#FFC107", "#F44336"]) // Material Design 색상
       .clamp(true);
 
     //console.log(`ColorScale created:`, colorScale(0), colorScale(max/2), colorScale(max));
@@ -96,10 +96,10 @@ export default function BaseFarmMap({
       let backgroundColor = originalColor;
       if (typeof originalColor === 'string' && originalColor.startsWith('rgb(')) {
         // rgb(255, 102, 0) → rgba(255, 102, 0, 0.5)
-        backgroundColor = originalColor.replace('rgb(', 'rgba(').replace(')', ', 0.6)');
+        backgroundColor = originalColor.replace('rgb(', 'rgba(').replace(')', ', 1.0)');
       } else if (typeof originalColor === 'string' && originalColor.startsWith('#')) {
         // hex인 경우 alpha 추가
-        backgroundColor = originalColor + '80';
+        backgroundColor = originalColor + '100';
       }
 
       baseStyle.backgroundColor = backgroundColor;

@@ -114,12 +114,10 @@ export default function NotiList(){
 						>
 							<div className="noti-item-top">
 								<div className="noti-bug-name">{alert.insectName}</div>
-								<div className="text-sm">
-									(신뢰도 {alert.anlsAcc}%)
-									{alert.notiCheck !== "Y" && <span className="ml-2 text-red-500">●</span>}
-								</div>
+								<div className="noti-acc">(신뢰도 {alert.anlsAcc}%)</div>
+                {alert.notiCheck !== "Y" && <span className="red-dot"></span>}
 							</div>
-							<div className="noti-item-bottom text-sm">
+							<div className="noti-item-bottom">
 								<div className="">{alert.gh_name}&nbsp;&nbsp;{alert.createdAt}</div>
 							</div>
 						</li>

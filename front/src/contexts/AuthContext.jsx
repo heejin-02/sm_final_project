@@ -63,12 +63,12 @@ export function AuthProvider({ children }) {
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true');
       localStorage.setItem(STORAGE_KEYS.LOGIN_TIME, new Date().toISOString());
-      console.log('✅ 로그인 상태 저장됨');
+      // console.log('✅ 로그인 상태 저장됨');
     } else {
       localStorage.removeItem(STORAGE_KEYS.USER);
       localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
       localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
-      console.log('🗑️ 로그인 상태 삭제됨');
+      // console.log('🗑️ 로그인 상태 삭제됨');
     }
   }, [isLoggedIn, user]);
 
@@ -103,7 +103,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
     localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
 
-    console.log('👋 로그아웃 완료');
+    // console.log('👋 로그아웃 완료');
   };
 
   const selectFarm = (farm) => {

@@ -31,7 +31,7 @@ export function useStatistics(period, selectedDate = new Date()) {
           return `${year}-${month}-${day}`;
         };
 
-        console.log(`📊 [Statistics] API 호출: ${period}, 날짜: ${formatDate(selectedDate)}, farmIdx: ${user.selectedFarm.farmIdx}`);
+        // console.log(`📊 [Statistics] API 호출: ${period}, 날짜: ${formatDate(selectedDate)}, farmIdx: ${user.selectedFarm.farmIdx}`);
 
         // TODO: 실제 API 호출로 교체
         // const response = await axios.get(`/api/statistics/${period}`, {
@@ -51,7 +51,7 @@ export function useStatistics(period, selectedDate = new Date()) {
 
         setData(dummyData);
       } catch (err) {
-        console.error('통계 데이터 로딩 실패:', err);
+        // console.error('통계 데이터 로딩 실패:', err);
         setError(err.message);
       } finally {
         setLoading(false);

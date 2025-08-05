@@ -23,7 +23,7 @@ export const useAlertList = (farmIdx) => {
       const data = await fetchAlertList(farmIdx);
       setAlerts(data || []);
     } catch (err) {
-      console.error('알림 목록 로딩 실패:', err);
+      // console.error('알림 목록 로딩 실패:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export const useAlertDetail = (anlsIdx) => {
       const data = await fetchAlertDetail(anlsIdx);
       setAlertDetail(data);
     } catch (err) {
-      console.error('알림 상세 정보 로딩 실패:', err);
+      // console.error('알림 상세 정보 로딩 실패:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -125,7 +125,7 @@ export const useUnreadAlertCount = (farmIdx) => {
         const count = alerts.filter(alert => alert.notiCheck !== "Y").length;
         setUnreadCount(count);
       } catch (err) {
-        console.error('읽지 않은 알림 개수 로딩 실패:', err);
+        // console.error('읽지 않은 알림 개수 로딩 실패:', err);
       } finally {
         setLoading(false);
       }

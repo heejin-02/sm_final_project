@@ -17,7 +17,7 @@ export default function LoginForm() {
       const userData = response.data;
       navigate(userData.role === 'admin' ? '/admin' : '/selectFarm', { replace: true });
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       alert('로그인 실패: 아이디/비밀번호를 확인하세요.');
     }
   };
@@ -50,7 +50,7 @@ export default function LoginForm() {
           />
         </li>
       </ul>
-      <button type="submit" className="btn btn-lg btn-primary w-full mt-4">로그인</button>
+      <button type="submit" className="btn btn-xl btn-primary w-full">로그인</button>
     </form>
   );
 }

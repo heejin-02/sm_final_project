@@ -8,7 +8,9 @@ export function useRegionCounts(farmId) {
   useEffect(() => {
     fetchRegionCounts(farmId)
       .then(setCounts)
-      .catch(console.error);
+      .catch((error) => {
+        // console.error(error);
+      });
   }, [farmId]);
 
   return counts;  // null(로딩) 또는 [{id, count},…]
