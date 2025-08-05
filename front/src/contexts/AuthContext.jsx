@@ -1,6 +1,19 @@
 // src/contexts/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 import { loginCheck } from '../api/auth';
+import axios from 'axios';
+
+// 세션 확인 API
+const checkSession = async () => {
+  try {
+    const response = await axios.get('http://localhost:8095/api/home/check-session', {
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    return null;
+  }
+};
 
 // 1. Context 생성
 const AuthContext = createContext();
@@ -29,33 +42,43 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    try {
-      const savedLoginState = localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN);
-      const loginTime = localStorage.getItem(STORAGE_KEYS.LOGIN_TIME);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-      if (savedLoginState === 'true' && loginTime) {
-        // 로그인 시간 체크 (7일 이내인지)
-        const loginDate = new Date(loginTime);
-        const now = new Date();
-        const daysDiff = (now - loginDate) / (1000 * 60 * 60 * 24);
+  // 초기화 시 서버 세션에서 로그인 상태 확인
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const sessionData = await checkSession();
 
-        if (daysDiff <= LOGIN_EXPIRY_DAYS) {
-          return true;
-        } else {
-          // 만료된 로그인 정보 삭제
-          localStorage.removeItem(STORAGE_KEYS.USER);
-          localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
-          localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
-          return false;
-        }
+      if (sessionData) {
+        // 서버 세션이 유효한 경우
+        setUser({
+          userName: sessionData.userName,
+          userPhone: sessionData.userPhone,
+          role: sessionData.role,
+          selectedFarm: null, // 농장 정보는 별도로 로드
+        });
+        setIsLoggedIn(true);
+
+        // localStorage에도 백업 저장 (UX 향상용)
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({
+          userName: sessionData.userName,
+          userPhone: sessionData.userPhone,
+          role: sessionData.role,
+        }));
+        localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true');
+        localStorage.setItem(STORAGE_KEYS.LOGIN_TIME, new Date().toISOString());
+      } else {
+        // 서버 세션이 없는 경우 localStorage 정리
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
+        localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
+        setUser(null);
+        setIsLoggedIn(false);
       }
-      return false;
-    } catch (error) {
-      console.error('로그인 상태 복원 실패:', error);
-      return false;
-    }
-  });
+    };
+
+    initializeAuth();
+  }, []);
 
   // 로그인 상태가 변경될 때마다 localStorage 업데이트
   useEffect(() => {
@@ -93,17 +116,29 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
-    // 로그아웃 시 초기화
-    setUser(null);
-    setIsLoggedIn(false);
+  const logout = async () => {
+    try {
+      // 서버에 로그아웃 요청
+      await axios.get('http://localhost:8095/api/home/logout', {
+        withCredentials: true
+      });
 
-    // localStorage 정리
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
-    localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
+      // 로그아웃 시 초기화
+      setUser(null);
+      setIsLoggedIn(false);
 
-    // console.log('👋 로그아웃 완료');
+      // localStorage 정리
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
+      localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
+
+    } catch (error) {
+      // 서버 로그아웃 실패해도 클라이언트는 로그아웃 처리
+      console.error('서버 로그아웃 실패:', error);
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.clear();
+    }
   };
 
   const selectFarm = (farm) => {

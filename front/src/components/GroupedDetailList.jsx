@@ -38,9 +38,23 @@ export default function GroupedDetailList({ data, period }) {
               </tr>
             </thead>
             <tbody>
-              {data?.detailList?.length > 0 ? (
+              {data?.details?.length > 0 ? (
+                data.details.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleRowClick(item.anlsIdx || index)}
+                  >
+                    <td className="p-3">{item.time}</td>
+                    <td className="p-3">{item.greenhouse}</td>
+                    <td className="p-3">{item.insect}</td>
+                    <td className="p-3">{item.accuracy}%</td>
+                  </tr>
+                ))
+              ) : data?.detailList?.length > 0 ? (
+                // 기존 구조 fallback
                 data.detailList.map((item) => (
-                  <tr 
+                  <tr
                     key={item.anlsIdx}
                     className="border-b hover:bg-gray-50 cursor-pointer"
                     onClick={() => handleRowClick(item.anlsIdx)}

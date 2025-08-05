@@ -73,7 +73,7 @@ export default function SelectFarm() {
                   className="farmList-item"
                   onClick={() => {
                     selectFarm(farm);
-                    navigate(`/mainfarm/${farm.farmIdx}`);
+                    navigate(`/mainFarm/${farm.farmIdx}`);
                   }}
                 >
                   {farm.farmName}

@@ -12,6 +12,10 @@ import {
 
 const API_KEY = '019d414c565826322ad2f0b73af0129b';
 
+// 날씨 데이터 캐시 (30분 유지)
+const WEATHER_CACHE_DURATION = 30 * 60 * 1000; // 30분
+const weatherCache = new Map();
+
 const cityKoreanMap = {
   Seoul: '서울',
   Busan: '부산',
@@ -193,31 +197,39 @@ const getCurrentLocation = async () => {
 function WeatherBox() {
   const { user } = useAuth();
   const location = useLocation();
-  const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isFolded, setIsFolded] = useState(false);
 
-  // MainFarm 페이지인지 확인
-  const isMainFarmPage = location.pathname.includes('/mainfarm/');
-
-  // MainFarm 페이지일 때 자동으로 접기
-  useEffect(() => {
-    if (isMainFarmPage) {
-      setIsFolded(true);
-    } else {
-      setIsFolded(false);
+  // localStorage에서 이전 날씨 데이터 복원 (즉시 표시용)
+  const [weather, setWeather] = useState(() => {
+    try {
+      const savedWeather = localStorage.getItem('lastWeatherData');
+      return savedWeather ? JSON.parse(savedWeather) : null;
+    } catch {
+      return null;
     }
-  }, [isMainFarmPage]);
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let timeoutId;
 
     const fetchWeather = async () => {
-      // console.log('날씨 데이터 요청:', new Date().toLocaleTimeString());
+      // 캐시 키 생성 (농장 주소 기반)
+      const farmAddr = user?.selectedFarm?.farmAddr;
+      const cacheKey = farmAddr || 'default_location';
+
+      // 캐시된 데이터 확인
+      const cachedData = weatherCache.get(cacheKey);
+      if (cachedData && (Date.now() - cachedData.timestamp) < WEATHER_CACHE_DURATION) {
+        console.log('🚀 캐시된 날씨 데이터 사용');
+        setWeather(cachedData.data);
+        setLoading(false);
+        return;
+      }
+
+      console.log('🌤️ 새로운 날씨 데이터 요청:', new Date().toLocaleTimeString());
       setLoading(true);
 
       try {
-        const farmAddr = user?.selectedFarm?.farmAddr;
         let weatherUrl;
         let locationName = '서울';
         let currentWeatherUrl; // fallback용
@@ -270,33 +282,40 @@ function WeatherBox() {
           }
         }
 
-        // 현재 날씨와 5일 예보를 동시에 가져오기
-        const [currentResponse, forecastResponse] = await Promise.all([
-          axios.get(weatherUrl),
-          axios.get(weatherUrl.replace('/weather?', '/forecast?'))
-        ]);
+        // 현재 날씨만 가져오기 (예보는 필요시에만)
+        const currentResponse = await axios.get(weatherUrl);
+
+        // 예보 데이터는 선택적으로 가져오기 (강수확률이 필요한 경우만)
+        let forecastData = null;
+        try {
+          const forecastResponse = await axios.get(weatherUrl.replace('/weather?', '/forecast?'));
+          forecastData = forecastResponse.data;
+        } catch (forecastError) {
+          console.log('예보 데이터 로딩 실패, 현재 날씨만 표시');
+        }
 
         const currentData = currentResponse.data;
-        const forecastData = forecastResponse.data;
 
-        // 오늘 날짜의 예보 데이터에서 최저/최고 기온 추출
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        const todayForecasts = forecastData.list.filter(item =>
-          item.dt_txt.startsWith(today)
-        );
-
-        let tempMin = currentData.main.temp;
-        let tempMax = currentData.main.temp;
+        // 예보 데이터가 있으면 최저/최고 기온과 강수확률 추출
+        let tempMin = currentData.main.temp_min || currentData.main.temp;
+        let tempMax = currentData.main.temp_max || currentData.main.temp;
         let precipitationProbability = 0; // 강수 확률
 
-        if (todayForecasts.length > 0) {
-          const temps = todayForecasts.map(item => item.main.temp);
-          tempMin = Math.min(...temps, currentData.main.temp);
-          tempMax = Math.max(...temps, currentData.main.temp);
+        if (forecastData && forecastData.list) {
+          const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+          const todayForecasts = forecastData.list.filter(item =>
+            item.dt_txt.startsWith(today)
+          );
 
-          // 가장 가까운 시간의 강수 확률 가져오기
-          const nextForecast = todayForecasts[0]; // 가장 가까운 예보
-          precipitationProbability = nextForecast.pop ? Math.round(nextForecast.pop * 100) : 0;
+          if (todayForecasts.length > 0) {
+            const temps = todayForecasts.map(item => item.main.temp);
+            tempMin = Math.min(...temps, currentData.main.temp);
+            tempMax = Math.max(...temps, currentData.main.temp);
+
+            // 가장 가까운 시간의 강수 확률 가져오기
+            const nextForecast = todayForecasts[0]; // 가장 가까운 예보
+            precipitationProbability = nextForecast.pop ? Math.round(nextForecast.pop * 100) : 0;
+          }
         }
 
         const englishCondition = currentData.weather[0].main;
@@ -311,7 +330,7 @@ function WeatherBox() {
           cityKorean = window.currentLocationInfo.cityKorean;
         }
 
-        setWeather({
+        const weatherData = {
           cityName,
           cityKorean,
           farmAddr: farmAddr || '서울시',
@@ -326,7 +345,22 @@ function WeatherBox() {
           condition: koreanCondition,
           iconCode: currentData.weather[0].icon,
           iconUrl: getWeatherIcon(currentData.weather[0].icon),
+        };
+
+        // 캐시에 저장
+        weatherCache.set(cacheKey, {
+          data: weatherData,
+          timestamp: Date.now()
         });
+
+        // localStorage에도 저장 (다음 방문 시 즉시 표시용)
+        try {
+          localStorage.setItem('lastWeatherData', JSON.stringify(weatherData));
+        } catch (error) {
+          console.log('날씨 데이터 localStorage 저장 실패');
+        }
+
+        setWeather(weatherData);
       } catch (err) {
         console.error('날씨 정보를 가져오는 중 오류 발생:', err);
 
@@ -405,13 +439,8 @@ function WeatherBox() {
     return `${weather.cityKorean}`; // 기본값
   };
 
-  // weather-arrow 클릭 핸들러
-  const handleArrowClick = () => {
-    setIsFolded(!isFolded);
-  };
-
   return (
-    <div className={`weather-box ${isFolded ? 'fold' : ''}`}>
+    <div className="weather-box">
       <div className="weather-top">
         <div className="weather-location">
           {getLocationDisplay()}
@@ -424,10 +453,6 @@ function WeatherBox() {
           <span>{weather.condition}</span>
           <span>·</span>
           <span>{typeof weather.temp === 'number' ? `${Math.round(weather.temp)}°` : weather.temp}</span>
-        </div>
-
-        <div className="weather-arrow" onClick={handleArrowClick}>
-          <img src="/images/arrow_up.svg" alt="" />
         </div>
       </div>
       

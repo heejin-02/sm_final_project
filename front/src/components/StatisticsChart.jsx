@@ -22,7 +22,14 @@ export default function StatisticsChart({ data, period }) {
   // 차트용 데이터 변환
   const getChartData = () => {
     if (period === 'daily') {
-      // 일간: 시간별 라인 차트
+      // 새로운 daily API 데이터 구조 사용
+      if (data.hourlyStats) {
+        return data.hourlyStats.map(item => ({
+          time: `${item.hour}시`,
+          count: item.count || 0
+        }));
+      }
+      // 기존 구조 fallback
       return data.detailList?.map(item => ({
         time: item.datetime.split(' ')[1] || item.datetime, // 시간만 추출
         count: item.count || 0, // 실제 count 값 사용
@@ -49,8 +56,17 @@ export default function StatisticsChart({ data, period }) {
 
   // 해충 종류별 파이 차트 데이터
   const getPieData = () => {
+    if (period === 'daily' && data.insectDistribution) {
+      // 새로운 daily API 데이터 구조 사용
+      return data.insectDistribution.map(item => ({
+        name: item.insect,
+        value: item.count
+      }));
+    }
+
+    // 기존 구조 fallback
     const bugCounts = {};
-    
+
     if (period === 'daily' && data.detailList) {
       data.detailList.forEach(item => {
         bugCounts[item.bugType] = (bugCounts[item.bugType] || 0) + (item.count || 1);
@@ -147,23 +163,33 @@ export default function StatisticsChart({ data, period }) {
 
         {/* 구역별 히트맵 차트 (일간만) */}
         {period === 'daily' && (() => {
-          // 구역별 데이터 집계
-          const regionData = chartData.reduce((acc, item) => {
-            const existing = acc.find(a => a.region === item.region);
-            if (existing) {
-              existing.count += item.count;
-              existing.incidents += 1; // 탐지 횟수
-            } else {
-              acc.push({
-                region: item.region,
-                count: item.count,
-                incidents: 1
-              });
-            }
-            return acc;
-          }, []);
+          // 새로운 API 데이터 구조 사용
+          let regionData = [];
+          if (data.zoneStats && data.zoneStats.length > 0) {
+            regionData = data.zoneStats.map(item => ({
+              region: item.zone,
+              count: item.count,
+              incidents: item.count // 탐지 횟수와 동일하게 처리
+            }));
+          } else {
+            // 기존 구조 fallback
+            regionData = chartData.reduce((acc, item) => {
+              const existing = acc.find(a => a.region === item.region);
+              if (existing) {
+                existing.count += item.count;
+                existing.incidents += 1; // 탐지 횟수
+              } else {
+                acc.push({
+                  region: item.region,
+                  count: item.count,
+                  incidents: 1
+                });
+              }
+              return acc;
+            }, []);
+          }
 
-          console.log('🏠 구역별 데이터:', regionData);
+          // console.log('구역별 데이터:', regionData);
 
           return (
             <div className="bordered-box lg:col-span-2">

@@ -118,7 +118,7 @@ export default function NotiList(){
                 {alert.notiCheck !== "Y" && <span className="red-dot"></span>}
 							</div>
 							<div className="noti-item-bottom">
-								<div className="">{alert.gh_name}&nbsp;&nbsp;{alert.createdAt}</div>
+								<div className="">{alert.ghName}&nbsp;&nbsp;{alert.createdAt}</div>
 							</div>
 						</li>
 					))

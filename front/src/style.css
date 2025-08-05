@@ -76,16 +76,13 @@
     --bg: #f7f7f7;
     --header-h: 88px;
     --color-80 : #808080;
-    --weather-box-fold-max-width: 240px;
-    --weather-box-fold-height: 75px;
-    --weather-box-max-width: 380px;
     --weather-box-max-height : 177px;
     --noti-area-width: 320px;
   }
 
   /* ===== 기본 요소 스타일 ===== */
   * {
-    font-family: 'Pretendard','KoddiUD-OnGodi', sans-serif;
+    font-family: 'Pretendard', sans-serif;
     /* font-weight: 500; */
     line-height: 1.555;
     letter-spacing: -0.7px;
@@ -105,6 +102,8 @@
   /* ===== 앱 기본 레이아웃 ===== */
   #app {
     padding-top: var(--header-h);
+    max-width: 1920px;
+    margin: 0 auto;
   }
   #app.admin{
     font-size: 16px;
@@ -212,11 +211,11 @@
   .view-control{
     display: flex;
     align-items: center;
-    gap: .3rem;
+    gap: .5rem;
   }
   .view-control .btn{
-    padding: .4rem .6rem;
-    font-size: 0.875rem;
+    padding: .3rem .8rem;
+    font-size: .9rem;
   }
   .view-control .btn:disabled{
     opacity: 0.5;
@@ -982,19 +981,17 @@
 
   /* ===== 날씨 스타일 ===== */
   .weather-box{
-    position: absolute;
-    top: calc(100% + 1rem);
-    right: 1rem;
-    z-index: 99999;
     background: white;
     border-radius: .68rem;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     box-shadow: 0 1px 4px 1px rgba(0, 0, 0, 0.16);
-    width: var(--weather-box-max-width, auto);
+    width: 100%;
     max-height: var(--weather-box-max-height, auto);
-    transition: all .2s ease-in-out;
+  }
+  .weather-box > .section{
+    min-height: auto;
   }
 
   .weather-box *{
@@ -1354,10 +1351,44 @@
   }
 
   .r-rt{
-    /* width: var(--weather-box-fold-max-width, auto); */
     flex: 0 0 auto;
-    padding-top: var(--weather-box-fold-height, auto);
-    width: var(--weather-box-max-width, auto);
+    width: 400px;
+  }
+
+  .r-rt hr{
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 1rem 0;
+  }
+
+  .today_detecting{
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    background: #fff;
+    border-radius: .66rem;
+    padding: 1rem;
+  }
+  .today_detecting > li{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .today_tit{
+    font-weight: 500;
+    color: var(--color-80);
+  }
+  .today_desc{
+    text-align: right;
+    font-size: 1.22rem;
+  }
+  .today_dsec b{
+    font-size: 1.77rem;
+    font-weight: 600;
+  }
+
+  .r-rt .day-check-buttons{
+    flex-direction: column;
   }
 
   /* ===== DayCheck 스타일 ===== */
@@ -2150,9 +2181,6 @@
     font-size: calc(18px * 0.9);
     --header-h : calc(88px * 0.9);
     --weather-box-max-height: calc(177px * 0.9);
-    --weather-box-max-width: calc(400px * 0.9);
-    --weather-box-fold-max-width: calc(240px * 0.9);
-    --weather-box-fold-height: calc(75px * 0.9);
     --noti-area-width: calc(320px * 0.9);
   }
 
@@ -2160,9 +2188,6 @@
     font-size: calc(18px * 1.1);
     --header-h : calc(88px * 1.1);
     --weather-box-max-height: calc(177px * 1.1);
-    --weather-box-max-width: calc(400px * 1.1);
-    --weather-box-fold-max-width: calc(240px * 1.1);
-    --weather-box-fold-height: calc(75px * 1.1);
     --noti-area-width: calc(320px * 1.1);
   }
 
@@ -2170,9 +2195,6 @@
     font-size: calc(18px * 1.2);
     --header-h : calc(88px * 1.2);
     --weather-box-max-height: calc(177px * 1.2);
-    --weather-box-max-width: calc(400px * 1.2);
-    --weather-box-fold-max-width: calc(240px * 1.2);
-    --weather-box-fold-height: calc(75px * 1.2);
     --noti-area-width: calc(320px * 1.2);
   }
 

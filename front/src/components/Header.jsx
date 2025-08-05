@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 import logo from '/images/logo-horizon.svg';
-import Weather from './Weather';
-import { LuLogOut } from "react-icons/lu";
 
 export default function Header() {
   const { user, logout } = useAuth(); // logout 함수도 가져옴
@@ -89,7 +87,7 @@ export default function Header() {
         {user?.userName && user.role !== 'admin' && user.selectedFarm?.farmName && (
           <div
             className="header-text cursor-pointer transition-colors"
-            onClick={() => navigate(`/mainfarm/${user.selectedFarm.farmIdx}`)}
+            onClick={() => navigate(`/mainFarm/${user.selectedFarm.farmIdx}`)}
           >
             {user.selectedFarm.farmName} <span className="font-normal text-black hover:text-black">관리중</span>
           </div>
@@ -111,7 +109,6 @@ export default function Header() {
           <div className="flex items-center gap-5">
             <span className="header-text">{user.userName}님 환영합니다</span>
             <button className="color-80 cursor-pointer" onClick={handleLogout}>로그아웃</button>
-            <Weather />
           </div>
         )}
 
