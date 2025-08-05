@@ -1,10 +1,10 @@
-package com.smhrd.web.report;
+package com.smhrd.web.report2;
 
 import lombok.Data;
 import java.sql.Timestamp;
 
 @Data
-public class ReportDTO {
+public class ReportDTO2 {
     private Long reportIdx;
     private Long farmIdx;
     private String periodType;

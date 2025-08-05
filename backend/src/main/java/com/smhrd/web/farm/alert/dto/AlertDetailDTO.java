@@ -9,4 +9,5 @@ public class AlertDetailDTO {
     private GreenhouseInfoDTO greenhouseInfo;
     private List<ImageInfoDTO> imageList;
     private GptResultDTO gptResult;
+    private FeedbackDTO feedback;
 }

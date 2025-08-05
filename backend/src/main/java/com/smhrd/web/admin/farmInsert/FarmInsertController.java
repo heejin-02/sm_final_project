@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "Farm Insert Controller", description = "농장 추가 API")
 @RestController
 @RequestMapping("/api/farm")
 public class FarmInsertController {
@@ -18,7 +20,7 @@ public class FarmInsertController {
     @Autowired
     private FarmInsertService farmInsertService;
 
-	@Operation(summary = "농장 추가")
+	@Operation(summary = "농장을 추가합니다.")
     @PostMapping(value = "/insertFarm", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> insertFarm(@ModelAttribute FarmInsertDTO dto) {
         MultipartFile file = dto.getFarmImg();
