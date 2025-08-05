@@ -25,7 +25,7 @@ from fastapi import Query
 from fastapi.responses import Response
 from fastapi import Request
 from collections import Counter
-
+from openai import OpenAI  
 
 # FastAPI 초기화
 app = FastAPI()
@@ -33,6 +33,7 @@ app = FastAPI()
 # 🌱 환경 변수 로드
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # DB 설정
 DB_USER = os.getenv("DB_USER")
@@ -164,6 +165,79 @@ def get_aggregated_analysis_text(insect_name: str) -> str:
         print("[FastAPI ERROR]", e)
         return "[DB 오류] 탐지 요약 정보를 불러오는 중 문제가 발생했습니다."
 
+def get_today_detection_summary():
+    try:
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT G.GH_NAME, N.INSECT_NAME, COUNT(*) AS CNT
+                    FROM QC_CLASSIFICATION C
+                    JOIN QC_IMAGES I ON C.IMG_IDX = I.IMG_IDX
+                    JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
+                    JOIN QC_INSECT N ON C.INSECT_IDX = N.INSECT_IDX
+                    WHERE TRUNC(I.CREATED_AT) = TRUNC(SYSDATE)
+                    GROUP BY G.GH_NAME, N.INSECT_NAME
+                    ORDER BY CNT DESC
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        print("[DB ERROR]", e)
+        return []
+    
+
+def build_dashboard_prompt(today_data: list[tuple]) -> str:
+    if not today_data:
+        return "오늘은 해충이 탐지되지 않았습니다. 안심하셔도 됩니다."
+
+    prompt = "오늘 하루 동안 각 구역에서 탐지된 해충 정보입니다:\n\n"
+    for gh_name, insect_name, cnt in today_data:
+        prompt += f"- {gh_name}에서 {insect_name}가 {cnt}마리 발견됨\n"
+
+    prompt += (
+        "\n위 데이터를 참고해 농장주에게 알려줄 짧은 2~3문장의 요약을 만들어 주세요. "
+        "중요한 구역과 해충은 강조하고, 존댓말 구어체로 작성해 주세요."
+    )
+    return prompt
+
+def create_dashboard_summary(today_data: list[tuple]) -> str:
+    prompt = build_dashboard_prompt(today_data)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.6,
+    )
+    return response.choices[0].message.content
+
+def upsert_dashboard_summary(anls_idx: int, prompt_content: str):
+    try:
+        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT GPT_IDX FROM QC_GPT
+                    WHERE USER_QES = '대시보드요약'
+                      AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+                """)
+                existing = cur.fetchone()
+
+                if existing:
+                    cur.execute("""
+                        UPDATE QC_GPT SET GPT_CONTENT = :1, CREATED_AT = SYSDATE
+                        WHERE GPT_IDX = :2
+                    """, [prompt_content, existing[0]])
+                else:
+                    cur.execute("""
+                        INSERT INTO QC_GPT (
+                            GPT_IDX, USER_QES, GPT_CONTENT, CREATED_AT, ANLS_IDX
+                        ) VALUES (
+                            QC_GPT_SEQ.NEXTVAL, '대시보드요약', :1, SYSDATE, :2
+                        )
+                    """, [prompt_content, anls_idx])
+                conn.commit()
+                print("[DB] 대시보드 요약 저장 완료")
+
+    except Exception as e:
+        print("[DB ERROR] 대시보드 요약 업서트 실패:", e)
+
 
 def insert_gpt_summary(anls_idx:int, user_qes:str, gpt_content:str):
     try:
@@ -192,7 +266,6 @@ def insert_gpt_summary(anls_idx:int, user_qes:str, gpt_content:str):
                 print("[DB] GPT 응답 저장 완료")
     except Exception as e:
         print("[DB ERROR]", e)
-
 
 # ✅ API: GPT 요약 (imgIdx 기반 → 벌레 전체 요약)
 @app.get("/api/summary-by-imgidx")
@@ -226,6 +299,12 @@ async def get_summary_by_imgidx(imgIdx: int):
             anls_idx = anls_idx,
             user_qes = "gpt 응답", 
             gpt_content= response["answer"])
+
+           # 2. 대시보드 요약 자동 생성 및 저장
+        today_data = get_today_detection_summary()
+        dashboard_summary = create_dashboard_summary(today_data)
+        upsert_dashboard_summary(anls_idx, prompt_content=dashboard_summary)
+
         return {
             "status": "success",
             "anls_idx" : anls_idx,
@@ -233,7 +312,6 @@ async def get_summary_by_imgidx(imgIdx: int):
             "solution_summary": response["answer"]
         }
     
-
     except Exception as e:
         print("[FastAPI ERROR]", e)
         return JSONResponse(status_code=500, content={"error": str(e)})
@@ -319,23 +397,42 @@ async def video_metadata(video_name: str):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+# ✅ 자동 실행용 API: 영상 업로드/탐지 후 호출
+@app.post("/api/update-dashboard-summary")
+def update_dashboard_summary(anls_idx: int):
+    today_data = get_today_detection_summary()
+    summary = create_dashboard_summary(today_data)
+    upsert_dashboard_summary(anls_idx, prompt_content=summary)
+    return {"message": "대시보드 요약이 갱신되었습니다.", "summary": summary}
 
-# ✅ 공통 함수
-def get_img_info_by_filename(video_name: str):
+# ✅ 대시보드 조회 API
+@app.get("/api/daily-zone-summary")
+def daily_zone_summary():
     try:
-        class_id = int(video_name.split("_")[0])
         with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
             with conn.cursor() as cur:
-                sql = "SELECT I.IMG_IDX FROM QC_IMAGES I WHERE I.IMG_NAME = :1"
-                cur.execute(sql, [video_name])
-                result = cur.fetchone()
-                if result:
-                    return result[0], class_id
+                cur.execute("""
+                    SELECT GPT_CONTENT
+                    FROM (
+                        SELECT GPT_CONTENT
+                        FROM QC_GPT
+                        WHERE USER_QES = '대시보드요약'
+                          AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+                        ORDER BY CREATED_AT DESC
+                    )
+                    WHERE ROWNUM = 1
+                """)
+                row = cur.fetchone()
+                content = row[0].read() if row and hasattr(row[0], 'read') else row[0]  # CLOB 처리
+        return {
+            "summary_text": content if content else "오늘 탐지된 해충이 없습니다."
+        }
     except Exception as e:
-        print("[DB ERROR]", e)
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
-    return None, None
 
+# Twilio/Signalwire API 
 @app.get("/api/get-phone")
 def get_user_phone(gh_idx: int):
     try:
@@ -355,9 +452,6 @@ def get_user_phone(gh_idx: int):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-
-# Twilio/Signalwire API
-# GET 방식 
 @app.get("/twilio/voice")
 def twilio_voice_get(
     insect: str = Query(default="알 수 없는 해충"),

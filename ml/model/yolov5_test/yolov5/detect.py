@@ -24,7 +24,7 @@ load_dotenv()
 import re
 
 # 고정 GH_IDX
-gh_idx = 2
+gh_idx = 24
 
 # Twilio 설정
 # TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
@@ -50,27 +50,26 @@ gh_idx = 2
 #         print(f"[전화 발신] Call SID: {call.sid}")
 #     except Exception as e:
 #         print("[전화 오류]", e)
-PUBLIC_FASTAPI_BASE = "https://92452ce99257.ngrok-free.app"
 
-# 전화번호 포맷 정규화 함수
-def normalize_phone(phone: str) -> str:
-    digits_only = re.sub(r"[^0-9]", "", phone)  # 숫자만 남김
-    if digits_only.startswith("0"):
-        digits_only = digits_only[1:]  # 0 제거
-    return f"+82{digits_only}"
+# # 전화번호 포맷 정규화 함수
+# def normalize_phone(phone: str) -> str:
+#     digits_only = re.sub(r"[^0-9]", "", phone)  # 숫자만 남김
+#     if digits_only.startswith("0"):
+#         digits_only = digits_only[1:]  # 0 제거
+#     return f"+82{digits_only}"
 
-# GH_IDX로 사용자 전화번호 가져오기 (QC_USER까지 조인)
-def get_user_phone_by_gh_idx(gh_idx: int) -> str | None:
-    try:
-        res = requests.get(f"http://localhost:8000/api/get-phone?gh_idx={gh_idx}")
-        if res.status_code == 200:
-            raw_phone = res.json().get("phone")
-            return normalize_phone(raw_phone)
-        else:
-            print("[전화번호 조회 실패]", res.status_code, res.text)
-    except Exception as e:
-        print("[전화번호 요청 오류]", e)
-    return None
+# # GH_IDX로 사용자 전화번호 가져오기 (QC_USER까지 조인)
+# def get_user_phone_by_gh_idx(gh_idx: int) -> str | None:
+#     try:
+#         res = requests.get(f"http://localhost:8000/api/get-phone?gh_idx={gh_idx}")
+#         if res.status_code == 200:
+#             raw_phone = res.json().get("phone")
+#             return normalize_phone(raw_phone)
+#         else:
+#             print("[전화번호 조회 실패]", res.status_code, res.text)
+#     except Exception as e:
+#         print("[전화번호 요청 오류]", e)
+#     return None
 
 # 전화 쿨다운
 last_call_time = 0
@@ -83,36 +82,36 @@ SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
 PUBLIC_FASTAPI_BASE = "https://92452ce99257.ngrok-free.app"
 
 
-def make_call_by_gh_idx(gh_idx: int):
-    global last_call_time
-    now = time.time()
-    if now - last_call_time < CALL_COOLDOWN:
-        print(f"[전화 건너뜀] 최근에 발신됨 ({now - last_call_time:.1f}s 전)")
-        return
+# def make_call_by_gh_idx(gh_idx: int):
+#     global last_call_time
+#     now = time.time()
+#     if now - last_call_time < CALL_COOLDOWN:
+#         print(f"[전화 건너뜀] 최근에 발신됨 ({now - last_call_time:.1f}s 전)")
+#         return
 
-    user_phone = get_user_phone_by_gh_idx(gh_idx)
-    if not user_phone:
-        print(f"[오류] gh_idx={gh_idx}에 해당하는 사용자 전화번호가 없습니다.")
-        return
+#     user_phone = get_user_phone_by_gh_idx(gh_idx)
+#     if not user_phone:
+#         print(f"[오류] gh_idx={gh_idx}에 해당하는 사용자 전화번호가 없습니다.")
+#         return
 
-    try:
-        client = SignalWireClient(
-            SIGNALWIRE_PROJECT_ID,
-            SIGNALWIRE_AUTH_TOKEN,
-            signalwire_space_url=SIGNALWIRE_SPACE_URL
-        )
+#     try:
+#         client = SignalWireClient(
+#             SIGNALWIRE_PROJECT_ID,
+#             SIGNALWIRE_AUTH_TOKEN,
+#             signalwire_space_url=SIGNALWIRE_SPACE_URL
+#         )
 
-        url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+#         url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
 
-        call = client.calls.create(
-            from_=SIGNALWIRE_PHONE_NUMBER,
-            to=user_phone,
-            url=url
-        )
-        last_call_time = now
-        print(f"[전화 발신] 대상: {user_phone} | Call SID: {call.sid}")
-    except Exception as e:
-        print("[전화 발신 실패]", e)
+#         call = client.calls.create(
+#             from_=SIGNALWIRE_PHONE_NUMBER,
+#             to=user_phone,
+#             url=url
+#         )
+#         last_call_time = now
+#         print(f"[전화 발신] 대상: {user_phone} | Call SID: {call.sid}")
+#     except Exception as e:
+#         print("[전화 발신 실패]", e)
 
 
 def get_insect_idx(name):
@@ -208,7 +207,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
             if len(det):
                 det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
                 for *xyxy, conf, cls in reversed(det):
-                    print(f"[탐지 로그] 클래스: {names[int(cls)]}, 신뢰도: {conf:.2f}, 좌표: {xyxy}")
+                    #print(f"[탐지 로그] 클래스: {names[int(cls)]}, 신뢰도: {conf:.2f}, 좌표: {xyxy}")
                     cls_id = int(cls)
                     insect_name = names[cls_id]
                     confidence = float(conf)
@@ -233,7 +232,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
             out.write(annotated_frame)
             if time.time() - start_time > duration:
                 recording = False
-                out.release()
+                out.release() 
                 print("[녹화 종료]")
 
                 converted_path = video_path.replace(".mp4", "_h264.mp4")
@@ -258,7 +257,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    make_call_by_gh_idx(gh_idx)
+                    #make_call_by_gh_idx(gh_idx)
 
                     try:
                         gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")
