@@ -1,16 +1,22 @@
 package com.smhrd.web.report;
 
-import java.util.List;
-import java.util.Map;
-
+import com.smhrd.web.report.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import java.util.List;
 
 @Mapper
 public interface ReportMapper {
-    List<ReportDTO> findTodayReports(@Param("farmIdx") Long farmIdx); // 이건 그대로 사용 가능
 
-    List<ReportDTO> findDailyReports(Map<String, Object> params);
-    List<ReportDTO> findMonthlyReports(Map<String, Object> params);
-    List<ReportDTO> findYearlyReports(Map<String, Object> params);
+    // 일별 통계
+    Integer getDailyTotalDetectionCount(@Param("farmIdx") Long farmIdx, @Param("date") String date);
+    Integer getDailyInsectTypeCount(@Param("farmIdx") Long farmIdx, @Param("date") String date);
+    String getDailyTopDetectionZone(@Param("farmIdx") Long farmIdx, @Param("date") String date);
+    List<TimeCountDTO> getDailyHourlyDetectionStats(@Param("farmIdx") Long farmIdx, @Param("date") String date);
+    List<InsectDistributionDTO> getDailyInsectDistribution(@Param("farmIdx") Long farmIdx, @Param("date") String date);
+    List<ZoneCountDTO> getDailyZoneDetectionCounts(@Param("farmIdx") Long farmIdx, @Param("date") String date);
+    List<DetectionDetailDTO> getDailyDetectionDetails(@Param("farmIdx") Long farmIdx, @Param("date") String date);
+
+    // 월별 통계
+    
 }

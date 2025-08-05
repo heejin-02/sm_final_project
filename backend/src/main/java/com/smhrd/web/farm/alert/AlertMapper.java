@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.smhrd.web.farm.alert.dto.AlertDTO;
+import com.smhrd.web.farm.alert.dto.FeedbackDTO;
 import com.smhrd.web.farm.alert.dto.GptResultDTO;
 import com.smhrd.web.farm.alert.dto.GreenhouseInfoDTO;
 import com.smhrd.web.farm.alert.dto.ImageInfoDTO;
@@ -25,6 +26,9 @@ public interface AlertMapper {
     GreenhouseInfoDTO getGreenhouseInfo(Long anlsIdx);
     List<ImageInfoDTO> getImageList(Long anlsIdx);
     GptResultDTO getGptResult(Long anlsIdx);
+    int insertFeedback(FeedbackDTO feedback);
+    FeedbackDTO getFeedback(Long anlsIdx);
+
 
 }
 

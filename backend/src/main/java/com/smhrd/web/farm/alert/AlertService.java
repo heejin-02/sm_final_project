@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.smhrd.web.farm.alert.dto.AlertDTO;
 import com.smhrd.web.farm.alert.dto.AlertDetailDTO;
+import com.smhrd.web.farm.alert.dto.FeedbackDTO;
 import com.smhrd.web.farm.alert.dto.GptResultDTO;
 import com.smhrd.web.farm.alert.dto.GreenhouseInfoDTO;
 import com.smhrd.web.farm.alert.dto.ImageInfoDTO;
@@ -33,13 +34,20 @@ public class AlertService {
         GreenhouseInfoDTO ghInfo = alertMapper.getGreenhouseInfo(anlsIdx);
         List<ImageInfoDTO> images = alertMapper.getImageList(anlsIdx);
         GptResultDTO gpt = alertMapper.getGptResult(anlsIdx);
+        FeedbackDTO feedback = alertMapper.getFeedback(anlsIdx);
 
         AlertDetailDTO dto = new AlertDetailDTO();
         dto.setGreenhouseInfo(ghInfo);
         dto.setImageList(images);
         dto.setGptResult(gpt);
+        dto.setFeedback(feedback);
         return dto;
     }
+    
+    public void insertFeedback(FeedbackDTO feedback) {
+        alertMapper.insertFeedback(feedback);
+    }
+
 
 
 

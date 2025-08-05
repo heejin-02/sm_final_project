@@ -6,26 +6,30 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/home")
+@Tag(name = "Home Controller", description = "MAIN 화면 API")
 public class HomeController {
 
     @Autowired
     private HomeService homeService;
 
-    // 홈 화면 - 간단 메시지 반환
     @GetMapping("/")
+    @Operation(summary = "홈 화면입니다.")
     public Map<String, Object> home() {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "백구백구 109의 home 입니다.");
         return response;
     }
 
-    // 로그인 처리 - 성공 시 사용자 정보 JSON 반환, 실패 시 401 에러 반환
     @PostMapping("/loginCheck")
+	@Operation(summary = "로그인 처리 - 성공 시 사용자 정보를 보여줍니다.")
     public ResponseEntity<?> loginCheck(@RequestParam("id") String id,
                                         @RequestParam("pw") String pw,
                                         HttpSession session) {
@@ -55,8 +59,8 @@ public class HomeController {
         }
     }
 
-    // 사용자 페이지 접근 권한 체크용 API
     @GetMapping("/userPage")
+	@Operation(summary = "사용자 페이지 접근 권한을 체크합니다.")
     public ResponseEntity<?> userPage(HttpSession session) {
         String role = (String) session.getAttribute("role");
 
@@ -68,8 +72,8 @@ public class HomeController {
         }
     }
 
-    // 관리자 페이지 접근 권한 체크용 API
     @GetMapping("/adminPage")
+	@Operation(summary = "관리자 페이지 접근 권한을 체크합니다.")
     public ResponseEntity<?> adminPage(HttpSession session) {
         String role = (String) session.getAttribute("role");
 
@@ -80,4 +84,12 @@ public class HomeController {
                     .body(Map.of("error", "접근 권한이 없습니다."));
         }
     }
+    
+    @GetMapping("/logout")
+    @Operation(summary = "로그아웃 처리 - 세션을 삭제합니다.")
+    public ResponseEntity<?> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok(Map.of("message", "로그아웃이 완료되었습니다."));
+    }
+
 }
