@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.smhrd.web.report2.ReportMapper">
+
+    <select id="findTodayReports" parameterType="long" resultType="com.smhrd.web.report2.ReportDTO2">
+        SELECT * FROM QC_REPORT
+        WHERE FARM_IDX = #{farmIdx}
+          AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+        ORDER BY CREATED_AT DESC
+    </select>
+
+    <select id="findDailyReports" parameterType="map" resultType="com.smhrd.web.report2.ReportDTO2">
+        SELECT * FROM QC_REPORT
+        WHERE FARM_IDX = #{farmIdx}
+          AND TO_CHAR(CREATED_AT, 'YYYY') = #{year}
+          AND TO_CHAR(CREATED_AT, 'MM') = #{month}
+          AND TO_CHAR(CREATED_AT, 'DD') = #{day}
+        ORDER BY CREATED_AT DESC
+    </select>
+
+    <select id="findMonthlyReports" parameterType="map" resultType="com.smhrd.web.report2.ReportDTO2">
+        SELECT * FROM QC_REPORT
+        WHERE FARM_IDX = #{farmIdx}
+          AND TO_CHAR(CREATED_AT, 'YYYY') = #{year}
+          AND TO_CHAR(CREATED_AT, 'MM') = #{month}
+        ORDER BY CREATED_AT DESC
+    </select>
+
+    <select id="findYearlyReports" parameterType="map" resultType="com.smhrd.web.report2.ReportDTO2">
+        SELECT * FROM QC_REPORT
+        WHERE FARM_IDX = #{farmIdx}
+          AND TO_CHAR(CREATED_AT, 'YYYY') = #{year}
+        ORDER BY CREATED_AT DESC
+    </select>
+
+</mapper>
