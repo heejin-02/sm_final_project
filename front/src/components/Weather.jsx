@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loader from './Loader';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 import {
   WiHumidity,
   WiRaindrops,
@@ -191,9 +192,22 @@ const getCurrentLocation = async () => {
 
 function WeatherBox() {
   const { user } = useAuth();
+  const location = useLocation();
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFolded, setIsFolded] = useState(false);
+
+  // MainFarm 페이지인지 확인
+  const isMainFarmPage = location.pathname.includes('/mainfarm/');
+
+  // MainFarm 페이지일 때 자동으로 접기
+  useEffect(() => {
+    if (isMainFarmPage) {
+      setIsFolded(true);
+    } else {
+      setIsFolded(false);
+    }
+  }, [isMainFarmPage]);
 
   useEffect(() => {
     let timeoutId;

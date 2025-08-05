@@ -87,8 +87,11 @@ export default function Header() {
       {/* 가운데 영역 - 농장명 */}
       <div className="header-center">
         {user?.userName && user.role !== 'admin' && user.selectedFarm?.farmName && (
-          <div className="header-text text-2xl">
-            <span className="font-semibold">{user.selectedFarm.farmName}</span> 관리중
+          <div
+            className="header-text cursor-pointer transition-colors"
+            onClick={() => navigate(`/mainfarm/${user.selectedFarm.farmIdx}`)}
+          >
+            {user.selectedFarm.farmName} <span className="font-normal text-black hover:text-black">관리중</span>
           </div>
         )}
       </div>

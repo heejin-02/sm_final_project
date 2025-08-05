@@ -7,7 +7,7 @@ export default function FarmMap({
   data,        // [{ id, count }, …]
   rows,        // 세로 셀 개수 (예: 3)
   cols,        // 가로 셀 개수 (예: 3)
-  gap = 4,          // 셀 사이격(px)
+  gap = 0,          // 셀 사이격(px)
   onCellClick,      // 클릭 시 호출(id)
 }) {
   const { user } = useAuth();

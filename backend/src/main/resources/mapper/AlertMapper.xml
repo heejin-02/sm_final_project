@@ -83,7 +83,7 @@
 	    WHERE ANLS_IDX = #{anlsIdx}
 	</select>
 	
-	<insert id="insertFeedback" parameterType="com.smhrd.web.farm.alert.dto.FeedbackDTO">
+<!-- 	<insert id="insertFeedback" parameterType="com.smhrd.web.farm.alert.dto.FeedbackDTO">
 	    INSERT INTO QC_FEEDBACK (
 	        FEEDBACK_IDX,
 	        ANLS_IDX,
@@ -104,7 +104,7 @@
 	        TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
 	    FROM QC_FEEDBACK
 	    WHERE ANLS_IDX = #{anlsIdx}
-	</select>
+	</select> -->
 
 		
 

@@ -7,7 +7,6 @@ import torch
 import requests
 import cv2
 from twilio.rest import Client
-from ultralytics.utils.plotting import Annotator, colors
 from models.common import DetectMultiBackend
 from utils.dataloaders import LoadStreams, LoadImages
 from utils.general import (
@@ -19,7 +18,7 @@ from utils.torch_utils import select_device, smart_inference_mode
 from urllib.parse import quote
 from signalwire.rest import Client as SignalWireClient
 from dotenv import load_dotenv
-
+from ultralytics.utils.plotting import Annotator, colors
 load_dotenv()
 # 고정 GH_IDX
 gh_idx = 1
