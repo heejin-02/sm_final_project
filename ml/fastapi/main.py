@@ -25,7 +25,8 @@ from fastapi import Query
 from fastapi.responses import Response
 from fastapi import Request
 from collections import Counter
-from openai import OpenAI  
+from openai import OpenAI 
+import socket
 
 # FastAPI 초기화
 app = FastAPI()
@@ -49,6 +50,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ip 주소 가져오기
+def get_host_ip():
+    return socket.gethostbyname(socket.gethostname())
+
+HOST_IP = get_host_ip()
 
 # 🧠 LangChain 설정
 embedding = OpenAIEmbeddings(model="text-embedding-3-large", openai_api_key=OPENAI_API_KEY)
@@ -195,7 +202,7 @@ def build_dashboard_prompt(today_data: list[tuple]) -> str:
 
     prompt += (
         "\n위 데이터를 참고해 농장주에게 알려줄 짧은 2~3문장의 요약을 만들어 주세요. "
-        "중요한 구역과 해충은 강조하고, 존댓말 구어체로 작성해 주세요."
+        "중요한 구역과 해충을 알려주고, 존댓말 구어체로 작성해 주세요."
     )
     return prompt
 
@@ -316,6 +323,125 @@ async def get_summary_by_imgidx(imgIdx: int):
         print("[FastAPI ERROR]", e)
         return JSONResponse(status_code=500, content={"error": str(e)})
    
+import requests
+
+def upsert_daily_report(farm_idx: int, date_str: str, summary: str):
+    with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+        with conn.cursor() as cur:
+            # 1. 이미 존재하는지 확인
+            cur.execute("""
+                SELECT REPORT_IDX FROM QC_REPORT
+                WHERE FARM_IDX = :1 AND PERIOD_TYPE = '일간' AND PERIOD_MARK = :2
+            """, [farm_idx, date_str])
+            existing = cur.fetchone()
+
+            if existing:
+                # 2. UPDATE
+                cur.execute("""
+                    UPDATE QC_REPORT
+                    SET REPORT = :1, CREATED_AT = SYSTIMESTAMP
+                    WHERE REPORT_IDX = :2
+                """, [summary, existing[0]])
+            else:
+                # 3. INSERT
+                cur.execute("""
+                    INSERT INTO QC_REPORT (REPORT_IDX, FARM_IDX, PERIOD_TYPE, PERIOD_MARK, REPORT, CREATED_AT, GPT_IDX)
+                    VALUES (QC_REPORT_SEQ.NEXTVAL, :1, '일간', :2, :3, SYSTIMESTAMP, NULL)
+                """, [farm_idx, date_str, summary])
+        conn.commit()
+
+
+def build_daily_stats_prompt(data: dict, date: str, farm_idx: int) -> str:
+    total = data.get("totalCount", 0)
+    top_zone = data.get("topZone", "정보 없음")
+    insects = data.get("insectDistribution", [])
+    hourly = data.get("hourlyStats", [])
+
+    # 가장 많은 해충
+    if insects:
+        top_insect = max(insects, key=lambda x: x["count"])
+        top_insect_name = top_insect["insect"]
+        top_insect_ratio = round((top_insect["count"] / total) * 100)
+    else:
+        top_insect_name = "정보 없음"
+        top_insect_ratio = 0
+
+    # 활동량이 많은 시간대
+    if hourly:
+        top_hour = int(hourly[0]["hour"])
+        hour_range = f"{top_hour}시~{top_hour+2}시"
+    else:
+        hour_range = "정보 없음"
+
+    # 최종 프롬프트
+    prompt = (
+        f"{date} 기준 {farm_idx}번 농장의 해충 탐지 요약입니다.\n"
+        f"오늘은 총 {total}마리의 해충이 탐지되었고, "
+        f"{top_insect_name}가 가장 많은 비중({top_insect_ratio}%)을 차지했어요.\n"
+        f"{top_zone}에서 가장 많이 탐지되었고, {hour_range} 사이에 활동량이 높았습니다.\n\n"
+        "위 내용을 인사말은 제외하고, 농장주에게 보고하는 2~3문장의 친절한 요약으로 작성해주세요. 존댓말 구어체로 부탁드립니다."
+    )
+    return prompt
+
+def get_existing_daily_summary(farm_idx: int, date_str: str):
+    with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT REPORT FROM QC_REPORT
+                WHERE FARM_IDX = :1 AND PERIOD_TYPE = '일간' AND PERIOD_MARK = :2
+            """, [farm_idx, date_str])
+            row = cur.fetchone()
+            return row[0] if row else None
+
+@app.get("/api/daily-gpt-summary")
+def gpt_daily_summary(farm_idx: int, date: str):
+    try:
+        # 1. 기존 요약이 있으면 그대로 반환
+        existing_summary = get_existing_daily_summary(farm_idx, date)
+        if existing_summary:
+            return {
+                "status": "already_exists",
+                "summary": existing_summary,
+                "raw_data": None
+            }
+
+        # 2. Spring API 호출
+        params = {"farmIdx": farm_idx, "date": date}
+        res = requests.get("http://localhost:8095/report/daily-stats", params=params)
+        if res.status_code != 200:
+            return {"error": f"Spring API 호출 실패: {res.status_code}"}
+        data = res.json()
+
+        # 3. 탐지 없으면 GPT 요청 생략
+        if not data or data.get("totalCount", 0) == 0 or not data.get("details"):
+            return {
+                "status": "no_detection",
+                "summary": f"{date} 기준으로 {farm_idx}번 농장에는 해충 탐지 정보가 없습니다. 오늘은 안전한 날이에요!",
+                "raw_data": data
+            }
+
+        # 4. GPT 프롬프트 생성 및 요청
+        prompt = build_daily_stats_prompt(data, date=date, farm_idx=farm_idx)
+        gpt_res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.6
+        )
+        summary = gpt_res.choices[0].message.content
+
+        # 5. DB 저장
+        upsert_daily_report(farm_idx, date, summary)
+
+        return {
+            "status": "success",
+            "summary": summary,
+            "raw_data": data
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
 
 # 탐지 후 비디오 영상 업로드하기 
 @app.post("/api/upload")
@@ -383,7 +509,7 @@ async def video_metadata(video_name: str):
         insect_name = INSECT_NAME_MAP.get(db_class_id or class_id, "Unknown")
         date_str = datetime.strptime(folder, "%Y%m%d").strftime("%Y-%m-%d")
         time_str = f"{time_raw[:2]}:{time_raw[2:4]}:{time_raw[4:]}"
-        video_url = f"http://localhost:8000/videos/{folder}/{video_name}"
+        video_url = f"http://{HOST_IP}:8000/videos/{folder}/{video_name}"
 
         return {
             "videoUrl": video_url,
