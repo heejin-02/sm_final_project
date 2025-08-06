@@ -22,14 +22,6 @@ from dotenv import load_dotenv
 import subprocess
 load_dotenv()
 import re
-from my_fastapi.main import app
-import threading
-import uvicorn
-
-SPRING_VIDEO_URL = "http://192.168.219.72:8095/api/qc-videos"
-SPRING_CLASSIFY_URL = "http://192.168.219.72:8095/api/qc-classification"
-FASTAPI_GET_PHONE_URL = "http://192.168.219.72:8000/api/get-phone"
-FASTAPI_GPT_SUMMARY_URL = "http://192.168.219.72:8000/api/summary-by-imgidx"
 
 # 고정 GH_IDX
 gh_idx = 2
@@ -45,7 +37,7 @@ def normalize_phone(phone: str) -> str:
 # GH_IDX로 사용자 전화번호 가져오기 (QC_USER까지 조인)
 def get_user_phone_by_gh_idx(gh_idx: int) -> str | None:
     try:
-        res = requests.get(f"{FASTAPI_GET_PHONE_URL}?gh_idx={gh_idx}")
+        res = requests.get(f"http://localhost:8000/api/get-phone?gh_idx={gh_idx}")
         if res.status_code == 200:
             raw_phone = res.json().get("phone")
             return normalize_phone(raw_phone)
@@ -63,7 +55,7 @@ SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
 SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
 SIGNALWIRE_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER")
 SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
-PUBLIC_FASTAPI_BASE = "https://7c7305302341.ngrok-free.app"
+PUBLIC_FASTAPI_BASE = "https://5d4417cd6b23.ngrok-free.app"
 
 
 def make_call_by_gh_idx(gh_idx: int):
@@ -124,17 +116,18 @@ def send_detection_to_api(insect_name, confidence, img_idx):
     }
 
     try:
-        res = requests.post(SPRING_CLASSIFY_URL, json=payload)
+        res = requests.post("http://localhost:8095/api/qc-classification", json=payload)
         print(f"[전송] {insect_name} 저장 완료 | 신뢰도: {confidence:.2f} | 상태코드: {res.status_code}")
     except Exception as e:
         print("[전송 실패]", e)
 
 # 🎥 영상 업로드 함수
 def upload_video(file_path, class_id, gh_idx):
+    url = "http://localhost:8095/api/qc-videos"
     files = {"video": open(file_path, "rb")}
     data = {"classId": class_id, "ghIdx": gh_idx}
     try:
-        res = requests.post(SPRING_VIDEO_URL, files=files, data=data)
+        res = requests.post(url, files=files, data=data)
         print(f"[서버 응답 상태코드] {res.status_code}")
         print(f"[서버 응답 본문] {res.text}")
         if res.status_code == 200:
@@ -244,7 +237,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                     make_call_by_gh_idx(gh_idx)
 
                     try:
-                        gpt_res = requests.get(f"{FASTAPI_GPT_SUMMARY_URL}?imgIdx={img_idx}")
+                        gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")
                         if gpt_res.status_code == 200:
                             print("[GPT] 요약 응답 저장 완료")
                         else:
@@ -270,18 +263,10 @@ def parse_opt():
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1
     return opt
 
-def start_yolo():
-    opt = parse_opt()
-    main(opt)
-
 def main(opt):
     check_requirements(exclude=("tensorboard", "thop"))
     run(**vars(opt))
 
 if __name__ == "__main__":
-    # YOLO 탐지를 별도 스레드로 실행
-    yolo_thread = threading.Thread(target=start_yolo)
-    yolo_thread.start()
-
-    # FastAPI 서버 실행
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    opt = parse_opt()
+    main(opt)
