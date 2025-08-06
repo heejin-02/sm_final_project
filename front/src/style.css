@@ -1000,6 +1000,7 @@
 
   .weather-box *{
     line-height: 1;
+    white-space: nowrap;
   }
 
   .weather-top{
@@ -1372,8 +1373,8 @@
 
   .r-rt{
     flex: 0 0 auto;
-    width: 35%;
-    max-width: 400px;
+    width: 40%;
+    max-width: 410px;
   }
 
   .r-rt hr{
