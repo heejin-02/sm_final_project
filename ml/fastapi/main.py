@@ -350,8 +350,14 @@ def upsert_daily_report(farm_idx: int, date_str: str, summary: str):
                 """, [farm_idx, date_str, summary])
         conn.commit()
 
-
-def build_daily_stats_prompt(data: dict, date: str, farm_idx: int) -> str:
+def get_farm_name_by_idx(farm_idx: int) -> str:
+    with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT FARM_NAME FROM QC_FARM WHERE FARM_IDX = :1", [farm_idx])
+            row = cur.fetchone()
+            return row[0] if row else "알 수 없는 농장"
+        
+def build_daily_stats_prompt(data: dict, date: str, farm_name: str) -> str:
     total = data.get("totalCount", 0)
     top_zone = data.get("topZone", "정보 없음")
     insects = data.get("insectDistribution", [])
@@ -375,7 +381,7 @@ def build_daily_stats_prompt(data: dict, date: str, farm_idx: int) -> str:
 
     # 최종 프롬프트
     prompt = (
-        f"{date} 기준 {farm_idx}번 농장의 해충 탐지 요약입니다.\n"
+        f"{date} 기준 {farm_name}의 해충 탐지 요약입니다.\n"
         f"오늘은 총 {total}마리의 해충이 탐지되었고, "
         f"{top_insect_name}가 가장 많은 비중({top_insect_ratio}%)을 차지했어요.\n"
         f"{top_zone}에서 가장 많이 탐지되었고, {hour_range} 사이에 활동량이 높았습니다.\n\n"
@@ -421,7 +427,8 @@ def gpt_daily_summary(farm_idx: int, date: str):
             }
 
         # 4. GPT 프롬프트 생성 및 요청
-        prompt = build_daily_stats_prompt(data, date=date, farm_idx=farm_idx)
+        farm_name = get_farm_name_by_idx(farm_idx)
+        prompt = build_daily_stats_prompt(data, date=date, farm_name=farm_name)
         gpt_res = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],

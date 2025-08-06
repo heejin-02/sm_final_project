@@ -24,7 +24,7 @@ load_dotenv()
 import re
 
 # 고정 GH_IDX
-gh_idx = 24
+gh_idx = 2
 
 
 # 전화번호 포맷 정규화 함수
