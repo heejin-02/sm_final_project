@@ -17,6 +17,15 @@ export default function BaseFarmMap({
   interactive = false,         // 클릭 가능 여부
   onCellClick = null,          // 클릭 핸들러
 }) {
+
+  // 디버깅: 받은 데이터 확인
+  console.log('🗺️ BaseFarmMap 받은 데이터:', {
+    mode,
+    greenhouseData,
+    regions,
+    dataLength: data.length,
+    greenhouseDataLength: greenhouseData.length
+  });
   
   // 로딩 중이거나 데이터가 없으면 로딩 표시
   if (loading) {

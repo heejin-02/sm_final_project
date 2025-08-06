@@ -1,67 +1,101 @@
 // src/hooks/useStatistics.js
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  getDailyStats,
+  getMonthlyStats,
+  getYearlyStats,
+  getDailyGptSummary,
+  getMonthlyGptSummary,
+  // getYearlyGptSummary,
+  formatDateForAPI,
+  formatMonthForAPI,
+  formatYearForAPI
+} from '../api/report';
 
-/**
- * 통계 데이터를 가져오는 커스텀 훅
- * @param {string} period - 'daily', 'monthly', 'yearly'
- * @param {Date} selectedDate - 선택된 날짜
- * @returns {Object} 통계 데이터
- */
-export function useStatistics(period, selectedDate = new Date()) {
+export function useStatistics({ period, date }) {
   const { user } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!user?.selectedFarm?.farmIdx || !period) {
-      setData(null);
-      setLoading(false);
+  const [gptSummary, setGptSummary] = useState(null);
+  const [gptLoading, setGptLoading] = useState(false);
+  const [gptError, setGptError] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    if (!period || !date || !user?.selectedFarm?.farmIdx) {
+      setStats(null);
       return;
     }
 
-    // daily는 useDailyStats에서 처리하므로 제외
-    if (period === 'daily') {
-      setData(null);
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
+    setError(null);
 
-    const fetchStatistics = async () => {
-      setLoading(true);
-      setError(null);
+    let formatted;
+    let fetchStatsFn;
+    let fetchGptFn;
 
-      try {
-        // 날짜 포맷팅
-        const formatDate = (date) => {
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        };
-
-        // 실제 API 호출 (monthly, yearly용)
-        const response = await axios.get(`/api/statistics/${period}`, {
-          params: {
-            farmIdx: user.selectedFarm.farmIdx,
-            date: formatDate(selectedDate)
-          },
-          withCredentials: true
-        });
-
-        setData(response.data);
-      } catch (err) {
-        // console.error('통계 데이터 로딩 실패:', err);
-        setError(err.message);
-      } finally {
+    switch (period) {
+      case 'daily':
+        formatted = formatDateForAPI(date);
+        fetchStatsFn = () => getDailyStats(user.selectedFarm.farmIdx, formatted);
+        fetchGptFn   = () => getDailyGptSummary(user.selectedFarm.farmIdx, formatted);
+        break;
+      case 'monthly':
+        formatted = formatMonthForAPI(date);
+        fetchStatsFn = () => getMonthlyStats(user.selectedFarm.farmIdx, formatted);
+        fetchGptFn   = () => getMonthlyGptSummary(user.selectedFarm.farmIdx, formatted);
+        break;
+      case 'yearly':
+        formatted = formatYearForAPI(date);
+        fetchStatsFn = () => getYearlyStats(user.selectedFarm.farmIdx, formatted);
+        // fetchGptFn   = () => getYearlyGptSummary(user.selectedFarm.farmIdx, formatted);
+        fetchGptFn   = () => '2';        
+        break;
+      default:
+        setError('지원하지 않는 기간입니다.');
         setLoading(false);
+        return;
+    }
+
+    try {
+      const data = await fetchStatsFn();
+      setStats(data);
+
+      // GPT 요약
+      setGptLoading(true);
+      setGptError(null);
+      try {
+        const summaryData = await fetchGptFn();
+        setGptSummary(summaryData.summary);
+      } catch (e) {
+        console.error('GPT summary error', e);
+        setGptError(e.message || 'GPT 분석을 불러오는데 실패했습니다.');
+        setGptSummary('분석 중 오류가 발생했습니다.');
+      } finally {
+        setGptLoading(false);
       }
-    };
 
-    fetchStatistics();
-  }, [user?.selectedFarm?.farmIdx, period, selectedDate]);
+    } catch (e) {
+      setError(e.message || '통계 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  }, [period, date, user]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return {
+    stats,
+    loading,
+    error,
+    gptSummary,
+    gptLoading,
+    gptError,
+    refetch: fetchData
+  };
 }
