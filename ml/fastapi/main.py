@@ -27,9 +27,8 @@ from fastapi import Request
 from collections import Counter
 from openai import OpenAI 
 import socket
-
-
-
+from dateutil.relativedelta import relativedelta
+from collections import Counter
 
 # FastAPI 초기화
 app = FastAPI()
@@ -328,6 +327,7 @@ async def get_summary_by_imgidx(imgIdx: int):
    
 import requests
 
+##### 일간 통계 및 메인 말풍선 ######
 def upsert_daily_report(farm_idx: int, date_str: str, summary: str):
     with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
         with conn.cursor() as cur:
@@ -402,26 +402,52 @@ def get_existing_daily_summary(farm_idx: int, date_str: str):
             row = cur.fetchone()
             return row[0] if row else None
 
+
 @app.get("/api/daily-gpt-summary")
 def gpt_daily_summary(farm_idx: int, date: str):
     try:
-        # 1. 기존 요약이 있으면 그대로 반환
+        # 1. 기존 요약 조회
         existing_summary = get_existing_daily_summary(farm_idx, date)
-        if existing_summary:
-            return {
-                "status": "already_exists",
-                "summary": existing_summary,
-                "raw_data": None
-            }
+        report_created_at = None
 
-        # 2. Spring API 호출
+        if existing_summary:
+            with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT CREATED_AT FROM QC_REPORT
+                        WHERE FARM_IDX = :1 AND PERIOD_TYPE = '일간' AND PERIOD_MARK = :2
+                    """, [farm_idx, date])
+                    row = cur.fetchone()
+                    if row:
+                        report_created_at = row[0]
+
+            # 2. 최신 탐지 기록 확인
+            with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT MAX(I.CREATED_AT)
+                        FROM QC_IMAGES I
+                        JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
+                        WHERE G.FARM_IDX = :1 AND TRUNC(I.CREATED_AT) = TO_DATE(:2, 'YYYY-MM-DD')
+                    """, [farm_idx, date])
+                    latest_detection_time = cur.fetchone()[0]
+
+            # 3. 기존 요약 이후 새 탐지 없음 → 기존 요약 반환
+            if not latest_detection_time or (report_created_at and latest_detection_time <= report_created_at):
+                return {
+                    "status": "already_exists",
+                    "summary": existing_summary,
+                    "raw_data": None
+                }
+
+        # 4. Spring API로 탐지 정보 요청
         params = {"farmIdx": farm_idx, "date": date}
         res = requests.get("http://localhost:8095/report/daily-stats", params=params)
         if res.status_code != 200:
             return {"error": f"Spring API 호출 실패: {res.status_code}"}
+        
         data = res.json()
 
-        # 3. 탐지 없으면 GPT 요청 생략
         if not data or data.get("totalCount", 0) == 0 or not data.get("details"):
             return {
                 "status": "no_detection",
@@ -429,7 +455,7 @@ def gpt_daily_summary(farm_idx: int, date: str):
                 "raw_data": data
             }
 
-        # 4. GPT 프롬프트 생성 및 요청
+        # 5. GPT 프롬프트 생성 및 요청
         farm_name = get_farm_name_by_idx(farm_idx)
         prompt = build_daily_stats_prompt(data, date=date, farm_name=farm_name)
         gpt_res = client.chat.completions.create(
@@ -439,17 +465,181 @@ def gpt_daily_summary(farm_idx: int, date: str):
         )
         summary = gpt_res.choices[0].message.content
 
-        # 5. DB 저장
+        # 6. DB에 저장 (있으면 UPDATE, 없으면 INSERT)
         upsert_daily_report(farm_idx, date, summary)
 
         return {
-            "status": "success",
+            "status": "updated" if existing_summary else "created",
             "summary": summary,
             "raw_data": data
         }
 
     except Exception as e:
         return {"error": str(e)}
+
+###### 월간 통계 ######
+
+# 1. 월간 프롬프트 생성 함수
+def build_monthly_stats_prompt(data: dict, month: str, farm_name: str) -> str:
+    total = data.get("totalCount", 0)
+    top_zone = data.get("topZone", "정보 없음")
+    insects = data.get("insectDistribution", [])
+    weekly = data.get("weeklyStats", [])
+
+    # 가장 많은 해충
+    if insects:
+        top_insect = max(insects, key=lambda x: x["count"])
+        top_insect_name = top_insect["insect"]
+        top_insect_ratio = round((top_insect["count"] / total) * 100)
+    else:
+        top_insect_name = "정보 없음"
+        top_insect_ratio = 0
+
+    # 활동량이 많은 시간대는 details에서 계산
+    details = data.get("details", [])
+    hour_counter = Counter()
+    for d in details:
+        time_str = d.get("time")
+        if time_str:
+            hour = int(time_str.split()[1].split(":")[0])
+            hour_counter[hour] += 1
+
+    if hour_counter:
+        top_hour = hour_counter.most_common(1)[0][0]
+        hour_range = f"{top_hour}시~{top_hour+2}시"
+    else:
+        hour_range = "정보 없음"
+
+    # 최종 프롬프트
+    prompt = (
+        f"{month} 동안 {farm_name}의 해충 탐지 요약입니다.\n"
+        f"총 {total}마리의 해충이 탐지되었고, {top_insect_name}가 가장 많은 비중({top_insect_ratio}%)을 차지했습니다.\n"
+        f"가장 많이 탐지된 구역은 {top_zone}이며, {hour_range} 시간대에 해충 활동이 가장 활발했습니다.\n\n"
+        "위 내용을 바탕으로 인사말 없이, 농장주에게 전달할 2~3문장의 요약을 존댓말 구어체로 작성해 주세요."
+    )
+    return prompt
+
+
+# 2. 기존 요약 조회 함수
+def get_existing_monthly_summary(farm_idx: int, month_str: str):
+    with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT REPORT FROM QC_REPORT
+                WHERE FARM_IDX = :1 AND PERIOD_TYPE = '월간' AND PERIOD_MARK = :2
+            """, [farm_idx, month_str])
+            row = cur.fetchone()
+            return row[0] if row else None
+
+
+# 3. FastAPI 엔드포인트
+@app.get("/api/monthly-gpt-summary")
+def gpt_monthly_summary(farm_idx: int, month: str):
+    try:
+        report_created_at = None
+        existing_summary = get_existing_monthly_summary(farm_idx, month)
+
+        if existing_summary:
+            # 기존 GPT 생성 시간 조회
+            with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT CREATED_AT FROM QC_REPORT
+                        WHERE FARM_IDX = :1 AND PERIOD_TYPE = '월간' AND PERIOD_MARK = :2
+                    """, [farm_idx, month])
+                    row = cur.fetchone()
+                    if row:
+                        report_created_at = row[0]
+
+            # 해당 월의 탐지 중 가장 최근 시각
+            month_start = f"{month}-01"
+            month_end = (datetime.strptime(month_start, "%Y-%m-%d") + relativedelta(months=1)).strftime("%Y-%m-%d")
+
+            with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT MAX(I.CREATED_AT)
+                        FROM QC_IMAGES I
+                        JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
+                        WHERE G.FARM_IDX = :1
+                        AND I.CREATED_AT >= TO_DATE(:2, 'YYYY-MM-DD')
+                        AND I.CREATED_AT < TO_DATE(:3, 'YYYY-MM-DD')
+                    """, [farm_idx, month_start, month_end])
+                    latest_detection_time = cur.fetchone()[0]
+
+            # 최신 탐지가 기존 요약 생성 이후면 새로 생성
+            if not latest_detection_time or (report_created_at and latest_detection_time <= report_created_at):
+                return {
+                    "status": "already_exists",
+                    "summary": existing_summary,
+                    "raw_data": None
+                }
+
+        # Spring API 호출
+        params = {"farmIdx": farm_idx, "month": month}
+        res = requests.get("http://localhost:8095/report/monthly-stats", params=params)
+        if res.status_code != 200:
+            return {"error": f"Spring API 호출 실패: {res.status_code}"}
+
+        data = res.json()
+
+        if not data or data.get("totalCount", 0) == 0 or not data.get("details"):
+            return {
+                "status": "no_detection",
+                "summary": f"{month} 기준 {farm_idx}번 농장에는 해충 탐지 정보가 없습니다.",
+                "raw_data": data
+            }
+
+        # GPT 요청
+        farm_name = get_farm_name_by_idx(farm_idx)
+        prompt = build_monthly_stats_prompt(data, month=month, farm_name=farm_name)
+        gpt_res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.6
+        )
+        summary = gpt_res.choices[0].message.content
+
+        # DB 저장
+        upsert_monthly_report(farm_idx, month, summary)
+
+        return {
+            "status": "updated" if existing_summary else "created",
+            "summary": summary,
+            "raw_data": data
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+# 4. 저장 함수
+
+def upsert_monthly_report(farm_idx: int, month_str: str, summary: str):
+    with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT REPORT_IDX FROM QC_REPORT
+                WHERE FARM_IDX = :1 AND PERIOD_TYPE = '월간' AND PERIOD_MARK = :2
+            """, [farm_idx, month_str])
+            existing = cur.fetchone()
+
+            if existing:
+                cur.execute("""
+                    UPDATE QC_REPORT
+                    SET REPORT = :1, CREATED_AT = SYSTIMESTAMP
+                    WHERE REPORT_IDX = :2
+                """, [summary, existing[0]])
+            else:
+                cur.execute("""
+                    INSERT INTO QC_REPORT (REPORT_IDX, FARM_IDX, PERIOD_TYPE, PERIOD_MARK, REPORT, CREATED_AT, GPT_IDX)
+                    VALUES (QC_REPORT_SEQ.NEXTVAL, :1, '월간', :2, :3, SYSTIMESTAMP, NULL)
+                """, [farm_idx, month_str, summary])
+        conn.commit()
+
+
+##### 연간 통계 #######
+
+
 
 
 
@@ -534,39 +724,6 @@ async def video_metadata(video_name: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-# ✅ 자동 실행용 API: 영상 업로드/탐지 후 호출
-@app.post("/api/update-dashboard-summary")
-def update_dashboard_summary(anls_idx: int):
-    today_data = get_today_detection_summary()
-    summary = create_dashboard_summary(today_data)
-    upsert_dashboard_summary(anls_idx, prompt_content=summary)
-    return {"message": "대시보드 요약이 갱신되었습니다.", "summary": summary}
-
-# ✅ 대시보드 조회 API
-@app.get("/api/daily-zone-summary")
-def daily_zone_summary():
-    try:
-        with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT GPT_CONTENT
-                    FROM (
-                        SELECT GPT_CONTENT
-                        FROM QC_GPT
-                        WHERE USER_QES = '대시보드요약'
-                          AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)
-                        ORDER BY CREATED_AT DESC
-                    )
-                    WHERE ROWNUM = 1
-                """)
-                row = cur.fetchone()
-                content = row[0].read() if row and hasattr(row[0], 'read') else row[0]  # CLOB 처리
-        return {
-            "summary_text": content if content else "오늘 탐지된 해충이 없습니다."
-        }
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
 
 # Twilio/Signalwire API 
 @app.get("/api/get-phone")
