@@ -2,6 +2,7 @@ package com.smhrd.web.report;
 
 import com.smhrd.web.report.dto.DailyStatsDTO;
 import com.smhrd.web.report.dto.MonthlyStatsDTO;
+import com.smhrd.web.report.dto.YearlyStatsDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,32 @@ public class ReportService {
         return dto;
     }
 
+    public MonthlyStatsDTO getMonthlyStats(Long farmIdx, String month) {
+        MonthlyStatsDTO dto = new MonthlyStatsDTO();
+
+        dto.setTotalCount(reportMapper.getMonthlyTotalDetectionCount(farmIdx, month));
+        dto.setInsectTypeCount(reportMapper.getMonthlyInsectTypeCount(farmIdx, month));
+        dto.setTopZone(reportMapper.getMonthlyTopDetectionZone(farmIdx, month));
+        dto.setWeeklyStats(reportMapper.getMonthlyWeeklyDetectionStats(farmIdx, month));
+        dto.setInsectDistribution(reportMapper.getMonthlyInsectDistribution(farmIdx, month));
+        dto.setDetails(reportMapper.getMonthlyDetectionDetails(farmIdx, month));
+
+        return dto;
+    }
+
+    public YearlyStatsDTO getYearlyStats(Long farmIdx, String year) {
+        YearlyStatsDTO dto = new YearlyStatsDTO();
+
+        dto.setTotalCount(reportMapper.getYearlyTotalDetectionCount(farmIdx, year));
+        dto.setInsectTypeCount(reportMapper.getYearlyInsectTypeCount(farmIdx, year));
+        dto.setTopZone(reportMapper.getYearlyTopDetectionZone(farmIdx, year));
+        dto.setMonthlyStats(reportMapper.getYearlyMonthlyStats(farmIdx, year));
+        dto.setInsectDistribution(reportMapper.getYearlyInsectDistribution(farmIdx, year));
+        dto.setDetails(reportMapper.getYearlyDetectionDetails(farmIdx, year));
+        dto.setPredictedInsectTrends(reportMapper.getYearlyInsectTrends(farmIdx));
+
+        return dto;
+    }
 
 }
 

@@ -54,31 +54,33 @@ export default function SelectFarm() {
   }
 
   return(
-    <div className="section bg home bg-[url('/images/bg_home.jpg')] bg-center bg-cover">
-      <div className="cont-wrap text-center flex flex-col justify-center gap-6">
-        <h2 className="font-semibold text-3xl mb-2">관리할 농장을 선택해주세요</h2>
+    <div className="select-farm section flex flex-col bg-[url('/images/home_bg.jpg')] bg-center bg-cover">
+      <div className="cont-wrap text-center items-center justify-center">
         {farms.length === 0 ? (
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-4 text-white">
             <p className='text-2xl '>등록된 농장이 없습니다. <br/>관리자에게 문의하세요.</p>
             <p className='text-2xl font-semibold'>관리자 번호 : 010-109-1009</p>
           </div>
         ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-[1200px] mx-auto">
-            {farms
-              .sort((a, b) => a.farmIdx - b.farmIdx) // farmIdx 낮은 순으로 정렬
-              .map(farm => (
-              <li
-                key={farm.farmIdx}
-                className="farmList-item cursor-pointer"
-                onClick={() => {
-                  selectFarm(farm);
-                  navigate(`/mainfarm/${farm.farmIdx}`);
-                }}
-              >
-                {farm.farmName}
-              </li>
-            ))}
-          </ul>
+          <div className='white-box'>
+            <h2 className="tit-3">관리할 농장을 선택해주세요</h2>
+            <ul className="farmList">
+              {farms
+                .sort((a, b) => a.farmIdx - b.farmIdx) // farmIdx 낮은 순으로 정렬
+                .map(farm => (
+                <li
+                  key={farm.farmIdx}
+                  className="farmList-item"
+                  onClick={() => {
+                    selectFarm(farm);
+                    navigate(`/mainFarm/${farm.farmIdx}`);
+                  }}
+                >
+                  {farm.farmName}
+                </li>
+              ))}
+            </ul>              
+          </div>
         )}
       </div>
     </div>

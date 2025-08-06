@@ -7,7 +7,7 @@ export default function FarmMap({
   data,        // [{ id, count }, …]
   rows,        // 세로 셀 개수 (예: 3)
   cols,        // 가로 셀 개수 (예: 3)
-  gap = 4,          // 셀 사이격(px)
+  gap = 0,          // 셀 사이격(px)
   onCellClick,      // 클릭 시 호출(id)
 }) {
   const { user } = useAuth();
@@ -37,8 +37,8 @@ export default function FarmMap({
     >
       {data.map((r) => {
         const c = rgb(colorScale(r.count));          // d3-color 로 파싱
-        c.opacity = 0.5;              // α = 0.6 (60%)
-        const bg = c.formatRgb();     // "rgba(r,g,b,0.6)"
+        // c.opacity = 0.5;              // α = 0.6 (60%)
+        // const bg = c.formatRgb();     // "rgba(r,g,b,0.6)"
         return (
           <div
             data-farm-idx={farmIdx || r.farm_idx || ''}
@@ -46,7 +46,7 @@ export default function FarmMap({
             key={r.gh_idx}
             className="flex flex-col items-center justify-center text-white font-bold text-lg rounded cursor-pointer"
             style={{
-              backgroundColor: bg,
+              backgroundColor: c,
             }}
             onClick={() => onCellClick?.(r.gh_idx)}
           >

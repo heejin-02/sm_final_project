@@ -39,7 +39,7 @@ export default function DetectionFeedback({ alertDetail, onFeedbackSubmit, onMar
 
   // 피드백 제출
   const handleSubmit = (finalFeedback = feedback) => {
-    console.log('피드백 제출:', finalFeedback);
+    // console.log('피드백 제출:', finalFeedback);
     onFeedbackSubmit?.(finalFeedback);
     setStep(3);
   };

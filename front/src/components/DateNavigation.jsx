@@ -14,6 +14,22 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
     setDay(date.getDate());
   }, [currentDate]);
 
+  // 오늘 날짜 확인
+  const isDateToday = (date) => {
+    const today = new Date();
+    const checkDate = new Date(date);
+    return today.toDateString() === checkDate.toDateString();
+  };
+
+  // 미래 날짜인지 확인
+  const isFutureDate = (date) => {
+    const today = new Date();
+    const checkDate = new Date(date);
+    today.setHours(0, 0, 0, 0);
+    checkDate.setHours(0, 0, 0, 0);
+    return checkDate > today;
+  };
+
   // 이전/다음 날짜로 이동
   const handlePrevious = () => {
     const currentDateObj = new Date(currentDate);
@@ -46,6 +62,10 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
       case 'daily':
         newDate = new Date(currentDateObj);
         newDate.setDate(currentDateObj.getDate() + 1);
+        // daily 모드에서는 오늘 이후로 이동 불가
+        if (isFutureDate(newDate)) {
+          return;
+        }
         break;
       case 'monthly':
         newDate = new Date(currentDateObj);
@@ -162,8 +182,28 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
 
         {/* 다음 버튼 */}
         <button
-          className="date-nav-btn"
+          className={`date-nav-btn ${
+            period === 'daily' && (() => {
+              const nextDate = new Date(currentDate);
+              nextDate.setDate(nextDate.getDate() + 1);
+              return isFutureDate(nextDate);
+            })() ? 'disabled' : ''
+          }`}
+          style={{
+            visibility: period === 'daily' && (() => {
+              const nextDate = new Date(currentDate);
+              nextDate.setDate(nextDate.getDate() + 1);
+              return isFutureDate(nextDate);
+            })() ? 'hidden' : 'visible'
+          }}
           onClick={handleNext}
+          disabled={
+            period === 'daily' && (() => {
+              const nextDate = new Date(currentDate);
+              nextDate.setDate(nextDate.getDate() + 1);
+              return isFutureDate(nextDate);
+            })()
+          }
           title={`다음 ${period === 'daily' ? '일' : period === 'monthly' ? '월' : '년'}`}
         >
           <span>다음 {period === 'daily' ? '일' : period === 'monthly' ? '월' : '년'}</span> ▶

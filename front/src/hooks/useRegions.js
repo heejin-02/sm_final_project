@@ -32,7 +32,7 @@ export function useRegions() {
         setError(null);
       } catch (err) {
         setError(err.message);
-        console.error('구역 데이터 로딩 실패:', err);
+        // console.error('구역 데이터 로딩 실패:', err);
       } finally {
         setLoading(false);
       }

@@ -31,7 +31,7 @@ export default function NotiDetail() {
 
   // 피드백 제출 핸들러
   const handleFeedbackSubmit = (feedbackData) => {
-    console.log('피드백 데이터:', feedbackData);
+    // console.log('피드백 데이터:', feedbackData);
     // TODO: 실제 API로 피드백 전송
     // axios.post('/api/feedback', feedbackData, { withCredentials: true })
     // 중복 팝업 제거 - DetectionFeedback 컴포넌트에서 이미 완료 메시지 표시
@@ -39,7 +39,7 @@ export default function NotiDetail() {
 
   // 나중에 확인하기 핸들러
   const handleMarkAsRead = (anlsIdx) => {
-    console.log('알림 확인 처리:', anlsIdx);
+    // console.log('알림 확인 처리:', anlsIdx);
     // TODO: 실제 API로 알림 읽음 처리
     alert('알림이 확인 처리되었습니다.');
     // 이전 페이지로 이동

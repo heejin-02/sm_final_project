@@ -86,5 +86,173 @@
     </select>
 
     <!-- 월별 통계 -->
+    <!-- 총 탐지수 -->
+    <select id="getMonthlyTotalDetectionCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM QC_CLASSIFICATION
+        WHERE GH_IDX IN (SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx})
+        AND TO_CHAR(CREATED_AT, 'YYYY-MM') = #{month}
+    </select>
 
+    <!-- 해충 종류 수 -->
+    <select id="getMonthlyInsectTypeCount" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT ANLS_RESULT)
+        FROM QC_CLASSIFICATION
+        WHERE GH_IDX IN (SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx})
+        AND TO_CHAR(CREATED_AT, 'YYYY-MM') = #{month}
+    </select>
+
+    <!-- 최다 탐지 구역 -->
+    <select id="getMonthlyTopDetectionZone" resultType="java.lang.String">
+        SELECT topZone FROM (
+            SELECT G.GH_NAME || ' (' || COUNT(*) || '건)' AS topZone, COUNT(*) AS cnt
+            FROM QC_CLASSIFICATION C
+            JOIN QC_GREENHOUSE G ON C.GH_IDX = G.GH_IDX
+            WHERE G.FARM_IDX = #{farmIdx}
+            AND TO_CHAR(C.CREATED_AT, 'YYYY-MM') = #{month}
+            GROUP BY G.GH_NAME
+            ORDER BY cnt DESC
+        ) WHERE ROWNUM = 1
+    </select>
+
+    <!-- 주차별 탐지 현황 -->
+    <select id="getMonthlyWeeklyDetectionStats" resultType="com.smhrd.web.report.dto.WeekCountDTO">
+        SELECT 
+            CASE 
+                WHEN TO_CHAR(CREATED_AT, 'DD') BETWEEN '01' AND '07' THEN '1주차'
+                WHEN TO_CHAR(CREATED_AT, 'DD') BETWEEN '08' AND '14' THEN '2주차'
+                WHEN TO_CHAR(CREATED_AT, 'DD') BETWEEN '15' AND '21' THEN '3주차'
+                ELSE '4주차'
+            END AS week,
+            COUNT(*) AS count
+        FROM QC_CLASSIFICATION
+        WHERE GH_IDX IN (SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx})
+        AND TO_CHAR(CREATED_AT, 'YYYY-MM') = #{month}
+        GROUP BY 
+            CASE 
+                WHEN TO_CHAR(CREATED_AT, 'DD') BETWEEN '01' AND '07' THEN '1주차'
+                WHEN TO_CHAR(CREATED_AT, 'DD') BETWEEN '08' AND '14' THEN '2주차'
+                WHEN TO_CHAR(CREATED_AT, 'DD') BETWEEN '15' AND '21' THEN '3주차'
+                ELSE '4주차'
+            END
+        ORDER BY week
+    </select>
+
+    <!-- 해충 종류별 분포 -->
+    <select id="getMonthlyInsectDistribution" resultType="com.smhrd.web.report.dto.InsectDistributionDTO">
+        SELECT 
+            ANLS_RESULT AS insect,
+            COUNT(*) AS count
+        FROM QC_CLASSIFICATION
+        WHERE GH_IDX IN (SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx})
+        AND TO_CHAR(CREATED_AT, 'YYYY-MM') = #{month}
+        GROUP BY ANLS_RESULT
+    </select>
+
+    <!-- 상세 현황 -->
+    <select id="getMonthlyDetectionDetails" resultType="com.smhrd.web.report.dto.DetectionDetailDTO">
+        SELECT
+            TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD HH24:MI') AS time,
+            G.GH_NAME AS greenhouse,
+            C.ANLS_RESULT AS insect,
+            C.ANLS_ACC AS accuracy
+        FROM QC_CLASSIFICATION C
+        JOIN QC_GREENHOUSE G ON C.GH_IDX = G.GH_IDX
+        WHERE G.FARM_IDX = #{farmIdx}
+        AND TO_CHAR(C.CREATED_AT, 'YYYY-MM') = #{month}
+        ORDER BY C.CREATED_AT
+    </select>
+    
+    <!-- 연별 통계 -->
+    <!-- 총 탐지 수 -->
+	<select id="getYearlyTotalDetectionCount" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM QC_CLASSIFICATION 
+	    WHERE GH_IDX IN (
+	        SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx}
+	    ) AND TO_CHAR(CREATED_AT, 'YYYY') = #{year}
+	</select>
+	
+	<!-- 탐지된 해충 종류 수 -->
+	<select id="getYearlyInsectTypeCount" resultType="int">
+	    SELECT COUNT(DISTINCT ANLS_RESULT) 
+	    FROM QC_CLASSIFICATION 
+	    WHERE GH_IDX IN (
+	        SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx}
+	    ) AND TO_CHAR(CREATED_AT, 'YYYY') = #{year}
+	</select>
+	
+	<!-- 최다 탐지 구역 -->
+	<select id="getYearlyTopDetectionZone" resultType="string">
+	    SELECT topZone FROM (
+	        SELECT G.GH_NAME || ' (' || COUNT(*) || '건)' AS topZone, COUNT(*) AS cnt
+	        FROM QC_CLASSIFICATION C
+	        JOIN QC_GREENHOUSE G ON C.GH_IDX = G.GH_IDX
+	        WHERE G.FARM_IDX = #{farmIdx}
+	        AND TO_CHAR(C.CREATED_AT, 'YYYY') = #{year}
+	        GROUP BY G.GH_NAME
+	        ORDER BY cnt DESC
+	    ) WHERE ROWNUM = 1
+	</select>
+	
+	<!-- 월별 통계 -->
+	<select id="getYearlyMonthlyStats" resultType="com.smhrd.web.report.dto.MonthCountDTO">
+	    SELECT TO_CHAR(CREATED_AT, 'MM') AS month, COUNT(*) AS count
+	    FROM QC_CLASSIFICATION
+	    WHERE GH_IDX IN (
+	        SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx}
+	    ) AND TO_CHAR(CREATED_AT, 'YYYY') = #{year}
+	    GROUP BY TO_CHAR(CREATED_AT, 'MM')
+	    ORDER BY month
+	</select>
+	
+	<!-- 해충 종류별 분포 -->
+	<select id="getYearlyInsectDistribution" resultType="com.smhrd.web.report.dto.InsectDistributionDTO">
+	    SELECT ANLS_RESULT AS insect, COUNT(*) AS count
+	    FROM QC_CLASSIFICATION 
+	    WHERE GH_IDX IN (
+	        SELECT GH_IDX FROM QC_GREENHOUSE WHERE FARM_IDX = #{farmIdx}
+	    ) AND TO_CHAR(CREATED_AT, 'YYYY') = #{year}
+	    GROUP BY ANLS_RESULT
+	</select>
+	
+	<!-- 상세 현황 -->
+	<select id="getYearlyDetectionDetails" resultType="com.smhrd.web.report.dto.DetectionDetailDTO">
+	    SELECT TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD HH24:MI') AS time,
+	           G.GH_NAME AS greenhouse,
+	           C.ANLS_RESULT AS insect,
+	           C.ANLS_ACC AS accuracy
+	    FROM QC_CLASSIFICATION C
+	    JOIN QC_GREENHOUSE G ON C.GH_IDX = G.GH_IDX
+	    WHERE G.FARM_IDX = #{farmIdx}
+	    AND TO_CHAR(C.CREATED_AT, 'YYYY') = #{year}
+	    ORDER BY C.CREATED_AT
+	</select>
+	
+	<!-- 4종 해충의 연도별 탐지수 -->
+	<select id="getYearlyInsectTrends" resultType="com.smhrd.web.report.dto.InsectYearlyCountDTO">
+	    SELECT
+	        I.INSECT_NAME AS insectName,
+	        NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 END), 0) AS count2024,
+	        NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0) AS count2025,
+	        ROUND(
+	            CASE
+	                WHEN NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 END), 0) = 0
+	                THEN NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0)
+	                ELSE
+	                    NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0)
+	                    * (
+	                        NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0)
+	                        /
+	                        NULLIF(NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 END), 0), 0)
+	                    )
+	            END
+	        ) AS predicted2026
+	    FROM QC_CLASSIFICATION C
+	    JOIN QC_INSECT I ON C.ANLS_RESULT = I.INSECT_NAME
+	    WHERE I.INSECT_NAME IN ('꽃노랑총채벌레', '담배가루이', '비단노린재', '알락수염노린재')
+	    GROUP BY I.INSECT_NAME
+	</select>
+
+	    
 </mapper>

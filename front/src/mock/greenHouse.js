@@ -97,6 +97,6 @@ export const updateRegionsForFarm = (farmIdx, newRegions) => {
   GH_DUMMY.length = 0; // 배열 초기화
   GH_DUMMY.push(...otherFarmRegions, ...newRegions);
 
-  console.log(`농장 ${farmIdx}의 구역 정보가 업데이트되었습니다:`, newRegions);
+  // console.log(`농장 ${farmIdx}의 구역 정보가 업데이트되었습니다:`, newRegions);
   return true;
 };

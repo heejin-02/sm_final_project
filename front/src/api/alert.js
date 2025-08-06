@@ -17,7 +17,7 @@ export const getAlertList = async (farmIdx) => {
     });
     return response.data;
   } catch (error) {
-    console.error('알림 목록 조회 실패:', error);
+    // console.error('알림 목록 조회 실패:', error);
     throw error;
   }
 };
@@ -52,7 +52,7 @@ export const getAlertDetail = async (anlsIdx) => {
     });
     return response.data;
   } catch (error) {
-    console.error('알림 상세 정보 조회 실패:', error);
+    // console.error('알림 상세 정보 조회 실패:', error);
     throw error;
   }
 };

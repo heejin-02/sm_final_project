@@ -18,5 +18,20 @@ public interface ReportMapper {
     List<DetectionDetailDTO> getDailyDetectionDetails(@Param("farmIdx") Long farmIdx, @Param("date") String date);
 
     // 월별 통계
-    
+    Integer getMonthlyTotalDetectionCount(@Param("farmIdx") Long farmIdx, @Param("month") String month);
+    Integer getMonthlyInsectTypeCount(@Param("farmIdx") Long farmIdx, @Param("month") String month);
+    String getMonthlyTopDetectionZone(@Param("farmIdx") Long farmIdx, @Param("month") String month);
+    List<WeekCountDTO> getMonthlyWeeklyDetectionStats(@Param("farmIdx") Long farmIdx, @Param("month") String month);
+    List<InsectDistributionDTO> getMonthlyInsectDistribution(@Param("farmIdx") Long farmIdx, @Param("month") String month);
+    List<DetectionDetailDTO> getMonthlyDetectionDetails(@Param("farmIdx") Long farmIdx, @Param("month") String month);
+
+    // 연도별 통계
+    Integer getYearlyTotalDetectionCount(@Param("farmIdx") Long farmIdx, @Param("year") String year);
+    Integer getYearlyInsectTypeCount(@Param("farmIdx") Long farmIdx, @Param("year") String year);
+    String getYearlyTopDetectionZone(@Param("farmIdx") Long farmIdx, @Param("year") String year);
+    List<MonthCountDTO> getYearlyMonthlyStats(@Param("farmIdx") Long farmIdx, @Param("year") String year);
+    List<InsectDistributionDTO> getYearlyInsectDistribution(@Param("farmIdx") Long farmIdx, @Param("year") String year);
+    List<DetectionDetailDTO> getYearlyDetectionDetails(@Param("farmIdx") Long farmIdx, @Param("year") String year);
+
+    List<InsectYearlyCountDTO> getYearlyInsectTrends(@Param("farmIdx") Long farmIdx);
 }

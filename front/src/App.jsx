@@ -51,7 +51,7 @@ export default function App() {
       {user?.role && user.role !== 'admin' && (
         <>
           <Route path="/selectFarm" element={<SelectFarm />} />
-          <Route path="/mainfarm/:id" element={<MainFarm />} />
+          <Route path="/mainFarm/:id" element={<MainFarm />} />
           <Route path="/report/:period" element={<Report />} />
           <Route path="/notifications/:id" element={<NotiDetail />} />
         </>

@@ -80,7 +80,7 @@ export default function AdminMain() {
       updateDisplayedData(userList, 1);
 
     } catch (error) {
-      console.error('회원 정보 조회 실패:', error);
+      // console.error('회원 정보 조회 실패:', error);
       setError('데이터 요청이 실패했습니다. 서버 연결을 확인해주세요.');
       setAllUserList([]);
       setFilteredUserList([]);
