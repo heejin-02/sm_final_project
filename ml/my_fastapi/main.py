@@ -28,6 +28,9 @@ from collections import Counter
 from openai import OpenAI 
 import socket
 
+
+
+
 # FastAPI 초기화
 app = FastAPI()
 

@@ -32,7 +32,7 @@ FASTAPI_GET_PHONE_URL = "http://192.168.219.72:8000/api/get-phone"
 FASTAPI_GPT_SUMMARY_URL = "http://192.168.219.72:8000/api/summary-by-imgidx"
 
 # 고정 GH_IDX
-gh_idx = 2
+gh_idx = 24
 
 
 # 전화번호 포맷 정규화 함수
