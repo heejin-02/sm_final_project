@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 import logo from '/images/logo-horizon.svg';
+import { LuLogOut } from 'react-icons/lu';
 
 export default function Header() {
   const { user, logout } = useAuth(); // logout 함수도 가져옴

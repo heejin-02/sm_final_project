@@ -1,6 +1,6 @@
 // src/pages/Report.jsx
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useStatistics } from '../hooks/useStatistics';
 import { useDailyStats } from '../hooks/useDailyStats';
@@ -13,7 +13,6 @@ import StatisticsChart from '../components/StatisticsChart';
 export default function Report() {
   const { period } = useParams(); // 'daily', 'monthly', 'yearly'
   const { user } = useAuth();
-  const navigate = useNavigate();
   // daily 모드일 때는 어제 날짜를 기본값으로 설정
   const getDefaultDate = () => {
     if (period === 'daily') {
@@ -60,16 +59,6 @@ export default function Report() {
     data.insectTypeCount === 0 &&
     (!data.details || data.details.length === 0)
   );
-
-  // 디버깅 로그
-  console.log('=== Report 페이지 디버깅 ===');
-  console.log('period:', period);
-  console.log('currentDate:', currentDate);
-  console.log('data:', data);
-  console.log('loading:', loading);
-  console.log('error:', error);
-  console.log('isToday:', isToday);
-  console.log('isEmptyData:', isEmptyData);
 
   const farm = user?.selectedFarm;
 

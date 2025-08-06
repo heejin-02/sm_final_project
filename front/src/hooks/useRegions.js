@@ -1,45 +1,56 @@
 // src/hooks/useRegions.js
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { getTodayGreenhouses } from '../api/report';
 
 export function useRegions() {
   const [regions, setRegions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
+  const farmIdx = user?.selectedFarm?.farmIdx;
 
   useEffect(() => {
-    // TODO: 실제 API 호출로 교체
     const fetchRegions = async () => {
+      if (!farmIdx) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        
-        // 임시 더미 데이터 - 실제로는 API에서 가져옴
-        const dummyRegions = [
-          { id: 1, name: '문앞' },
-          { id: 2, name: '00밭' },
-          { id: 3, name: '1번 레인' },
-          { id: 4, name: '2번 레인' },
-          { id: 5, name: '온실 A동' },
-          { id: 6, name: '온실 B동' },
-          { id: 7, name: '저장고' },
-          { id: 8, name: '뒷마당' },
-          { id: 9, name: '주차장' }
-        ];
 
-        // API 호출 시뮬레이션
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        setRegions(dummyRegions);
+        // 실제 API 호출 (getTodayGreenhouses 직접 사용)
+        const apiData = await getTodayGreenhouses(farmIdx);
+        // API 데이터를 regions 형태로 변환 (실제 데이터만 사용)
+        const regionsWithNames = apiData.map(region => ({
+          id: region.ghIdx,
+          name: region.ghName || `${region.ghIdx}번 구역`,
+          count: region.todayInsectCount || 0
+        }));
+        setRegions(regionsWithNames);
         setError(null);
       } catch (err) {
+        console.error('구역 데이터 로딩 실패:', err);
         setError(err.message);
-        // console.error('구역 데이터 로딩 실패:', err);
+
+        // API 실패 시 기본 구역 데이터 사용
+        const fallbackRegions = [];
+        for (let i = 1; i <= 9; i++) {
+          fallbackRegions.push({
+            id: i,
+            name: `${i}번 구역`,
+            count: 0
+          });
+        }
+        setRegions(fallbackRegions);
       } finally {
         setLoading(false);
       }
     };
 
     fetchRegions();
-  }, []);
+  }, [farmIdx]);
 
   return { regions, loading, error };
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { getRegionsByFarmIdx, updateRegionsForFarm } from '../mock/greenHouse';
+import { getGreenhousesByFarm, saveGreenhouses } from '../api/greenhouse';
 
 function AdminFarmInfo() {
   const { farmIdx } = useParams();
@@ -61,41 +61,46 @@ function AdminFarmInfo() {
   };
   */
 
-  // 구역 정보 로드 (GH_DUMMY에서)
-  const loadRegionData = (farmIdx) => {
+  // 구역 정보 로드 (API 기반)
+  const loadRegionData = async (farmIdx) => {
     if (!farmIdx) return;
 
     try {
-      // GH_DUMMY에서 해당 농장의 구역 정보 가져오기
-      const farmRegions = getRegionsByFarmIdx(parseInt(farmIdx));
+      // 실제 API 호출 시도
+      const apiRegions = await getGreenhousesByFarm(farmIdx);
 
-      // AdminFarmInfo에서 사용할 형태로 변환
-      const regionsForAdmin = farmRegions.map(region => ({
-        id: region.ghIdx, // ghIdx를 id로 사용
-        name: region.ghName,
-        ghIdx: region.ghIdx,
-        farmIdx: region.farmIdx,
-        ghArea: region.ghArea,
-        ghCrops: region.ghCrops
-      }));
-
-      setRegions(regionsForAdmin);
-      console.log('로드된 구역 정보:', regionsForAdmin);
+      if (apiRegions && apiRegions.length > 0) {
+        // API에서 받은 데이터 사용
+        const regionsForAdmin = apiRegions.map(region => ({
+          id: region.ghIdx,
+          name: region.ghName || '',
+          ghIdx: region.ghIdx,
+          farmIdx: region.farmIdx,
+          ghArea: region.ghArea || '',
+          ghCrops: region.ghCrops || ''
+        }));
+        setRegions(regionsForAdmin);
+        console.log('API에서 구역 정보 로드 완료:', regionsForAdmin);
+      } else {
+        // API에 데이터가 없으면 기본 구역 생성
+        throw new Error('No greenhouse data found');
+      }
     } catch (error) {
       console.error('구역 정보 로드 실패:', error);
-      // 오류 시 기본 구역 생성
+      // API 실패 시 기본 구역 생성
       const defaultRegions = [];
       for (let i = 1; i <= 9; i++) {
         defaultRegions.push({
           id: i,
-          name: `${i}번 구역`,
+          name: '',
           ghIdx: i,
           farmIdx: parseInt(farmIdx),
-          ghArea: '100m',
-          ghCrops: '토마토'
+          ghArea: '',
+          ghCrops: ''
         });
       }
       setRegions(defaultRegions);
+      console.log('기본 구역 정보 로드 완료:', defaultRegions);
     }
   };
 
@@ -106,7 +111,7 @@ function AdminFarmInfo() {
     ));
   };
 
-  // 구역 DB 저장/수정 (GH_DUMMY 업데이트)
+  // 구역 저장/수정 (API 연동)
   const handleRegionSubmit = async () => {
     try {
       if (!farmInfo?.farmIdx && !isCreateMode) {
@@ -120,24 +125,27 @@ function AdminFarmInfo() {
       const regionData = regions.map((region) => ({
         farmIdx: targetFarmIdx,
         ghIdx: region.ghIdx || region.id,
-        ghName: region.name,
-        ghArea: region.ghArea || '100m',
+        ghName: region.name || `${region.ghIdx || region.id}번 구역`,
+        ghArea: region.ghArea || '100m²',
         ghCrops: region.ghCrops || '토마토',
         createdAt: new Date().toISOString()
       }));
 
-      // GH_DUMMY 업데이트 (실제로는 백엔드 API 호출)
-      updateRegionsForFarm(targetFarmIdx, regionData);
+      console.log('구역 데이터 저장 시도:', regionData);
 
-      console.log('저장된 구역 데이터:', regionData);
-
-      // TODO: 실제 백엔드 연동 시
-      // const response = await axios.post(`/api/regions/${targetFarmIdx}`, regionData);
-
+      // 실제 API 호출
+      await saveGreenhouses(targetFarmIdx, regionData);
       alert(`${regions.length}개 구역이 저장되었습니다.`);
+
     } catch (error) {
       console.error('구역 저장 실패:', error);
-      alert('구역 저장에 실패했습니다.');
+
+      // API 실패 시 사용자에게 알림
+      if (error.response?.status === 404) {
+        alert('구역 저장 API가 아직 구현되지 않았습니다.\n백엔드 개발 완료 후 사용 가능합니다.');
+      } else {
+        alert('구역 저장에 실패했습니다.\n잠시 후 다시 시도해주세요.');
+      }
     }
   };
 
@@ -184,11 +192,11 @@ function AdminFarmInfo() {
           for (let i = 1; i <= 9; i++) {
             defaultRegions.push({
               id: i,
-              name: `${i}번 구역`,
+              name: '',
               ghIdx: i,
               farmIdx: null, // 농장 생성 후 설정
-              ghArea: '100m',
-              ghCrops: '토마토'
+              ghArea: '',
+              ghCrops: ''
             });
           }
           setRegions(defaultRegions);
@@ -207,7 +215,7 @@ function AdminFarmInfo() {
               farmImg: passedFarmInfo.farmImg || ''
             });
             // 구역 정보 로드
-            loadRegionData(passedFarmInfo.farmIdx);
+            await loadRegionData(passedFarmInfo.farmIdx);
           } else {
             // 수정 모드이고 전달받은 데이터가 없으면 API 호출
             const response = await axios.get(`http://localhost:8095/api/farms/${farmIdx}/detail`);
@@ -221,7 +229,7 @@ function AdminFarmInfo() {
               farmImg: response.data.farmImg || ''
             });
             // 구역 정보 로드
-            loadRegionData(farmIdx);
+            await loadRegionData(farmIdx);
           }
         }
       } catch (error) {
