@@ -77,7 +77,10 @@
     --header-h: 88px;
     --color-80 : #808080;
     --weather-box-max-height : 177px;
+    --weather-box-min-height : 157px;
     --noti-area-width: 320px;
+    --window-max-width: 1920px;
+    --window-min-width: 1520px;
   }
 
   /* ===== 기본 요소 스타일 ===== */
@@ -87,6 +90,14 @@
     line-height: 1.555;
     letter-spacing: -0.7px;
     box-sizing: border-box;
+  }
+
+  html, body{
+    width: 100%;
+    max-width: var(--window-max-width);
+    min-width: var(--window-min-width);
+    margin: 0 auto;
+    overflow-x: auto;
   }
 
   html {
@@ -104,9 +115,6 @@
     padding-top: var(--header-h);
     max-width: 1920px;
     margin: 0 auto;
-  }
-  #app.admin{
-    font-size: 16px;
   }
   .inner{
     width: 1440px;
@@ -128,7 +136,7 @@
   }
   .main-farm .noti-area{
     width: 22%;
-    max-width: 340px;    
+    max-width: 370px;    
   }
   .main-farm .baekgu-msg-wrap{
     margin: 0;
@@ -140,6 +148,11 @@
   .main-farm .btn-wrap{
     width: 200px;
     flex: 0 0 auto;
+  }
+  .last-update{
+    text-align: right;
+    font-size: .875rem;
+    color: var(--color-80);
   }
 
   .flex-0-auto {
@@ -184,10 +197,18 @@
     background-color: white;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     height: var(--header-h);
+    padding: 1.25rem 3.25rem;
+    max-width: var(--window-max-width);
+    min-width: var(--window-min-width);
+  }
+
+  .header-in {
+    width: 100%;
+    margin: 0 auto;
+    transform: translateX(0);
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    padding: 1.25rem 3.25rem;
+    align-items: center;    
   }
 
   .header-left {
@@ -530,6 +551,7 @@
   .btn-primary:hover {
     background-color: #124501;
     border-color: #124501;
+  }
 
   .btn-accent {
     background-color: var(--color-accent);
@@ -684,9 +706,15 @@
   }
 
   .table {
-    min-width: 100%;
+    width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+  }
+
+  .table.border {
+      border-radius: .5rem;
+      overflow: hidden;
+      border-color: #dedede;
   }
 
   .table thead {
@@ -705,6 +733,7 @@
     color: #666;
     border-bottom: 1px solid #e5e7eb;
     white-space: nowrap;
+    text-align: center;
   }
 
   .table td {
@@ -738,6 +767,11 @@
   .table td.text-blue-600 {
     color: #2563eb;
     font-weight: 500;
+  }
+
+  .grouped-detail-list .table-wrap{
+    max-height: 500px;
+    overflow: auto;
   }
 
   /* ===== 공통 입력 필드 스타일 ===== */
@@ -992,6 +1026,7 @@
     box-shadow: 0 1px 4px 1px rgba(0, 0, 0, 0.16);
     width: 100%;
     max-height: var(--weather-box-max-height, auto);
+    min-height: var(--weather-box-min-height, auto);
   }
   .weather-box > .section{
     min-height: auto;
@@ -999,6 +1034,7 @@
 
   .weather-box *{
     line-height: 1;
+    white-space: nowrap;
   }
 
   .weather-top{
@@ -1014,10 +1050,10 @@
   
   .weather-range{
     color: var(--color-80);
-    margin-bottom: 1rem;
+    margin-bottom: .66rem;
   }
   
-  .weather-arrow{
+  /* .weather-arrow{
     position: absolute;
     top: 0;
     right: 0;
@@ -1029,7 +1065,7 @@
   
   .weather-arrow img{
     transition: all .2s ease-in-out;
-  }
+  } */
 
   .weather-condition{
     display: flex;
@@ -1038,6 +1074,10 @@
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: .7rem;
+  }
+
+  .weather-details{
+    font-size: .9rem;
   }
 
   /* .weather-box.fold{
@@ -1305,7 +1345,7 @@
   /* ===== LeftPanel 스타일 ===== */
   .left-panel {
     width: 24%;
-    max-width: 370px;
+    max-width: 400px;
     height: calc(100vh - var(--header-h));
     overflow: hidden;
     display: flex;
@@ -1371,8 +1411,8 @@
 
   .r-rt{
     flex: 0 0 auto;
-    width: 35%;
-    max-width: 400px;
+    width: 40%;
+    max-width: 410px;
   }
 
   .r-rt hr{
@@ -1384,7 +1424,7 @@
   .today_detecting{
     display: flex;
     flex-direction: column;
-    gap: .4rem;
+    gap: .6rem;
     background: #fff;
     border-radius: .66rem;
     padding: 1rem;
@@ -1601,20 +1641,17 @@
   }
 
   /* ===== NotiFarmMap 스타일 ===== */
-  .noti-farm-map {
-    width: 100%;
-  }
-  .noti-farm-map .farm-cell{
-    background: var(--bg);
-  }
-
   .farm-grid {
     position: relative;
     z-index: 2;
   }
 
+  .noti-farm-map {
+    width: 100%;
+  }
+  
   .noti-farm-map .farm-cell {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--bg);
     flex-direction: column;
     padding: 0.5rem;
   }
@@ -2140,21 +2177,35 @@
     margin: 0;
   }
 
-  /* ===== 차트 스타일 ===== */
-  .statistics-charts {
-    width: 100%;
-  }
-
-  .statistics-charts .bordered-box {
+  /* ===== 통계 스타일 ===== */
+  .report-content .bordered-box{
     background: white;
     border-radius: 8px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  .statistics-charts h3 {
+  .report-content h3{
     margin-bottom: 1rem;
-    color: #374151;
+    color: #333;
+  }
+
+  .report-content .table th,
+  .report-content .table td{
+    font-size: 1rem;
+  }
+
+  /* ===== 차트 스타일 ===== */
+  .statistics-charts {
+    width: 100%;
+  }
+
+  .report-content:focus,
+  .report-content:focus-visible,
+  .report-content *:focus,
+  .report-content *:focus-visible{
+    outline: 0;
+    border: 0;
   }
 
   /* Recharts 툴팁 커스터마이징 */
@@ -2196,6 +2247,8 @@
     --header-h : calc(88px * 0.9);
     --weather-box-max-height: calc(177px * 0.9);
     --noti-area-width: calc(320px * 0.9);
+    --window-max-width: calc(1920px * 0.9);
+    --window-min-width: calc(1520px * 0.9);
   }
 
   html[data-zoom="110%"] {
@@ -2203,6 +2256,8 @@
     --header-h : calc(88px * 1.1);
     --weather-box-max-height: calc(177px * 1.1);
     --noti-area-width: calc(320px * 1.1);
+    --window-max-width: calc(1920px * 1.1);
+    --window-min-width: calc(1520px * 1.1);
   }
 
   html[data-zoom="120%"] {
@@ -2210,6 +2265,8 @@
     --header-h : calc(88px * 1.2);
     --weather-box-max-height: calc(177px * 1.2);
     --noti-area-width: calc(320px * 1.2);
+    --window-max-width: calc(1920px * 1.2);
+    --window-min-width: calc(1520px * 1.2);
   }
 
   /* ===== 위치 유틸리티 ===== */
