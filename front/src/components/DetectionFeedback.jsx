@@ -108,9 +108,15 @@ export default function DetectionFeedback({ anlsIdx, alertDetail, onFeedbackSubm
 
         {/* ✅ 피드백 완료 메시지는 딱 1회만 */}
         {isFirstSubmit && (
-          <p className="complete-message text-green-600 mt-4 text-center">
+          <p className="complete-message text-green-600 mt-4 text-center text-lg">
             ✅ 피드백이 완료되었습니다. 감사합니다!
           </p>
+          // <div className="feedback-complete">
+          //   <h3 className="complete-title"><span className="complete-icon">✅</span> 피드백이 완료되었습니다!</h3>
+          //   <p className="complete-message">
+          //     소중한 의견 감사합니다. 백구가 더 똑똑해질 수 있도록 도와주셨어요!
+          //   </p>
+          // </div>          
         )}
       </div>
     </div>
