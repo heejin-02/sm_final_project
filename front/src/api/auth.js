@@ -17,6 +17,7 @@ export const getUserFarms = (userPhone) => {
 }
 
 // 세션 확인
+
 export const checkSession = async () => {
   try {
     const response = await api.get('/api/home/check-session');
@@ -40,3 +41,4 @@ export const logout = async () => {
     throw error;
   }
 };
+
