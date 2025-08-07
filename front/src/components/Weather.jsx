@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loader from './Loader';
 import { useAuth } from '../contexts/AuthContext';
-import { useLocation } from 'react-router-dom';
-import {
-  WiHumidity,
-  WiRaindrops,
-} from 'react-icons/wi';
+
 
 const API_KEY = '019d414c565826322ad2f0b73af0129b';
 
@@ -196,7 +192,6 @@ const getCurrentLocation = async () => {
 
 function WeatherBox() {
   const { user } = useAuth();
-  const location = useLocation();
 
   // localStorage에서 이전 날씨 데이터 복원 (즉시 표시용)
   const [weather, setWeather] = useState(() => {
@@ -220,13 +215,13 @@ function WeatherBox() {
       // 캐시된 데이터 확인
       const cachedData = weatherCache.get(cacheKey);
       if (cachedData && (Date.now() - cachedData.timestamp) < WEATHER_CACHE_DURATION) {
-        console.log('🚀 캐시된 날씨 데이터 사용');
+        // console.log('캐시된 날씨 데이터 사용');
         setWeather(cachedData.data);
         setLoading(false);
         return;
       }
 
-      console.log('🌤️ 새로운 날씨 데이터 요청:', new Date().toLocaleTimeString());
+      // console.log('새로운 날씨 데이터 요청:', new Date().toLocaleTimeString());
       setLoading(true);
 
       try {
@@ -246,7 +241,7 @@ function WeatherBox() {
             //console.log('농장 좌표 변환 성공:', coordinates);
           } else {
             // 농장 주소 변환 실패 시 현재 위치로 fallback
-            //console.log('🔄 농장 주소 변환 실패, 현재 위치로 시도...');
+            //console.log('농장 주소 변환 실패, 현재 위치로 시도...');
             try {
               const currentLocation = await getCurrentLocation();
               weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${currentLocation.lat}&lon=${currentLocation.lon}&units=metric&appid=${API_KEY}`;
@@ -291,7 +286,7 @@ function WeatherBox() {
           const forecastResponse = await axios.get(weatherUrl.replace('/weather?', '/forecast?'));
           forecastData = forecastResponse.data;
         } catch (forecastError) {
-          console.log('예보 데이터 로딩 실패, 현재 날씨만 표시');
+          // console.log('예보 데이터 로딩 실패, 현재 날씨만 표시');
         }
 
         const currentData = currentResponse.data;
@@ -357,7 +352,7 @@ function WeatherBox() {
         try {
           localStorage.setItem('lastWeatherData', JSON.stringify(weatherData));
         } catch (error) {
-          console.log('날씨 데이터 localStorage 저장 실패');
+          // console.log('날씨 데이터 localStorage 저장 실패');
         }
 
         setWeather(weatherData);

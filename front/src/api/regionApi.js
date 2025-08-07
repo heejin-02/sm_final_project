@@ -1,39 +1,53 @@
 // 서버에서 구역별 해충 카운트(fetch) 담당
 import axios from "axios";
-import { getRegionsWithDetectionCount } from "../mock/greenHouse";
 
-// 나중에 real API endpoint로만 바꿔주세요
+// 구역별 해충 카운트 조회 (실제 API 연동)
 export async function fetchRegionCounts(farmId) {
-  // return axios
-  //   .get(`/api/home/farms/${farmId}/region-counts`, { withCredentials:true })
-  //   .then(res => res.data);
+  try {
+    // 실제 API 호출 (getTodayGreenhouses와 동일한 엔드포인트 사용)
+    const response = await axios.get(`http://localhost:8095/user/today/today/greenhouses`, {
+      params: { farmIdx: farmId },
+      withCredentials: true,
+      timeout: 5000
+    });
 
-  // mock 데이터 사용 (DB + 기본값 병합)
-  const regions = getRegionsWithDetectionCount(parseInt(farmId));
+    const apiData = response.data || [];
+    // console.log('getTodayGreenhouses API 응답:', apiData);
 
-  // API 호출 시뮬레이션을 위한 딜레이
-  await new Promise(resolve => setTimeout(resolve, 300));
+    // 9개 구역 보장 (1~9번)
+    const result = [];
+    for (let i = 1; i <= 9; i++) {
+      const existingRegion = apiData.find(r => r.ghIdx === i);
+      if (existingRegion) {
+        // API에서 받은 실제 데이터 사용
+        result.push({
+          id: existingRegion.ghIdx,
+          name: existingRegion.ghName || `${i}번 구역`,
+          count: existingRegion.todayInsectCount || 0
+        });
+      } else {
+        // API에 없는 구역은 기본값 사용
+        result.push({
+          id: i,
+          name: `${i}번 구역`,
+          count: 0
+        });
+      }
+    }
 
-  // 9개 구역 보장 (1~9번)
-  const result = [];
-  for (let i = 1; i <= 9; i++) {
-    const existingRegion = regions.find(r => r.ghIdx === i);
-    if (existingRegion) {
-      // 실제 데이터가 있으면 사용
-      result.push({
-        id: existingRegion.ghIdx,
-        name: existingRegion.gh_name,
-        count: existingRegion.count || 0
-      });
-    } else {
-      // 없으면 기본 구역 생성
-      result.push({
+    return result;
+  } catch (error) {
+    console.error('구역별 해충 카운트 조회 실패:', error);
+
+    // API 실패 시 기본 구역 데이터 반환
+    const fallbackResult = [];
+    for (let i = 1; i <= 9; i++) {
+      fallbackResult.push({
         id: i,
         name: `${i}번 구역`,
-        count: Math.floor(Math.random() * 3) // 0~2 랜덤 더미 카운트
+        count: 0
       });
     }
+    return fallbackResult;
   }
-
-  return result;
 }
