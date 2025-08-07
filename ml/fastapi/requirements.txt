@@ -25,3 +25,5 @@ langchain-community      # langchain_community 모듈
 
 # 날짜 처리
 python-dateutil
+
+python-multipart
