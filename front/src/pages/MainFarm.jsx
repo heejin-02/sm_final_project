@@ -114,8 +114,6 @@ export default function MainFarm() {
 
   // 모든 데이터 병렬로 가져오기 (빠른 로딩 + 캐시 활용)
   useEffect(() => {
-    console.log('🔥 useEffect 실행됨!', { farmIdx });
-
     const fetchAllData = async () => {
 
       if (!farmIdx) {
@@ -168,7 +166,7 @@ export default function MainFarm() {
         const CACHE_FRESH_DURATION = 5 * 60 * 1000; // 5분
 
         if (cacheAge < CACHE_FRESH_DURATION) {
-          console.log('🏠 신선한 캐시 사용 - API 호출 생략 (캐시 나이:', Math.round(cacheAge / 1000), '초)');
+          // console.log('신선한 캐시 사용 - API 호출 생략 (캐시 나이:', Math.round(cacheAge / 1000), '초)');
           // 신선한 캐시가 있으면 greenhouse API 호출 생략
           var skipGreenhouseApi = true;
         }
@@ -184,8 +182,6 @@ export default function MainFarm() {
       }
 
       // 모든 데이터가 캐시에 있어도 최신 데이터 요청 (실시간성 보장)
-      console.log('📡 캐시와 관계없이 최신 데이터 요청 진행...');
-
       // 20초 후 강제 타임아웃 (너무 오래 기다리지 않도록)
       const timeoutId = setTimeout(() => {
         setSummaryLoading(false);
@@ -222,7 +218,6 @@ export default function MainFarm() {
           apiCalls.push(retryApiCall(() => withTimeout(getTodayGreenhouses(farmIdx), 5000))); // 5초로 증가
         }
 
-        console.log('📡 API 호출 개수:', apiCalls.length, skipGreenhouseApi ? '(greenhouse API 생략)' : '');
         const startTime = Date.now();
 
         const results = await Promise.allSettled(apiCalls);
@@ -233,7 +228,6 @@ export default function MainFarm() {
           : results;
 
         const endTime = Date.now();
-        console.log(`⏱️ API 호출 완료 (소요시간: ${endTime - startTime}ms)`);
 
         // 타임아웃 취소 (API 응답이 왔으므로)
         clearTimeout(timeoutId);

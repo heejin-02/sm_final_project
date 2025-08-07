@@ -18,55 +18,77 @@ from utils.torch_utils import select_device, smart_inference_mode
 from urllib.parse import quote
 from signalwire.rest import Client as SignalWireClient
 from dotenv import load_dotenv
+import subprocess
 from ultralytics.utils.plotting import Annotator, colors
 load_dotenv()
+import re
+
 # 고정 GH_IDX
-gh_idx = 1
-
-# Twilio 설정
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-USER_PHONE_NUMBER = os.getenv("USER_PHONE_NUMBER")  # 수신자
-PUBLIC_FASTAPI_BASE = "https://6d5a02fc8d0b.ngrok-free.app"
-
-# SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
-# SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
-# SIGNALWIRE_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER")
-# SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
-
-# # 테스트용 수신자 번호
-# TEST_PHONE_NUMBER = "+821085849748"  # ← 테스트할 실제 전화번호로 바꿔주세요
-
-# def make_call(insect_name: str, confidence: float):
-#     client = SignalWireClient(
-#         SIGNALWIRE_PROJECT_ID,
-#         SIGNALWIRE_AUTH_TOKEN,
-#         signalwire_space_url=SIGNALWIRE_SPACE_URL
-#     )
-
-#     url = f"{PUBLIC_FASTAPI_BASE}/twilio-call?insect={quote(insect_name)}"
-
-#     try:
-#         call = client.calls.create(
-#             from_=SIGNALWIRE_PHONE_NUMBER,
-#             to=TEST_PHONE_NUMBER,
-#             url=url
-#         )
-#         print(f"[테스트 전화 발신] Call SID: {call.sid} | 대상: {TEST_PHONE_NUMBER}")
-#     except Exception as e:
-#         print("[전화 발신 실패]", e)
+gh_idx = 6
 
 
-def make_call(insect_name: str, confidence: float):
-    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
-    call = client.calls.create(
-        to=USER_PHONE_NUMBER,
-        from_=TWILIO_PHONE_NUMBER,
-        url=url
-    )
-    print(f"[전화 발신] Call SID: {call.sid}")
+# 전화번호 포맷 정규화 함수
+def normalize_phone(phone: str) -> str:
+    digits_only = re.sub(r"[^0-9]", "", phone)  # 숫자만 남김
+    if digits_only.startswith("0"):
+        digits_only = digits_only[1:]  # 0 제거
+    return f"+82{digits_only}"
+
+# GH_IDX로 사용자 전화번호 가져오기 (QC_USER까지 조인)
+def get_user_phone_by_gh_idx(gh_idx: int) -> str | None:
+    try:
+        res = requests.get(f"http://localhost:8000/api/get-phone?gh_idx={gh_idx}")
+        if res.status_code == 200:
+            raw_phone = res.json().get("phone")
+            return normalize_phone(raw_phone)
+        else:
+            print("[전화번호 조회 실패]", res.status_code, res.text)
+    except Exception as e:
+        print("[전화번호 요청 오류]", e)
+    return None
+
+# 전화 쿨다운
+last_call_time = 0
+CALL_COOLDOWN = 60 #초단위 실사용시 10분으로 변경
+
+SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
+SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
+SIGNALWIRE_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER")
+SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
+PUBLIC_FASTAPI_BASE = "https://5d4417cd6b23.ngrok-free.app"
+
+
+def make_call_by_gh_idx(gh_idx: int):
+    global last_call_time
+    now = time.time()
+    if now - last_call_time < CALL_COOLDOWN:
+        print(f"[전화 건너뜀] 최근에 발신됨 ({now - last_call_time:.1f}s 전)")
+        return
+
+    user_phone = get_user_phone_by_gh_idx(gh_idx)
+    if not user_phone:
+        print(f"[오류] gh_idx={gh_idx}에 해당하는 사용자 전화번호가 없습니다.")
+        return
+
+    try:
+        client = SignalWireClient(
+            SIGNALWIRE_PROJECT_ID,
+            SIGNALWIRE_AUTH_TOKEN,
+            signalwire_space_url=SIGNALWIRE_SPACE_URL
+        )
+
+        url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+
+        call = client.calls.create(
+            from_=SIGNALWIRE_PHONE_NUMBER,
+            to=user_phone,
+            url=url
+        )
+        last_call_time = now
+        print(f"[전화 발신] 대상: {user_phone} | Call SID: {call.sid}")
+    except Exception as e:
+        print("[전화 발신 실패]", e)
+
 
 def get_insect_idx(name):
     return {
@@ -99,8 +121,6 @@ def send_detection_to_api(insect_name, confidence, img_idx):
     except Exception as e:
         print("[전송 실패]", e)
 
-
-
 # 🎥 영상 업로드 함수
 def upload_video(file_path, class_id, gh_idx):
     url = "http://localhost:8095/api/qc-videos"
@@ -132,6 +152,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
     save_dir = Path("clips")
     save_dir.mkdir(parents=True, exist_ok=True)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    
 
     frame_buffer = []
     recording = False
@@ -141,6 +162,10 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
     insect_name = ""
     best_conf = 0
     video_path = ""
+
+    # 벌레 탐지 쿨다운
+    last_detection_time = 0
+    DETECTION_COOLDOWN = 30 # 초 단위 
 
     for path, im, im0s, vid_cap, s in dataset:
         im = torch.from_numpy(im).to(model.device).float() / 255.0
@@ -159,6 +184,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
             if len(det):
                 det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
                 for *xyxy, conf, cls in reversed(det):
+                    #print(f"[탐지 로그] 클래스: {names[int(cls)]}, 신뢰도: {conf:.2f}, 좌표: {xyxy}")
                     cls_id = int(cls)
                     insect_name = names[cls_id]
                     confidence = float(conf)
@@ -166,7 +192,9 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                     annotator.box_label(xyxy, label, color=colors(cls_id, True))
                     detected = True
 
-                    if not recording:
+                    now = time.time()
+                    if not recording and (now - last_detection_time) > DETECTION_COOLDOWN:
+                        last_detection_time = now
                         start_time = time.time()
                         video_name = f"{insect_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
                         video_path = str(save_dir / video_name)
@@ -181,11 +209,23 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
             out.write(annotated_frame)
             if time.time() - start_time > duration:
                 recording = False
-                out.release()
+                out.release() 
                 print("[녹화 종료]")
 
                 converted_path = video_path.replace(".mp4", "_h264.mp4")
-                os.system(f'ffmpeg -y -i "{video_path}" -vcodec libx264 -acodec aac "{converted_path}"')
+                 # 🔇 ffmpeg 로그 숨기기
+                with open(os.devnull, 'w') as devnull:
+                    subprocess.run(
+                [
+                    'ffmpeg', '-y',
+                    '-i', video_path,
+                    '-vcodec', 'libx264',
+                    '-acodec', 'aac',
+                    converted_path
+                ],
+                stdout=devnull,
+                stderr=devnull
+            )
                 os.remove(video_path)
                 video_path = converted_path
 
@@ -194,7 +234,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    make_call(insect_name, best_conf)
+                    make_call_by_gh_idx(gh_idx)
 
                     try:
                         gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")

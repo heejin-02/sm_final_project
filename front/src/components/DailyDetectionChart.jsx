@@ -36,23 +36,29 @@ export default function DailyDetectionChart({ hourlyStats }) {
           />
           <YAxis />
           <Tooltip
-            formatter={v => [`${v}마리`, '탐지 수']}
+            formatter={v => [`${v}마리`, '탐지 해충 수']}
             labelFormatter={l => `시간: ${l}시`}
           />
-          <Legend />
+          <Legend
+            wrapperStyle={{
+              paddingTop: '10px',
+              margin: '0',
+            }}
+          />
           <Line
             type="monotone"
             dataKey="count"
+            name="탐지 해충 수"
             stroke="#ef4444"
             strokeWidth={3}
- dot={props => {
-   const { cx, cy, payload } = props;
-   if (payload.count > 0) {
-    // 각 dot마다 고유 key를 달아 줍니다
-     return <circle key={`dot-${payload.time}`} cx={cx} cy={cy} r={6} strokeWidth={2} fill="#ef4444" />;
-   }
-   return null;
-}}
+            dot={props => {
+              const { cx, cy, payload } = props;
+              if (payload.count > 0) {
+                // 각 dot마다 고유 key를 달아 줍니다
+                return <circle key={`dot-${payload.time}`} cx={cx} cy={cy} r={6} strokeWidth={2} fill="#ef4444" />;
+              }
+              return null;
+            }}
           />
         </LineChart>
       </ResponsiveContainer>
