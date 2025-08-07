@@ -263,7 +263,13 @@ export default function AdminUserInfo() {
                   value={userInfo.userName || ''}
                   readOnly
                 />
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-600">이름</label>
+              {!isEditing ? (
+                <div className="text-lg font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+                  {userInfo.userName}
+                </div>
               ) : (
                 <div>
                   <input
@@ -366,7 +372,6 @@ export default function AdminUserInfo() {
               </table>
             </div>
           </div>
-
         </div>
 
       </div>
