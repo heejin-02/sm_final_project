@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   getDailyStats,
   getMonthlyStats,
-  //getYearlyStats,
+  getYearlyStats,
   formatDateForAPI,
   formatMonthForAPI,
   formatYearForAPI

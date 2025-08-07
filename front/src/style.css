@@ -774,6 +774,11 @@
     overflow: auto;
   }
 
+  .table-overflow{
+    width: 100%;
+    overflow: auto;
+  }
+
   /* ===== 공통 입력 필드 스타일 ===== */
   .input {
     display: block;

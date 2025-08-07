@@ -7,6 +7,7 @@ import LeftPanel from '../components/LeftPanel';
 import DateNavigation from '../components/DateNavigation';
 import GroupedDetailList from '../components/GroupedDetailList';
 import StatisticsChart from '../components/StatisticsChart';
+import MonthlyTable from '../components/MonthlyTable'; 
 import YearOverYearTable from '../components/YearOverYearTable';
 import GptSummary from '../components/GptSummary'; 
 
@@ -159,10 +160,14 @@ export default function Report() {
                 </div>
               </div>
 
-              {/* 연도별 테이블 */}
-              {period === 'monthly' && stats?.predictions && (
-                <YearOverYearTable predictions={stats.predictions} />
-              )}
+              {/* 내년 예측 테이블 */}
+              <div className="mt-8 predicted-table">
+                {/* 월간 통계 */}
+                {period === 'monthly' && stats && <MonthlyTable predictions={stats?.predictions} />}
+                
+                {/* 연간 통계 */}
+                {period === 'yearly' && stats && <YearOverYearTable stats={stats} />}
+              </div>
 
               {/* 차트 */}
               <div className="mt-8">

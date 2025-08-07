@@ -21,7 +21,7 @@ export default function GroupedDetailList({ data, period }) {
   // 일간: 단순 리스트
   if (period === 'daily') {
     return (
-      <div className="bordered-box">
+      <div className="bordered-box grouped-detail-list">
         <h2 className="text-xl font-bold mb-4">상세 현황</h2>
         <div className="table-wrap scrl-custom">
           <table className="table border">
@@ -91,7 +91,7 @@ export default function GroupedDetailList({ data, period }) {
 
               {/* 토글 내용 */}
               {expandedGroups.has(groupKey) && (
-                <div className="table-wrap">
+                <div className="table-wrap scrl-custom">
                   <table className="table border">
                     <thead>
                       <tr className="bg-gray-50">
