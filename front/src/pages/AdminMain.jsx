@@ -44,7 +44,6 @@ export default function AdminMain() {
       const filteredList = rawUserList.filter(user => user.userPhone !== 'admin');
 
       // console.log('🔍 admin 제외 후:', filteredList.length, '건');
-
       // 회원별로 중복 제거 (userPhone 기준으로 farmIdx가 가장 낮은 농장을 대표로 사용)
       const uniqueUserMap = new Map();
       filteredList.forEach(user => {

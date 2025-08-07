@@ -530,7 +530,6 @@
   .btn-primary:hover {
     background-color: #124501;
     border-color: #124501;
-  }
 
   .btn-accent {
     background-color: var(--color-accent);
