@@ -70,7 +70,6 @@ export default function NotiDetail() {
 
   // 피드백 제출 핸들러 → axios 대신 alert
   const handleFeedbackSubmit = (feedback) => {
-    console.log('피드백 데이터:', feedback);
     // 나중에 실제 API 붙일 때 여기에 axios.post 넣으면 됩니다.
   };
 
