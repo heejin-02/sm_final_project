@@ -83,8 +83,36 @@ export default function GroupedDetailList({ data, period }) {
   return (
     <div className="bordered-box">
       <h2 className="text-xl font-bold mb-4">📋 상세 현황</h2>
-      
-      {data?.groupedData ? (
+
+      {/* 월간 데이터의 새로운 구조 처리 */}
+      {period === 'monthly' && data?.details ? (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-3">탐지 시간</th>
+                <th className="text-left p-3">탐지 구역</th>
+                <th className="text-left p-3">해충 이름</th>
+                <th className="text-left p-3">탐지 정확도</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.details.map((item, index) => (
+                <tr
+                  key={index}
+                  className="border-b hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleRowClick(item.anlsIdx || index)}
+                >
+                  <td className="p-3">{item.time}</td>
+                  <td className="p-3">{item.greenhouse}</td>
+                  <td className="p-3">{item.insect}</td>
+                  <td className="p-3">{item.accuracy}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : data?.groupedData ? (
         <div className="space-y-2">
           {Object.entries(data.groupedData).map(([groupKey, group]) => (
             <div key={groupKey} className="border rounded-lg overflow-hidden">
@@ -116,7 +144,7 @@ export default function GroupedDetailList({ data, period }) {
                     </thead>
                     <tbody>
                       {group.items.map((item) => (
-                        <tr 
+                        <tr
                           key={item.anlsIdx}
                           className="border-b hover:bg-blue-50 cursor-pointer"
                           onClick={() => handleRowClick(item.anlsIdx)}

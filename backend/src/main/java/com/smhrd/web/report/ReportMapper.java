@@ -21,6 +21,8 @@ public interface ReportMapper {
     Integer getMonthlyTotalDetectionCount(@Param("farmIdx") Long farmIdx, @Param("month") String month);
     Integer getMonthlyInsectTypeCount(@Param("farmIdx") Long farmIdx, @Param("month") String month);
     String getMonthlyTopDetectionZone(@Param("farmIdx") Long farmIdx, @Param("month") String month);
+    List<InsectMonthlyPredictionDTO> getMonthlyInsectPrediction(@Param("yearMonth") String yearMonth,
+            @Param("prevYearMonth") String prevYearMonth);
     List<WeekCountDTO> getMonthlyWeeklyDetectionStats(@Param("farmIdx") Long farmIdx, @Param("month") String month);
     List<InsectDistributionDTO> getMonthlyInsectDistribution(@Param("farmIdx") Long farmIdx, @Param("month") String month);
     List<DetectionDetailDTO> getMonthlyDetectionDetails(@Param("farmIdx") Long farmIdx, @Param("month") String month);
