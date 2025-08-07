@@ -11,6 +11,8 @@ public interface AdminMapper {
 
     int updateFarmInfo(AdminDTO farm);
     int deleteFarm(Long farmIdx);
+    int updateUserInfo(AdminDTO user);
+    int deleteUser(String userPhone);
 
 
 }

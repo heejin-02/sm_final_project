@@ -11,7 +11,7 @@
 		SELECT 
 		    c.ANLS_IDX,
 		    i.INSECT_NAME,
-		    g.GH_AREA AS GH_AREA,
+		    g.GH_NAME AS GH_NAME,
 		    c.ANLS_ACC,
 		    TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
 		    c.NOTI_CHECK
@@ -34,7 +34,7 @@
 	<select id="getAlertDetail" resultType="com.smhrd.web.farm.alert.dto.AlertDTO">
 	    SELECT 
 	        c.ANLS_IDX,
-	        g.GH_AREA,
+	        g.GH_NAME,
 	        i.INSECT_NAME,
 	        c.ANLS_ACC,
 	        c.CREATED_AT,
@@ -52,23 +52,16 @@
 
 	<select id="getGreenhouseInfo" resultType="com.smhrd.web.farm.alert.dto.GreenhouseInfoDTO">
 	    SELECT 
-	        c.ANLS_IDX,
-	        g.GH_AREA,
-	        i.INSECT_NAME,
-	        c.ANLS_ACC,
-	        TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
-	        q.USER_QES,
-	        q.GPT_CONTENT,
-	        TO_CHAR(q.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS GPT_CREATED_AT,
-	        c.NOTI_CHECK,
-	        img.IMG_URL
+	        c.ANLS_ACC       AS anlsAcc,
+	        g.GH_NAME        AS ghName,
+	        i.INSECT_NAME    AS insectName,
+	        TO_CHAR(c.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
 	    FROM QC_CLASSIFICATION c
 	    JOIN QC_GREENHOUSE g ON c.GH_IDX = g.GH_IDX
 	    JOIN QC_INSECT i ON c.INSECT_IDX = i.INSECT_IDX
-	    LEFT JOIN QC_GPT q ON c.ANLS_IDX = q.ANLS_IDX
-		LEFT JOIN QC_IMAGES img ON c.IMG_IDX = img.IMG_IDX
 	    WHERE c.ANLS_IDX = #{anlsIdx}
 	</select>
+	
 
 
 	<select id="getImageList" parameterType="long" resultType="com.smhrd.web.farm.alert.dto.ImageInfoDTO">
@@ -89,6 +82,31 @@
 	    FROM QC_GPT
 	    WHERE ANLS_IDX = #{anlsIdx}
 	</select>
+	
+<!-- 	<insert id="insertFeedback" parameterType="com.smhrd.web.farm.alert.dto.FeedbackDTO">
+	    INSERT INTO QC_FEEDBACK (
+	        FEEDBACK_IDX,
+	        ANLS_IDX,
+	        FEEDBACK_CONTENT,
+	        CREATED_AT
+	    ) VALUES (
+	        QC_FEEDBACK_SEQ.NEXTVAL,
+	        #{anlsIdx},
+	        #{feedbackContent},
+	        SYSTIMESTAMP
+	    )
+	</insert>
+
+	<select id="getFeedback" parameterType="long" resultType="com.smhrd.web.farm.alert.dto.FeedbackDTO">
+	    SELECT 
+	        FEEDBACK_IDX AS feedbackIdx,
+	        FEEDBACK_CONTENT AS feedbackContent,
+	        TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+	    FROM QC_FEEDBACK
+	    WHERE ANLS_IDX = #{anlsIdx}
+	</select> -->
+
+		
 
 
 </mapper>

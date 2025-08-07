@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.smhrd.web.today.TodayMapper">
+
+	<select id="getTodayResultByFarm" resultType="com.smhrd.web.today.TodayResultDTO" parameterType="Long">
+	    SELECT
+	        TO_CHAR(TRUNC(SYSDATE), 'YYYY-MM-DD') AS todayDate,
+	        COUNT(*) AS todayCount, 
+	        COUNT(DISTINCT C.ANLS_RESULT) AS insectTypeCount,
+	        COUNT(DISTINCT G.GH_NAME) AS zoneCount
+	    FROM 
+	        QC_CLASSIFICATION C
+	    JOIN 
+	        QC_GREENHOUSE G ON C.GH_IDX = G.GH_IDX
+	    WHERE 
+	        TRUNC(C.CREATED_AT) = TRUNC(SYSDATE)
+	        AND G.FARM_IDX = #{farmIdx}
+	</select>
+	
+	<select id="getTodayResultByGreenhouse" resultType="com.smhrd.web.today.TodayGreenhouseDTO" parameterType="Long">
+	    SELECT 
+	        G.GH_IDX AS ghIdx,
+	        G.GH_NAME AS ghName,
+	        COUNT(C.ANLS_IDX) AS todayInsectCount
+	    FROM 
+	        QC_GREENHOUSE G
+	    LEFT JOIN 
+	        QC_CLASSIFICATION C ON G.GH_IDX = C.GH_IDX 
+	        AND TRUNC(C.CREATED_AT) = TRUNC(SYSDATE)
+	    WHERE 
+	        G.FARM_IDX = #{farmIdx}
+	    GROUP BY 
+	        G.GH_IDX, G.GH_NAME
+	    ORDER BY 
+	        G.GH_IDX ASC
+	</select>
+
+	<select id="getTodayGptReportsByFarm" resultType="String" parameterType="Long">
+	    SELECT 
+	        G.GPT_CONTENT
+	    FROM 
+	        QC_GPT G
+	    JOIN 
+	        QC_CLASSIFICATION C ON G.ANLS_IDX = C.ANLS_IDX
+	    JOIN
+	        QC_GREENHOUSE GH ON C.GH_IDX = GH.GH_IDX
+	    WHERE 
+	        TRUNC(G.CREATED_AT) = TRUNC(SYSDATE)
+	        AND GH.FARM_IDX = #{farmIdx}
+	    ORDER BY 
+	        G.CREATED_AT DESC
+	</select>
+
+
+
+</mapper>

@@ -2,6 +2,7 @@
 import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext';
+import { DataCacheProvider } from './contexts/DataCacheContext';
 
 import AdminMain from './pages/AdminMain'
 import AdminUserInfo from './pages/AdminUserInfo'
@@ -29,35 +30,37 @@ export default function App() {
   }, [user?.role]);
 
   return (
-    <Routes>
-      <Route 
-        path="/"
-        element={
-          user
-            ? <Navigate to={user.role === 'admin' ? '/admin' : '/selectFarm'} replace />
-            : <Home />
-        }
-      />
+    <DataCacheProvider>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            user
+              ? <Navigate to={user.role === 'admin' ? '/admin' : '/selectFarm'} replace />
+              : <Home />
+          }
+        />
 
-      {user?.role === 'admin' && (
-        <>
-          <Route path="/admin" element={<AdminMain />} />
-          <Route path="/admin/userInfo/:userPhone" element={<AdminUserInfo />} />
-          <Route path="/admin/farm/create" element={<AdminFarmInfo />} />
-          <Route path="/admin/farm/:farmIdx" element={<AdminFarmInfo />} />
-        </>
-      )}
+        {user?.role === 'admin' && (
+          <>
+            <Route path="/admin" element={<AdminMain />} />
+            <Route path="/admin/userInfo/:userPhone" element={<AdminUserInfo />} />
+            <Route path="/admin/farm/create" element={<AdminFarmInfo />} />
+            <Route path="/admin/farm/:farmIdx" element={<AdminFarmInfo />} />
+          </>
+        )}
 
-      {user?.role && user.role !== 'admin' && (
-        <>
-          <Route path="/selectFarm" element={<SelectFarm />} />
-          <Route path="/mainfarm/:id" element={<MainFarm />} />
-          <Route path="/report/:period" element={<Report />} />
-          <Route path="/notifications/:id" element={<NotiDetail />} />
-        </>
-      )}
+        {user?.role && user.role !== 'admin' && (
+          <>
+            <Route path="/selectFarm" element={<SelectFarm />} />
+            <Route path="/mainFarm/:id" element={<MainFarm />} />
+            <Route path="/report/:period" element={<Report />} />
+            <Route path="/notifications/:id" element={<NotiDetail />} />
+          </>
+        )}
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </DataCacheProvider>
   )
 }

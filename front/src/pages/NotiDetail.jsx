@@ -1,19 +1,63 @@
 // src/pages/NotiDetail.jsx
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LeftPanel from '../components/LeftPanel';
-import { useNotifications } from '../hooks/useNotifications';
+import { useAlertDetail } from '../hooks/useAlerts';
 import { useRegions } from '../hooks/useRegions';
-import NotiFarmMap from '../components/NotiFarmMap';
+import { useAuth } from '../contexts/AuthContext';
+import { useDataCache } from '../contexts/DataCacheContext';
+import BaseFarmMap from '../components/NotiFarmMap';
 import DetectionFeedback from '../components/DetectionFeedback';
+import Loader from '../components/Loader';
 
 
 
 export default function NotiDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const notifications = useNotifications();
+  const anlsIdx = parseInt(id);
+  const { user } = useAuth();
+  const farmIdx = user?.selectedFarm?.farmIdx;
+  const { findGhIdxByName } = useDataCache();
+
+  const { alertDetail, loading: alertLoading, error } = useAlertDetail(anlsIdx);
   const { regions, loading: regionsLoading } = useRegions();
+
+
+
+  // ghIdx 찾기 로직 (useMemo로 최적화 및 렌더링 중 상태 업데이트 방지)
+  const targetGhIdx = useMemo(() => {
+    if (!alertDetail) return null;
+
+    // 1. 직접적인 ghIdx 확인
+    const directGhIdx = alertDetail.ghIdx ||
+                       alertDetail.greenhouseInfo?.ghIdx ||
+                       alertDetail.greenhouse?.ghIdx ||
+                       alertDetail.anlsGhIdx;
+
+    if (directGhIdx) {
+      return directGhIdx;
+    }
+
+    // 2. 캐시된 구역 데이터에서 ghName으로 찾기 (더 정확함)
+    const ghName = alertDetail.greenhouseInfo?.ghName;
+    if (ghName && farmIdx) {
+      const cachedGhIdx = findGhIdxByName(farmIdx, ghName);
+      if (cachedGhIdx) {
+        return cachedGhIdx;
+      }
+    }
+
+    // 3. fallback: regions에서 찾기
+    if (ghName && regions.length > 0) {
+      const foundRegion = regions.find(r => r.name === ghName);
+      if (foundRegion) {
+        return foundRegion.id;
+      }
+    }
+
+    return null;
+  }, [alertDetail, farmIdx, findGhIdxByName, regions]);
 
   // 페이지 진입 시 body 스크롤 막기
   useEffect(() => {
@@ -26,28 +70,37 @@ export default function NotiDetail() {
     };
   }, []);
 
-  // 현재 알림 찾기
-  const notification = notifications.find(item => item.id.toString() === id);
-
   // 피드백 제출 핸들러
   const handleFeedbackSubmit = (feedbackData) => {
     console.log('피드백 데이터:', feedbackData);
     // TODO: 실제 API로 피드백 전송
-    // axios.post('/api/feedback', feedbackData, { withCredentials: true })
+    axios.post('/api/feedback', feedbackData, { withCredentials: true })
     // 중복 팝업 제거 - DetectionFeedback 컴포넌트에서 이미 완료 메시지 표시
   };
 
   // 나중에 확인하기 핸들러
-  const handleMarkAsRead = (notificationId) => {
-    console.log('알림 확인 처리:', notificationId);
+  const handleMarkAsRead = (anlsIdx) => {
+    // console.log('알림 확인 처리:', anlsIdx);
     // TODO: 실제 API로 알림 읽음 처리
     alert('알림이 확인 처리되었습니다.');
     // 이전 페이지로 이동
     navigate(-1);
   };
 
-  // 알림을 찾지 못한 경우
-  if (!notification) {
+  // 로딩 중
+  if (alertLoading || regionsLoading) {
+    return (
+      <div className="flex h-screen">
+        <LeftPanel />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader message="알림 상세 정보를 불러오는 중..." />
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 또는 알림을 찾지 못한 경우
+  if (error || !alertDetail) {
     return (
       <div className="flex h-screen">
         <LeftPanel />
@@ -77,7 +130,7 @@ export default function NotiDetail() {
           {/* 헤더 */}
           <div className="r-sec-top">
             <div>
-              <p className="tit">해충 탐지 알림 내용</p>
+              <p className="tit">오늘의 알림</p>
               <p className="desc">탐지된 해충에 대한 상세 정보입니다.</p>
             </div>
             {/* <button 
@@ -90,26 +143,39 @@ export default function NotiDetail() {
 
           {/* 탐지 영상 */}
           <div className="flex gap-4">
-            <div className="bordered-box flex-1/2">
+            <div className="bordered-box flex-1/2 flex flex-col">
               {/* <h3 className="tit-2 text-center">탐지 구역</h3> */}
               <div className="text-center mb-3">
                 <span className="text-gray-600 text-lg">
-                  <span className="font-semibold text-black">{notification.location}</span> 에서&nbsp;
-                  <span className="font-semibold text-black">{notification.bugName}</span> 탐지됨&nbsp; 
-                  <span className='text-base'>(신뢰도 {notification.accuracy}%)</span>
+                  <span className="font-semibold text-black">
+                    {alertDetail.greenhouseInfo?.ghName || `${alertDetail.greenhouseInfo?.ghIdx}번 구역`}
+                  </span> 에서&nbsp;
+                  <span className="font-semibold text-black">{alertDetail.greenhouseInfo?.insectName}</span> 탐지됨&nbsp;
+                  <span className='text-base'>(신뢰도 {alertDetail.greenhouseInfo?.anlsAcc}%)</span>
                 </span>
-                <div>{notification.timestamp}</div>
-              </div>              
-              <NotiFarmMap
-                highlightRegion={notification.location}
+                <div>{alertDetail.greenhouseInfo?.createdAt}</div>
+
+              </div>
+              <BaseFarmMap
+                highlightRegion={alertDetail.greenhouseInfo?.ghName}
+                highlightGhIdx={targetGhIdx}
                 regions={regions}
                 loading={regionsLoading}
+                gap={0}
+                useApiData={false}
               />
+
             </div>            
             <div className="bordered-box flex-1/2">
               <h3 className="tit-2 text-center">탐지 영상</h3>
               <div className="video_wrap">
-                <video src="http://192.168.219.72:8095/videos/20250725/2_20250725_113404.mp4" controls/>
+                {alertDetail.imageList?.[0]?.imgUrl ? (
+                  <video src={`http://192.168.219.72:8095/videos${alertDetail.imageList[0].imgUrl}`} controls mute="true" autoPlay/>
+                ) : (
+                  <div className="flex items-center justify-center h-64 bg-gray-100 text-gray-500">
+                    동영상을 불러올 수 없습니다.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -118,7 +184,7 @@ export default function NotiDetail() {
 
           {/* AI 탐지 결과 피드백 */}
           <DetectionFeedback
-            notification={notification}
+            alertDetail={alertDetail}
             onFeedbackSubmit={handleFeedbackSubmit}
             onMarkAsRead={handleMarkAsRead}
           />
