@@ -29,7 +29,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")  // 전체 경로 허용
-                .allowedOrigins("http://localhost:5173") // 프론트엔드 주소 (필요시 여러개 가능)
+                .allowedOrigins("http://localhost:5173",
+                		"smfinalproject-production.up.railway.app") // 프론트엔드 주소 (필요시 여러개 가능)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true); // 인증 정보 허용
     }
