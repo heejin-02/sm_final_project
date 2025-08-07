@@ -4,13 +4,13 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   getDailyStats,
   getMonthlyStats,
-  getYearlyStats,
+  // getYearlyStats,
   getDailyGptSummary,
   getMonthlyGptSummary,
   // getYearlyGptSummary,
   formatDateForAPI,
   formatMonthForAPI,
-  formatYearForAPI
+  // formatYearForAPI
 } from '../api/report';
 
 export function useStatistics({ period, date }) {
@@ -51,8 +51,7 @@ export function useStatistics({ period, date }) {
       case 'yearly':
         formatted = formatYearForAPI(date);
         fetchStatsFn = () => getYearlyStats(user.selectedFarm.farmIdx, formatted);
-        // fetchGptFn   = () => getYearlyGptSummary(user.selectedFarm.farmIdx, formatted);
-        fetchGptFn   = () => '2';        
+        fetchGptFn   = () => getYearlyGptSummary(user.selectedFarm.farmIdx, formatted);
         break;
       default:
         setError('지원하지 않는 기간입니다.');

@@ -77,8 +77,10 @@
     --header-h: 88px;
     --color-80 : #808080;
     --weather-box-max-height : 177px;
-    --weather-box-min-height : 172px;
+    --weather-box-min-height : 157px;
     --noti-area-width: 320px;
+    --window-max-width: 1920px;
+    --window-min-width: 1520px;
   }
 
   /* ===== 기본 요소 스타일 ===== */
@@ -88,6 +90,14 @@
     line-height: 1.555;
     letter-spacing: -0.7px;
     box-sizing: border-box;
+  }
+
+  html, body{
+    width: 100%;
+    max-width: var(--window-max-width);
+    min-width: var(--window-min-width);
+    margin: 0 auto;
+    overflow-x: auto;
   }
 
   html {
@@ -105,9 +115,6 @@
     padding-top: var(--header-h);
     max-width: 1920px;
     margin: 0 auto;
-  }
-  #app.admin{
-    font-size: 16px;
   }
   .inner{
     width: 1440px;
@@ -190,10 +197,18 @@
     background-color: white;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     height: var(--header-h);
+    padding: 1.25rem 3.25rem;
+    max-width: var(--window-max-width);
+    min-width: var(--window-min-width);
+  }
+
+  .header-in {
+    width: 100%;
+    margin: 0 auto;
+    transform: translateX(0);
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    padding: 1.25rem 3.25rem;
+    align-items: center;    
   }
 
   .header-left {
@@ -691,9 +706,15 @@
   }
 
   .table {
-    min-width: 100%;
+    width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+  }
+
+  .table.border {
+      border-radius: .5rem;
+      overflow: hidden;
+      border-color: #dedede;
   }
 
   .table thead {
@@ -746,6 +767,11 @@
   .table td.text-blue-600 {
     color: #2563eb;
     font-weight: 500;
+  }
+
+  .grouped-detail-list .table-wrap{
+    max-height: 500px;
+    overflow: auto;
   }
 
   /* ===== 공통 입력 필드 스타일 ===== */
@@ -1615,20 +1641,17 @@
   }
 
   /* ===== NotiFarmMap 스타일 ===== */
-  .noti-farm-map {
-    width: 100%;
-  }
-  .noti-farm-map .farm-cell{
-    background: var(--bg);
-  }
-
   .farm-grid {
     position: relative;
     z-index: 2;
   }
 
+  .noti-farm-map {
+    width: 100%;
+  }
+  
   .noti-farm-map .farm-cell {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--bg);
     flex-direction: column;
     padding: 0.5rem;
   }
@@ -2167,6 +2190,11 @@
     color: #333;
   }
 
+  .report-content .table th,
+  .report-content .table td{
+    font-size: 1rem;
+  }
+
   /* ===== 차트 스타일 ===== */
   .statistics-charts {
     width: 100%;
@@ -2219,6 +2247,8 @@
     --header-h : calc(88px * 0.9);
     --weather-box-max-height: calc(177px * 0.9);
     --noti-area-width: calc(320px * 0.9);
+    --window-max-width: calc(1920px * 0.9);
+    --window-min-width: calc(1520px * 0.9);
   }
 
   html[data-zoom="110%"] {
@@ -2226,6 +2256,8 @@
     --header-h : calc(88px * 1.1);
     --weather-box-max-height: calc(177px * 1.1);
     --noti-area-width: calc(320px * 1.1);
+    --window-max-width: calc(1920px * 1.1);
+    --window-min-width: calc(1520px * 1.1);
   }
 
   html[data-zoom="120%"] {
@@ -2233,6 +2265,8 @@
     --header-h : calc(88px * 1.2);
     --weather-box-max-height: calc(177px * 1.2);
     --noti-area-width: calc(320px * 1.2);
+    --window-max-width: calc(1920px * 1.2);
+    --window-min-width: calc(1520px * 1.2);
   }
 
   /* ===== 위치 유틸리티 ===== */

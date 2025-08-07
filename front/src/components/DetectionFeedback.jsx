@@ -1,7 +1,8 @@
 // src/components/DetectionFeedback.jsx
 import { useState } from 'react';
+import FeedbackTextarea from './FeedbackTextarea';
 
-export default function DetectionFeedback({ alertDetail, onFeedbackSubmit, onMarkAsRead }) {
+export default function DetectionFeedback({ anlsIdx, alertDetail, onFeedbackSubmit, onMarkAsRead }) {
   const [step, setStep] = useState(1);
   const [feedback, setFeedback] = useState({
     accuracy: null,
@@ -13,6 +14,8 @@ export default function DetectionFeedback({ alertDetail, onFeedbackSubmit, onMar
     timeOfDay: null,
     improvement: []
   });
+
+  console.log('디텍션피드백', alertDetail, alertDetail.anlsIdx);
 
   // 해충별 기본 메시지
   const getDefaultMessage = (insectName) => {
@@ -63,11 +66,7 @@ export default function DetectionFeedback({ alertDetail, onFeedbackSubmit, onMar
         <div className="baekgu-msg">{alertDetail?.gptResult?.gptContent || getDefaultMessage(alertDetail?.greenhouseInfo?.insectName)}</div>
       </div>  
 
-      <div className="baekgu-msg-wrap feedback">
-        <div className="baekgu-msg">
-          <textarea name="feedback_content" id="feedback_content" className='scrl-custom' placeholder="백구에게 전달하고 싶은 말이나 분석 결과에 대해 기록하고 싶은 말을 자유롭게 남겨주세요. 자세한 의견은 백구의 성장에 도움이 돼요."></textarea>
-        </div>
-      </div>     
+      <FeedbackTextarea anlsIdx={anlsIdx} alertDetail={alertDetail} />     
 
       {step === 1 && (
        

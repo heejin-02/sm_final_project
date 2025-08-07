@@ -26,15 +26,15 @@ export default function GroupedDetailList({ data, period }) {
   if (period === 'daily') {
     return (
       <div className="bordered-box">
-        <h2 className="text-xl font-bold mb-4">📋 상세 현황</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <h2 className="text-xl font-bold mb-4">상세 현황</h2>
+        <div className="table-wrap scrl-custom">
+          <table className="table border">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-3">탐지 시간</th>
-                <th className="text-left p-3">탐지 구역</th>
-                <th className="text-left p-3">해충 이름</th>
-                <th className="text-left p-3">탐지 정확도</th>
+                <th className="">탐지 시간</th>
+                <th className="">탐지 구역</th>
+                <th className="">해충 이름</th>
+                <th className="">탐지 정확도</th>
               </tr>
             </thead>
             <tbody>
@@ -81,19 +81,19 @@ export default function GroupedDetailList({ data, period }) {
 
   // 월간/연간은 그룹핑된 토글 방식
   return (
-    <div className="bordered-box">
-      <h2 className="text-xl font-bold mb-4">📋 상세 현황</h2>
+    <div className="bordered-box grouped-detail-list">
+      <h2 className="text-xl font-bold mb-4">상세 현황</h2>
 
       {/* 월간 데이터의 새로운 구조 처리 */}
       {period === 'monthly' && data?.details ? (
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="table-wrap scrl-custom">
+          <table className="table border">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-3">탐지 시간</th>
-                <th className="text-left p-3">탐지 구역</th>
-                <th className="text-left p-3">해충 이름</th>
-                <th className="text-left p-3">탐지 정확도</th>
+                <th className="">탐지 시간</th>
+                <th className="">탐지 구역</th>
+                <th className="">해충 이름</th>
+                <th className="">탐지 정확도</th>
               </tr>
             </thead>
             <tbody>
@@ -132,14 +132,14 @@ export default function GroupedDetailList({ data, period }) {
 
               {/* 그룹 내용 (토글 시 표시) */}
               {expandedGroups.has(groupKey) && (
-                <div className="border-t overflow-x-auto">
-                  <table className="w-full">
+                <div className="table-wrap">
+                  <table className="table border">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="text-left p-3 text-sm">탐지 시간</th>
-                        <th className="text-left p-3 text-sm">탐지 구역</th>
-                        <th className="text-left p-3 text-sm">해충 이름</th>
-                        <th className="text-left p-3 text-sm">탐지 정확도</th>
+                        <th className="">탐지 시간</th>
+                        <th className="">탐지 구역</th>
+                        <th className="">해충 이름</th>
+                        <th className="">탐지 정확도</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -149,10 +149,10 @@ export default function GroupedDetailList({ data, period }) {
                           className="border-b hover:bg-blue-50 cursor-pointer"
                           onClick={() => handleRowClick(item.anlsIdx)}
                         >
-                          <td className="p-3 text-sm">{item.datetime}</td>
-                          <td className="p-3 text-sm">{item.region}</td>
-                          <td className="p-3 text-sm">{item.bugType}</td>
-                          <td className="p-3 text-sm">{item.accuracy}%</td>
+                          <td className="">{item.datetime}</td>
+                          <td className="">{item.region}</td>
+                          <td className="">{item.bugType}</td>
+                          <td className="">{item.accuracy}%</td>
                         </tr>
                       ))}
                     </tbody>

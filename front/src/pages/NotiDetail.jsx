@@ -23,8 +23,6 @@ export default function NotiDetail() {
   const { alertDetail, loading: alertLoading, error } = useAlertDetail(anlsIdx);
   const { regions, loading: regionsLoading } = useRegions();
 
-
-
   // ghIdx 찾기 로직 (useMemo로 최적화 및 렌더링 중 상태 업데이트 방지)
   const targetGhIdx = useMemo(() => {
     if (!alertDetail) return null;
@@ -180,10 +178,9 @@ export default function NotiDetail() {
             </div>
           </div>
 
-
-
           {/* AI 탐지 결과 피드백 */}
           <DetectionFeedback
+            anlsIdx={anlsIdx}
             alertDetail={alertDetail}
             onFeedbackSubmit={handleFeedbackSubmit}
             onMarkAsRead={handleMarkAsRead}
