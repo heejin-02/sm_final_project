@@ -525,21 +525,29 @@ def build_monthly_stats_prompt(data: dict, month: str, farm_name: str) -> str:
     return prompt
 
 
-# 2. 기존 요약 조회 함수
-def get_existing_monthly_summary(farm_idx: int, month_str: str):
+
+def get_existing_monthly_summary_and_created_at(farm_idx: int, month_str: str):
     with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT REPORT, CREATED_AT FROM QC_REPORT
-                WHERE FARM_IDX = :1 AND PERIOD_TYPE = '월간' AND PERIOD_MARK = :2
+                SELECT REPORT, CREATED_AT
+                  FROM QC_REPORT
+                 WHERE FARM_IDX = :1
+                   AND PERIOD_TYPE = '월간'
+                   AND PERIOD_MARK = :2
             """, [farm_idx, month_str])
             row = cur.fetchone()
-            return (row[0],row[1]) if row else (None,None)
+            return (row[0], row[1]) if row else (None, None)
 
 def get_latest_monthly_detection_time(farm_idx: int, month_str: str):
-    # month_str: "2025-08" 과 같은 형태
-    month_start = f"{month_str}-01"
-    next_month_start = month_start + relativedelta(months=1)
+    # 1) month_str 검증 및 datetime 변환 (YYYY-MM)
+    try:
+        month_start = datetime.strptime(month_str, "%Y-%m")
+    except ValueError:
+        raise ValueError("month 파라미터는 'YYYY-MM' 형식이어야 합니다.")
+    # 2) 다음 달 첫날 계산
+    next_month = month_start + relativedelta(months=1)
+
     with oracledb.connect(user=DB_USER, password=DB_PASS, dsn=DB_DSN) as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -547,46 +555,51 @@ def get_latest_monthly_detection_time(farm_idx: int, month_str: str):
                   FROM QC_IMAGES I
                   JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
                  WHERE G.FARM_IDX = :1
-                   AND I.CREATED_AT >= TO_DATE(:2,'YYYY-MM-DD')
-                   AND I.CREATED_AT <  TO_DATE(:3,'YYYY-MM-DD')
-            """, [farm_idx, month_start.date(),next_month_start.date()])
+                   AND I.CREATED_AT >= :2
+                   AND I.CREATED_AT <  :3
+            """, [
+                farm_idx,
+                month_start.date(),    # 2025-08-01
+                next_month.date()      # 2025-09-01
+            ])
             return cur.fetchone()[0]  # None 이면 탐지 기록 없음
-        
-# 3. FastAPI 엔드포인트
+
 @app.get("/api/monthly-gpt-summary")
 def gpt_monthly_summary(farm_idx: int, month: str):
     try:
-        existing_summary,report_created_at  = get_existing_monthly_summary(farm_idx, month)
-        latest_detection = get_latest_monthly_detection_time(farm_idx, month)
-        if existing_summary and (not latest_detection or latest_detection <= report_created_at):
+        # (A) 기존 요약 + 생성 시각 조회
+        existing_summary, created_at = get_existing_monthly_summary_and_created_at(farm_idx, month)
+        # (B) 최신 탐지 시각 조회
+        latest = get_latest_monthly_detection_time(farm_idx, month)
+
+        # (C) 요약이 있고, 새로운 탐지 없음 → 기존 요약만 반환
+        if existing_summary and (not latest or latest <= created_at):
             return {
-                "status" : "already_exists",
-                "summary" : existing_summary,
+                "status": "already_exists",
+                "summary": existing_summary,
                 "raw_data": None
             }
 
-        res = requests.get("http://localhost:8095/report/monthly-stats", params={"farmIdx": farm_idx , "month" : month})
+        # (D) 탐지 데이터 가져오기
+        res = requests.get(
+            "http://localhost:8095/report/monthly-stats",
+            params={"farmIdx": farm_idx, "month": month}
+        )
         if res.status_code != 200:
             return {"error": f"Spring API 호출 실패: {res.status_code}"}
-
         data = res.json()
 
-              # ──(D) 탐지 기록 자체가 없다면
+        # (E) 탐지 자체가 없으면 기존 요약 또는 no_detection
         if not data or data.get("totalCount", 0) == 0:
-            # 기존 요약 있으면 그것만 돌려주고, 없으면 “탐지 없음” 안내
             if existing_summary:
-                return {
-                    "status": "already_exists",
-                    "summary": existing_summary,
-                    "raw_data": None
-                }
-            else:
-                return {
-                    "status": "no_detection",
-                    "summary": f"{month} 기준 {farm_idx}번 농장에는 해충 탐지 정보가 없습니다.",
-                    "raw_data": data
-                }
-        # GPT 요청
+                return {"status": "already_exists", "summary": existing_summary, "raw_data": None}
+            return {
+                "status": "no_detection",
+                "summary": f"{month}월 기준 {farm_idx}번 농장에는 해충 탐지 정보가 없습니다.",
+                "raw_data": data
+            }
+
+        # (F) GPT 호출 & DB 저장
         farm_name = get_farm_name_by_idx(farm_idx)
         prompt = build_monthly_stats_prompt(data, month=month, farm_name=farm_name)
         gpt_res = client.chat.completions.create(
@@ -595,8 +608,6 @@ def gpt_monthly_summary(farm_idx: int, month: str):
             temperature=0.6
         )
         summary = gpt_res.choices[0].message.content
-
-        # ──(F) DB에 upsert
         upsert_monthly_report(farm_idx, month, summary)
 
         return {
@@ -605,9 +616,10 @@ def gpt_monthly_summary(farm_idx: int, month: str):
             "raw_data": data
         }
 
+    except ValueError as ve:
+        return {"error": str(ve)}
     except Exception as e:
         return {"error": str(e)}
-
 # 4. 저장 함수
 
 def upsert_monthly_report(farm_idx: int, month_str: str, summary: str):
