@@ -123,7 +123,7 @@
         ) WHERE ROWNUM = 1
     </select>
     
-    <!-- 예측 -->
+    <!-- 해충 미래 예측 -->
 	<select id="getMonthlyInsectPrediction" resultType="com.smhrd.web.report.dto.InsectMonthlyPredictionDTO">
 	    SELECT
 	        #{yearMonth} AS month,
@@ -147,7 +147,6 @@
 	    WHERE I.INSECT_NAME IN ('꽃노랑총채벌레', '담배가루이', '비단노린재', '알락수염노린재')
 	    GROUP BY I.INSECT_NAME
 	</select>
-		
 
     <!-- 주차별 탐지 현황 -->
 	<select id="getMonthlyWeeklyDetectionStats" resultType="com.smhrd.web.report.dto.WeekCountDTO">
@@ -237,6 +236,52 @@
 	    ) WHERE ROWNUM = 1
 	</select>
 	
+	<!-- 계절별 해충 예측 -->
+	<select id="getYearlySeasonalPrediction" resultType="com.smhrd.web.report.dto.SeasonalPredictionDTO">
+	    SELECT 
+		    CASE 
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('03', '04', '05') THEN 'Spring'
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('06', '07', '08') THEN 'Summer'
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('09', '10', '11') THEN 'Fall'
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('12', '01', '02') THEN 'Winter'
+		    END AS season,
+		    I.INSECT_NAME AS insectName,
+		    NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 ELSE 0 END), 0) AS count2024,
+		    NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 ELSE 0 END), 0) AS count2025,
+		    ROUND(
+		        CASE
+		            WHEN NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 ELSE 0 END), 0) = 0 THEN
+		                NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 ELSE 0 END), 0)
+		            ELSE
+		                NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 ELSE 0 END), 0) * 
+		                NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 ELSE 0 END), 0) /
+		                NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 ELSE 0 END), 0)
+		        END
+		    ) AS predicted2026
+		FROM 
+		    QC_CLASSIFICATION C
+		JOIN 
+		    QC_INSECT I ON TRIM(C.ANLS_RESULT) = TRIM(I.INSECT_NAME)
+		WHERE 
+		    I.INSECT_NAME IN ('꽃노랑총채벌레', '담배가루이', '비단노린재', '알락수염노린재')
+		    AND TO_CHAR(C.CREATED_AT, 'YYYY') IN ('2024', '2025') 
+		GROUP BY 
+		    CASE 
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('03', '04', '05') THEN 'Spring'
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('06', '07', '08') THEN 'Summer'
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('09', '10', '11') THEN 'Fall'
+		        WHEN TO_CHAR(C.CREATED_AT, 'MM') IN ('12', '01', '02') THEN 'Winter'
+		    END,
+		    I.INSECT_NAME
+		ORDER BY 
+		    season, insectName
+
+	</select>
+
+
+
+		
+	
 	<!-- 월별 통계 -->
 	<select id="getYearlyMonthlyStats" resultType="com.smhrd.web.report.dto.MonthCountDTO">
 	    SELECT TO_CHAR(CREATED_AT, 'MM') AS month, COUNT(*) AS count
@@ -271,30 +316,6 @@
 	    ORDER BY C.CREATED_AT
 	</select>
 	
-	<!-- 4종 해충의 연도별 탐지수 -->
-	<select id="getYearlyInsectTrends" resultType="com.smhrd.web.report.dto.InsectYearlyCountDTO">
-	    SELECT
-	        I.INSECT_NAME AS insectName,
-	        NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 END), 0) AS count2024,
-	        NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0) AS count2025,
-	        ROUND(
-	            CASE
-	                WHEN NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 END), 0) = 0
-	                THEN NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0)
-	                ELSE
-	                    NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0)
-	                    * (
-	                        NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2025' THEN 1 END), 0)
-	                        /
-	                        NULLIF(NVL(SUM(CASE WHEN TO_CHAR(C.CREATED_AT, 'YYYY') = '2024' THEN 1 END), 0), 0)
-	                    )
-	            END
-	        ) AS predicted2026
-	    FROM QC_CLASSIFICATION C
-	    JOIN QC_INSECT I ON C.ANLS_RESULT = I.INSECT_NAME
-	    WHERE I.INSECT_NAME IN ('꽃노랑총채벌레', '담배가루이', '비단노린재', '알락수염노린재')
-	    GROUP BY I.INSECT_NAME
-	</select>
-
+	
 	    
 </mapper>

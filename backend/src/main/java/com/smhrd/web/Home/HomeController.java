@@ -85,11 +85,43 @@ public class HomeController {
         }
     }
     
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     @Operation(summary = "로그아웃 처리 - 세션을 삭제합니다.")
     public ResponseEntity<?> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.ok(Map.of("message", "로그아웃이 완료되었습니다."));
     }
+    
+    @GetMapping("/check-session")
+    @Operation(summary = "세션 상태 확인 - 로그인 상태와 사용자 정보를 반환합니다.")
+    public ResponseEntity<Map<String, Object>> checkSession(HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        String loginId = (String) session.getAttribute("loginId");
+        String userName = (String) session.getAttribute("userName");
+        String role = (String) session.getAttribute("role");
+        
+        if (loginId != null && userName != null) {
+            // 세션이 유효한 경우
+            Map<String, Object> user = new HashMap<>();
+            user.put("userPhone", loginId);
+            user.put("userName", userName);
+            user.put("role", role);
+            
+            response.put("isAuthenticated", true);
+            response.put("user", user);
+            
+            System.out.println("유효한 세션 발견: " + userName + " (" + role + ")");
+        } else {
+            // 세션이 없거나 만료된 경우
+            response.put("isAuthenticated", false);
+            response.put("user", null);
+            
+            System.out.println("유효한 세션 없음");
+        }
+        
+        return ResponseEntity.ok(response);
+    }    
+
 
 }
