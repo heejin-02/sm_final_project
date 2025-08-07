@@ -15,3 +15,13 @@ export const loginCheck = (id, pw) =>
 export const getUserFarms = (userPhone) => {
   return api.get('/api/user/farms', { params: { userPhone } });
 }
+
+// 세션 확인
+export const checkSession = () => {
+  return api.get('/api/auth/session');
+}
+
+// 로그아웃
+export const logout = () => {
+  return api.post('/api/auth/logout');
+}
