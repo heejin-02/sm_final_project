@@ -18,8 +18,9 @@ export default function NotiList(){
       if (a.notiCheck === "N" && b.notiCheck === "Y") return -1; // a가 위로
       if (a.notiCheck === "Y" && b.notiCheck === "N") return 1;  // b가 위로
     }
-    // 2. 같은 읽음 상태 내에서는 anlsIdx 큰 순 (최신순)
-    return b.anlsIdx - a.anlsIdx;
+    // 2. 같은 읽음 상태 내에서는 createdAt 큰 순 (최신순)
+    //return b.anlsIdx - a.anlsIdx;
+    return b.createdAt - a.createdAt;
   });
 
   const unreadCount = alerts.filter(alert => alert.notiCheck !== "Y").length;

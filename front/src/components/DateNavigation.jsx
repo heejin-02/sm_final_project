@@ -30,6 +30,26 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
     return checkDate > today;
   };
 
+  // “다음” 버튼 활성 여부 (daily/monthly/yearly 별 로직 통합)
+  const isNextDisabled = (() => {
+    const today = new Date();
+    const sel = new Date(currentDate);
+
+    if (period === 'daily') {
+      const next = new Date(sel);
+      next.setDate(sel.getDate() + 1);
+      return isFutureDate(next);
+    }
+    if (period === 'monthly') {
+      return sel.getFullYear() === today.getFullYear()
+          && sel.getMonth()    === today.getMonth();
+    }
+    if (period === 'yearly') {
+      return sel.getFullYear() === today.getFullYear();
+    }
+    return false;
+  })();  
+
   // 이전/다음 날짜로 이동
   const handlePrevious = () => {
     const currentDateObj = new Date(currentDate);
@@ -130,9 +150,9 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
         <button
           className="date-nav-btn"
           onClick={handlePrevious}
-          title={`이전 ${period === 'daily' ? '일' : period === 'monthly' ? '월' : '년'}`}
+          title={`이전 ${period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}`}
         >
-          ◀ <span>이전 {period === 'daily' ? '일' : period === 'monthly' ? '월' : '년'}</span>
+          ◀ <span>이전 {period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}</span>
         </button>
 
         {/* 연도 선택 */}
@@ -182,31 +202,13 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
 
         {/* 다음 버튼 */}
         <button
-          className={`date-nav-btn ${
-            period === 'daily' && (() => {
-              const nextDate = new Date(currentDate);
-              nextDate.setDate(nextDate.getDate() + 1);
-              return isFutureDate(nextDate);
-            })() ? 'disabled' : ''
-          }`}
-          style={{
-            visibility: period === 'daily' && (() => {
-              const nextDate = new Date(currentDate);
-              nextDate.setDate(nextDate.getDate() + 1);
-              return isFutureDate(nextDate);
-            })() ? 'hidden' : 'visible'
-          }}
+          className={`date-nav-btn ${isNextDisabled ? 'disabled' : ''}`}
+          style={{ visibility: isNextDisabled ? 'hidden' : 'visible' }}
           onClick={handleNext}
-          disabled={
-            period === 'daily' && (() => {
-              const nextDate = new Date(currentDate);
-              nextDate.setDate(nextDate.getDate() + 1);
-              return isFutureDate(nextDate);
-            })()
-          }
-          title={`다음 ${period === 'daily' ? '일' : period === 'monthly' ? '월' : '년'}`}
+          disabled={isNextDisabled}
+          title={`다음 ${period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}`}
         >
-          <span>다음 {period === 'daily' ? '일' : period === 'monthly' ? '월' : '년'}</span> ▶
+          <span>다음 {period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}</span> ▶
         </button>
       </div>
     </div>

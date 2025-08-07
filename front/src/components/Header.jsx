@@ -88,7 +88,14 @@ export default function Header() {
         {user?.userName && user.role !== 'admin' && user.selectedFarm?.farmName && (
           <div
             className="header-text cursor-pointer transition-colors"
-            onClick={() => navigate(`/mainFarm/${user.selectedFarm.farmIdx}`)}
+            onClick={() => {
+              // 현재 페이지가 MainFarm이면 새로고침, 아니면 이동
+              if (window.location.pathname === `/mainFarm/${user.selectedFarm.farmIdx}`) {
+                window.location.reload();
+              } else {
+                navigate(`/mainFarm/${user.selectedFarm.farmIdx}`);
+              }
+            }}
           >
             {user.selectedFarm.farmName} <span className="font-normal text-black hover:text-black">관리중</span>
           </div>
