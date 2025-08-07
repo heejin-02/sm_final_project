@@ -8,6 +8,7 @@ import DateNavigation from '../components/DateNavigation';
 import GroupedDetailList from '../components/GroupedDetailList';
 import StatisticsChart from '../components/StatisticsChart';
 import YearOverYearTable from '../components/YearOverYearTable';
+import GptSummary from '../components/GptSummary'; 
 
 export default function Report() {
   const { period } = useParams(); // 'daily' | 'monthly' | 'yearly'
@@ -25,9 +26,6 @@ export default function Report() {
     stats,
     loading,
     error,
-    gptSummary,
-    gptLoading,
-    gptError,
   } = useStatistics({ period, date: currentDate });
 
   useEffect(() => {
@@ -143,18 +141,7 @@ export default function Report() {
               className="report-content"
             >
               {/* GPT 분석 */}
-              <div className="baekgu-msg-wrap mt-8 flex">
-                <div className="thumb">
-                  <img src="/images/talk_109.png" alt="백구" />
-                </div>
-                <div className="baekgu-msg w-full">
-                  {(() => {
-                    if (gptLoading) return '통계 내용을 토대로 분석 중입니다. 잠시만 기다려 주세요.';
-                    if (gptError) return '분석 요청이 실패했습니다.';
-                    return gptSummary || '분석을 준비 중입니다.';
-                  })()}
-                </div>
-              </div>
+              <GptSummary period={period} date={currentDate} />
 
               {/* 요약 카드 */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">

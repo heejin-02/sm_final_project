@@ -1569,36 +1569,6 @@
     min-height: 100px;
   }
 
-  .baekgu-msg.is-tri{
-    margin-left: 10px;
-  }
-
-  .baekgu-msg.is-tri::before{
-  content: '';
-  position: absolute;
-  border-style: solid;
-  border-width: 12px 12px 12px 0;
-  border-color: transparent #d2e9fe;
-  display: block;
-  width: 0;
-  z-index: 0;
-  left: -12px;
-  top: 38px;
-  }
-
-  .baekgu-msg.is-tri::after{ 
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 10px 10px 10px 0;
-    border-color: transparent aliceblue;
-    display: block;
-    width: 0;
-    z-index: 1;
-    left: -10px;
-    top: 40px;
-  }
-
   .baekgu-msg-wrap.feedback{
     justify-content: flex-end;
   }
@@ -1611,7 +1581,7 @@
 
   .baekgu-msg-wrap textarea{
     width: 100%;
-    min-height: 100px;
+    min-height: 130px;
     resize: vertical;
     border: none;
     background: transparent;
@@ -1621,6 +1591,12 @@
   .baekgu-msg-wrap textarea:focus-visible{
     border: none;
     outline: none;
+  }
+
+  .baekgu-msg-wrap.feedback .btn-wrap .btn{
+    margin-left: auto;
+    background: #ffe387;
+    padding: .6rem 1.4rem;    
   }
 
   /* ===== video 스타일 ===== */
@@ -1839,13 +1815,15 @@
 
   .feedback-question {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
   .question-text {
     font-size: 1.125rem;
     color: #374151;
     line-height: 1.6;
+    text-align: center;
+    margin-bottom: 1.2rem;    
   }
 
   .feedback-options {
@@ -1880,16 +1858,27 @@
     font-weight: bold;
   }
 
-  .feedback-btn-simple.correct:hover {
+  .feedback-btn-simple.correct:not(:disabled):hover,
+  .feedback-btn-simple.correct.selected {
     background-color: #f0fdf4;
     border-color: #16a34a;
     color: #16a34a;
   }
 
-  .feedback-btn-simple.wrong:hover {
+  .feedback-btn-simple.wrong:not(:disabled):hover,
+  .feedback-btn-simple.wrong.selected {
     background-color: #fef2f2;
     border-color: #dc2626;
     color: #dc2626;
+  }
+
+  .feedback-btn-simple:disabled{
+    opacity: 1;
+  }
+
+  .feedback-btn-simple:disabled:not(.selected):hover{
+    border-color: #d1d5db;
+    background: #fff;
   }
 
   .feedback-btn-simple.later:hover {
@@ -2193,6 +2182,10 @@
   .report-content .table th,
   .report-content .table td{
     font-size: 1rem;
+  }
+
+  .text-toggle{
+    color: var(--color-accent);
   }
 
   /* ===== 차트 스타일 ===== */

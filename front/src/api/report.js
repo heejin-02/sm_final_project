@@ -183,21 +183,21 @@ export const formatMonthForAPI = (date) => {
 };
 
 // 연간 통계 데이터 가져오기
-// export const getYearlyStats = async (farmIdx, year) => {
-//   try {
-//     const response = await axios.get(`${BASE_URL}/report/yearly-stats`, {
-//       params: {
-//         farmIdx: farmIdx,
-//         year: year // YYYY 형식 (예: 2025)
-//       },
-//       withCredentials: true,
-//       timeout: 10000 // 10초 타임아웃
-//     });
-//     return response.data;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+export const getYearlyStats = async (farmIdx, year) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/report/yearly-stats`, {
+      params: {
+        farmIdx: farmIdx,
+        year: year // YYYY 형식 (예: 2025)
+      },
+      withCredentials: true,
+      timeout: 10000 // 10초 타임아웃
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 // 연간 날짜 포맷 유틸리티 함수
 export const formatYearForAPI = (date) => {

@@ -3,8 +3,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { loginCheck, checkSession, logout as apiLogout, getUserFarms } from '../api/auth';
 import axios from 'axios';
 
-// checkSession은 auth.js에서 import하여 사용
-
 // 1. Context 생성
 const AuthContext = createContext();
 

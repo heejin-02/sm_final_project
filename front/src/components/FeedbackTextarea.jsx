@@ -53,26 +53,26 @@ export default function FeedbackTextarea({ anlsIdx, alertDetail }) {
       <div className="baekgu-msg">
         <textarea
           name="feedback_content"
-          className="scrl-custom w-full h-40 p-3 rounded resize-none border"
+          className="scrl-custom resize-none"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="백구에게 전달하고 싶은 말이나 분석 결과에 대해 기록하고 싶은 말을 자유롭게 남겨주세요."
           readOnly={!isEditing}
         />
 
-        <div className="mt-2 text-right space-x-2">
+        <div className="btn-wrap">
           {isEditing ? (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || !content.trim()}
-              className="btn-submit px-4 py-2 text-sm"
+              className="btn"
             >
-              {isSubmitting ? '저장 중...' : savedFeedback ? '수정 완료' : '등록하기'}
+              {isSubmitting ? '저장 중...' : savedFeedback ? '수정 완료' : '저장하기'}
             </button>
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="btn-outline px-4 py-2 text-sm"
+              className="btn"
             >
               수정하기
             </button>
