@@ -23,8 +23,6 @@ export default function NotiDetail() {
   const { alertDetail, loading: alertLoading, error } = useAlertDetail(anlsIdx);
   const { regions, loading: regionsLoading } = useRegions();
 
-
-
   // ghIdx 찾기 로직 (useMemo로 최적화 및 렌더링 중 상태 업데이트 방지)
   const targetGhIdx = useMemo(() => {
     if (!alertDetail) return null;
@@ -70,22 +68,14 @@ export default function NotiDetail() {
     };
   }, []);
 
-  // 피드백 제출 핸들러
-  const handleFeedbackSubmit = (feedbackData) => {
-    console.log('피드백 데이터:', feedbackData);
-    // TODO: 실제 API로 피드백 전송
-    axios.post('/api/feedback', feedbackData, { withCredentials: true })
-    // 중복 팝업 제거 - DetectionFeedback 컴포넌트에서 이미 완료 메시지 표시
+  // 피드백 제출 핸들러 → axios 대신 alert
+  const handleFeedbackSubmit = (feedback) => {
+    // 나중에 실제 API 붙일 때 여기에 axios.post 넣으면 됩니다.
   };
 
-  // 나중에 확인하기 핸들러
-  const handleMarkAsRead = (anlsIdx) => {
-    // console.log('알림 확인 처리:', anlsIdx);
-    // TODO: 실제 API로 알림 읽음 처리
-    alert('알림이 확인 처리되었습니다.');
-    // 이전 페이지로 이동
-    navigate(-1);
-  };
+  const handleMarkAsRead = () => {
+    // 읽음 처리 로직(없으면 빈 함수)
+  };  
 
   // 로딩 중
   if (alertLoading || regionsLoading) {
@@ -180,10 +170,9 @@ export default function NotiDetail() {
             </div>
           </div>
 
-
-
           {/* AI 탐지 결과 피드백 */}
           <DetectionFeedback
+            anlsIdx={anlsIdx}
             alertDetail={alertDetail}
             onFeedbackSubmit={handleFeedbackSubmit}
             onMarkAsRead={handleMarkAsRead}

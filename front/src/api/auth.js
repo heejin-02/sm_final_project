@@ -32,17 +32,6 @@ export const checkSession = async () => {
   }
 };
 
-// 농장 선택 정보를 세션에 저장
-export const selectFarmInSession = async (farmInfo) => {
-  try {
-    const response = await api.post('/api/home/select-farm', farmInfo);
-    return response.data;
-  } catch (error) {
-    console.error('농장 선택 세션 저장 실패:', error);
-    throw error;
-  }
-};
-
 // 로그아웃
 export const logout = async () => {
   try {

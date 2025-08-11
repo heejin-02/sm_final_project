@@ -42,11 +42,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 DB_USER = os.getenv("DB_USER")
 DB_PASS =  os.getenv("DB_PASS")
 DB_DSN =  os.getenv("DB_DSN")
-#oracledb.init_oracle_client(lib_dir=None)
-# 환경 변수 ORACLE_CLIENT_LIB_DIR이 설정된 경우에만 Thick 모드 초기화
-lib_dir = os.getenv("ORACLE_CLIENT_LIB_DIR")
-if lib_dir:
-    oracledb.init_oracle_client(lib_dir=lib_dir)
+oracledb.init_oracle_client(lib_dir=None)
 
 # 🌐 CORS 설정
 app.add_middleware(

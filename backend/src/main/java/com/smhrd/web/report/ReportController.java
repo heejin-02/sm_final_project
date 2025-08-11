@@ -34,9 +34,9 @@ public class ReportController {
     
     @GetMapping("/yearly-stats")
     @Operation(summary = "연간 탐지 통계 조회")
-    public YearlyStatsDTO getYearlyStats(@RequestParam Long ghIdx,
+    public YearlyStatsDTO getYearlyStats(@RequestParam Long farmIdx,
                                          @RequestParam String year) {
-        return reportService.getYearlyStats(ghIdx, year);
+        return reportService.getYearlyStats(farmIdx, year);
     }
 
 

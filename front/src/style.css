@@ -774,6 +774,11 @@
     overflow: auto;
   }
 
+  .table-overflow{
+    width: 100%;
+    overflow: auto;
+  }
+
   /* ===== 공통 입력 필드 스타일 ===== */
   .input {
     display: block;
@@ -1569,36 +1574,6 @@
     min-height: 100px;
   }
 
-  .baekgu-msg.is-tri{
-    margin-left: 10px;
-  }
-
-  .baekgu-msg.is-tri::before{
-  content: '';
-  position: absolute;
-  border-style: solid;
-  border-width: 12px 12px 12px 0;
-  border-color: transparent #d2e9fe;
-  display: block;
-  width: 0;
-  z-index: 0;
-  left: -12px;
-  top: 38px;
-  }
-
-  .baekgu-msg.is-tri::after{ 
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 10px 10px 10px 0;
-    border-color: transparent aliceblue;
-    display: block;
-    width: 0;
-    z-index: 1;
-    left: -10px;
-    top: 40px;
-  }
-
   .baekgu-msg-wrap.feedback{
     justify-content: flex-end;
   }
@@ -1608,10 +1583,16 @@
     border-color: #ededd4;
     width: 80%;
   }
+  
+  .baekgu-msg-wrap.feedback .btn{
+    margin-left: auto;
+    background: #ffe387;
+    padding: .6rem 1.4rem;    
+  }
 
   .baekgu-msg-wrap textarea{
     width: 100%;
-    min-height: 100px;
+    min-height: 130px;
     resize: vertical;
     border: none;
     background: transparent;
@@ -1731,6 +1712,10 @@
   }
 
   /* ===== 공통 모달 스타일 ===== */
+  .admin .modal{
+    width: 400px;
+  }
+
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -1748,11 +1733,11 @@
     background-color: white;
     border-radius: 0.75rem;
     padding: 1.5rem;
-    max-width: 400px;
-    width: 90%;
     box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
     max-height: 90%;
-    overflow-y: auto;    
+    overflow-y: auto;  
+    width: auto;
+    min-width: 300px;      
   }
 
   .modal-header {
@@ -1760,6 +1745,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    position: relative;
   }
 
   .modal-header .title {
@@ -1770,12 +1756,31 @@
   .modal-close-btn {
     background: none;
     border: none;
-    font-size: 1.5rem;
     cursor: pointer;
     color: #666;
-    padding: 0.25rem;
-    min-height: 44px;
-    min-width: 44px;
+    font-size: 2.4rem;
+    line-height: .6;
+    position: absolute;
+    top: 0;
+    right: 0;    
+  }
+
+  .feedback-modal .modal{
+    padding: 1rem 1.5rem 1.5rem;
+  }
+
+  .feedback-modal .modal-body{
+    text-align: center;
+    padding: 1rem 0 1.25rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+  .feedback-modal .btn-primary{
+    width: 100%;
+  }
+
+  .feedback-modal .modal-body > p{
+    line-height: 1.555;
   }
 
   .quick-options {
@@ -1839,13 +1844,15 @@
 
   .feedback-question {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
   .question-text {
     font-size: 1.125rem;
     color: #374151;
     line-height: 1.6;
+    text-align: center;
+    margin-bottom: 1.2rem;    
   }
 
   .feedback-options {
@@ -1880,16 +1887,27 @@
     font-weight: bold;
   }
 
-  .feedback-btn-simple.correct:hover {
+  .feedback-btn-simple.correct:not(:disabled):hover,
+  .feedback-btn-simple.correct.selected {
     background-color: #f0fdf4;
     border-color: #16a34a;
     color: #16a34a;
   }
 
-  .feedback-btn-simple.wrong:hover {
+  .feedback-btn-simple.wrong:not(:disabled):hover,
+  .feedback-btn-simple.wrong.selected {
     background-color: #fef2f2;
     border-color: #dc2626;
     color: #dc2626;
+  }
+
+  .feedback-btn-simple:disabled{
+    opacity: 1;
+  }
+
+  .feedback-btn-simple:disabled:not(.selected):hover{
+    border-color: #d1d5db;
+    background: #fff;
   }
 
   .feedback-btn-simple.later:hover {
@@ -2190,10 +2208,13 @@
     color: #333;
   }
 
-
   .report-content .table th,
   .report-content .table td{
     font-size: 1rem;
+  }
+
+  .text-toggle{
+    color: var(--color-accent);
   }
 
   /* ===== 차트 스타일 ===== */

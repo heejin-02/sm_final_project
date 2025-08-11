@@ -197,7 +197,7 @@ export default function AdminMain() {
         <div className="inner">
           <h1 className="tit-head">전체 회원 정보</h1>
           <div className="flex items-center justify-between mb-6">
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 text-base">
               총 {totalCount}명의 회원 (페이지당 {pageSize}개씩 표시)
             </p>
             <button 

@@ -55,5 +55,20 @@ public class AlertController {
         return ResponseEntity.ok("피드백이 성공적으로 등록되었습니다.");
     }
 
+    // Controller
+    @GetMapping("/feedback/{anlsIdx}")
+    @Operation(summary = "피드백 조회")
+    public ResponseEntity<FeedbackDTO> getFeedback(@PathVariable Long anlsIdx) {
+        FeedbackDTO feedback = alertService.getFeedback(anlsIdx);
+        return ResponseEntity.ok(feedback);
+    }
+
+    // Controller
+    @PutMapping("/feedback/{anlsIdx}")
+    @Operation(summary = "피드백 수정")
+    public ResponseEntity<String> updateFeedback(@PathVariable Long anlsIdx, @RequestBody FeedbackDTO feedback) {
+        alertService.updateFeedback(anlsIdx, feedback);
+        return ResponseEntity.ok("피드백이 성공적으로 수정되었습니다.");
+    }
 
 }

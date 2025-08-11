@@ -84,21 +84,21 @@ export const getMonthlyGptSummary = async (farmIdx, date) => {
   }
 };
 
-// // 연간 통계 gpt 분석 요약
-// export const getYearlyGptSummary = async (farmIdx, date) => {
-//   try {
-//     const response = await axios.get('http://192.168.219.72:8000/api/yearly-gpt-summary', {
-//       params: {
-//         farm_idx: farmIdx,
-//         year: date
-//       }
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error('GPT 분석 API 호출 실패:', error);
-//     throw error;
-//   }
-// };
+// 연간 통계 gpt 분석 요약
+export const getYearlyGptSummary = async (farmIdx, date) => {
+  try {
+    const response = await axios.get('http://192.168.219.72:8000/api/yearly-gpt-summary', {
+      params: {
+        farm_idx: farmIdx,
+        year: date
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('GPT 분석 API 호출 실패:', error);
+    throw error;
+  }
+};
 
 // 일일 구역별 요약 API (백구 메시지용)
 export const getDailyZoneSummary = async (farmIdx, date) => {
