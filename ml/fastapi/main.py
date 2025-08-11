@@ -922,15 +922,27 @@ def twilio_call():
         with conn.cursor() as cur:
             # 가장 최근 탐지 기록 1건 가져오기
             cur.execute("""
-            SELECT * FROM (
-                SELECT I.CREATED_AT, G.GH_NAME, N.INSECT_NAME
-                FROM QC_CLASSIFICATION C
-                JOIN QC_IMAGES I ON C.IMG_IDX = I.IMG_IDX
-                JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
-                JOIN QC_INSECT N ON C.INSECT_IDX = N.INSECT_IDX
-                ORDER BY I.CREATED_AT DESC
+            SELECT
+            event_ts, gh_name, insect_name, img_idx, anls_result
+            FROM (
+            SELECT
+                GREATEST(
+                CAST(c.created_at AS TIMESTAMP),
+                CAST(i.created_at AS TIMESTAMP)
+                ) AS event_ts,
+                g.gh_name,
+                n.insect_name,
+                c.img_idx,
+                c.anls_result
+            FROM qc_classification c
+            JOIN qc_images       i ON c.img_idx = i.img_idx
+            JOIN qc_greenhouse   g ON i.gh_idx = g.gh_idx
+            JOIN qc_insect       n ON c.insect_idx = n.insect_idx
+            WHERE c.noti_check = 'N'            -- 알림 미처리만(원하면 유지)
+            ORDER BY
+                GREATEST(CAST(c.created_at AS TIMESTAMP), CAST(i.created_at AS TIMESTAMP)) DESC
             )
-            WHERE ROWNUM = 1
+            WHERE ROWNUM = 1;
         """)
             row = cur.fetchone()
 
