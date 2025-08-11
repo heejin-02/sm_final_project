@@ -52,7 +52,7 @@ export const getTodayDate = () => {
   return new Date().toISOString().split('T')[0];
 };
 
-// GPT 분석 요약 API
+// 일별 통계 gpt 분석 요약
 export const getDailyGptSummary = async (farmIdx, date) => {
   try {
     const response = await axios.get('http://192.168.219.72:8000/api/daily-gpt-summary', {
@@ -68,23 +68,52 @@ export const getDailyGptSummary = async (farmIdx, date) => {
   }
 };
 
+// 월별 통계 gpt 분석 요약
+export const getMonthlyGptSummary = async (farmIdx, date) => {
+  try {
+    const response = await axios.get('http://192.168.219.72:8000/api/monthly-gpt-summary', {
+      params: {
+        farm_idx: farmIdx,
+        month: date
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('GPT 분석 API 호출 실패:', error);
+    throw error;
+  }
+};
+
+// 연간 통계 gpt 분석 요약
+export const getYearlyGptSummary = async (farmIdx, date) => {
+  try {
+    const response = await axios.get('http://192.168.219.72:8000/api/yearly-gpt-summary', {
+      params: {
+        farm_idx: farmIdx,
+        year: date
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('GPT 분석 API 호출 실패:', error);
+    throw error;
+  }
+};
+
 // 일일 구역별 요약 API (백구 메시지용)
 export const getDailyZoneSummary = async (farmIdx, date) => {
+  const startTime = Date.now();
   try {
-    console.log('🚀 getDailyZoneSummary 호출:', { farmIdx, date, getTodayDate });
-
     const response = await axios.get('http://192.168.219.72:8000/api/daily-gpt-summary', {
       params: {
         farm_idx: farmIdx,
         date: date
       }
     });
-
-    console.log('📥 getDailyZoneSummary 응답:', response.data);
+    const endTime = Date.now();
     return response.data;
   } catch (error) {
-    console.error('🚨 일일 구역별 요약 API 호출 실패:', error);
-    console.error('🚨 에러 상세:', error.response?.data);
+    const endTime = Date.now();
     throw error;
   }
 };
@@ -108,17 +137,73 @@ export const getTodayStats = async (farmIdx) => {
 
 // 온실별 오늘 해충 수 가져오기 (farmMap용)
 export const getTodayGreenhouses = async (farmIdx) => {
+  const startTime = Date.now();
   try {
     const response = await axios.get(`${BASE_URL}/user/today/today/greenhouses`, {
       params: {
         farmIdx: farmIdx
       },
+      // withCredentials: true, // 임시로 주석 처리
+      timeout: 3000 // 3초 타임아웃으로 단축
+    });
+
+    const endTime = Date.now();
+    return response.data;
+  } catch (error) {
+    const endTime = Date.now();
+    throw error;
+  }
+};
+
+// 월간 통계 데이터 가져오기
+export const getMonthlyStats = async (farmIdx, month) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/report/monthly-stats`, {
+      params: {
+        farmIdx: farmIdx,
+        month: month // YYYY-MM 형식 (예: 2025-07)
+      },
       withCredentials: true,
-      timeout: 5000 // 5초 타임아웃
+      timeout: 10000 // 10초 타임아웃
     });
     return response.data;
   } catch (error) {
-    console.error('온실별 오늘 해충 수 조회 실패:', error);
     throw error;
   }
+};
+
+// 월간 날짜 포맷 유틸리티 함수
+export const formatMonthForAPI = (date) => {
+  if (date instanceof Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  }
+  return date; // 이미 문자열인 경우
+};
+
+// 연간 통계 데이터 가져오기
+export const getYearlyStats = async (farmIdx, year) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/report/yearly-stats`, {
+      params: {
+        farmIdx: farmIdx,
+        year: year // YYYY 형식 (예: 2025)
+      },
+      withCredentials: true,
+      timeout: 10000 // 10초 타임아웃
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// 연간 날짜 포맷 유틸리티 함수
+export const formatYearForAPI = (date) => {
+  if (date instanceof Date) {
+    const year = date.getFullYear();
+    return `${year}`;
+  }
+  return date; // 이미 문자열인 경우
 };

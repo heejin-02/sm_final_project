@@ -1,67 +1,67 @@
-// src/hooks/useStatistics.js
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  getDailyStats,
+  getMonthlyStats,
+  getYearlyStats,
+  formatDateForAPI,
+  formatMonthForAPI,
+  formatYearForAPI
+} from '../api/report';
 
-/**
- * 통계 데이터를 가져오는 커스텀 훅
- * @param {string} period - 'daily', 'monthly', 'yearly'
- * @param {Date} selectedDate - 선택된 날짜
- * @returns {Object} 통계 데이터
- */
-export function useStatistics(period, selectedDate = new Date()) {
+export function useStatistics({ period, date }) {
   const { user } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!user?.selectedFarm?.farmIdx || !period) {
-      setData(null);
-      setLoading(false);
+  const fetchData = useCallback(async () => {
+    if (!period || !date || !user?.selectedFarm?.farmIdx) {
+      setStats(null);
       return;
     }
 
-    // daily는 useDailyStats에서 처리하므로 제외
-    if (period === 'daily') {
-      setData(null);
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
+    setError(null);
 
-    const fetchStatistics = async () => {
-      setLoading(true);
-      setError(null);
+    try {
+      let formatted;
+      let fetchFn;
 
-      try {
-        // 날짜 포맷팅
-        const formatDate = (date) => {
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        };
-
-        // 실제 API 호출 (monthly, yearly용)
-        const response = await axios.get(`/api/statistics/${period}`, {
-          params: {
-            farmIdx: user.selectedFarm.farmIdx,
-            date: formatDate(selectedDate)
-          },
-          withCredentials: true
-        });
-
-        setData(response.data);
-      } catch (err) {
-        // console.error('통계 데이터 로딩 실패:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      switch (period) {
+        case 'daily':
+          formatted = formatDateForAPI(date);
+          fetchFn = () => getDailyStats(user.selectedFarm.farmIdx, formatted);
+          break;
+        case 'monthly':
+          formatted = formatMonthForAPI(date);
+          fetchFn = () => getMonthlyStats(user.selectedFarm.farmIdx, formatted);
+          break;
+        case 'yearly':
+          formatted = formatYearForAPI(date);
+          fetchFn = () => getYearlyStats(user.selectedFarm.farmIdx, formatted);
+          break;
+        default:
+          throw new Error('지원하지 않는 기간입니다.');
       }
-    };
 
-    fetchStatistics();
-  }, [user?.selectedFarm?.farmIdx, period, selectedDate]);
+      const data = await fetchFn();
+      setStats(data);
+    } catch (e) {
+      setError(e.message || '통계 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  }, [period, date, user]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return {
+    stats,
+    loading,
+    error,
+    refetch: fetchData
+  };
 }

@@ -1,19 +1,7 @@
 // src/contexts/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginCheck } from '../api/auth';
+import { loginCheck, checkSession, logout as apiLogout, getUserFarms } from '../api/auth';
 import axios from 'axios';
-
-// 세션 확인 API
-const checkSession = async () => {
-  try {
-    const response = await axios.get('http://localhost:8095/api/home/check-session', {
-      withCredentials: true
-    });
-    return response.data;
-  } catch (error) {
-    return null;
-  }
-};
 
 // 1. Context 생성
 const AuthContext = createContext();
@@ -47,33 +35,72 @@ export function AuthProvider({ children }) {
   // 초기화 시 서버 세션에서 로그인 상태 확인
   useEffect(() => {
     const initializeAuth = async () => {
-      const sessionData = await checkSession();
 
-      if (sessionData) {
-        // 서버 세션이 유효한 경우
-        setUser({
-          userName: sessionData.userName,
-          userPhone: sessionData.userPhone,
-          role: sessionData.role,
-          selectedFarm: null, // 농장 정보는 별도로 로드
-        });
-        setIsLoggedIn(true);
+      try {
+        const sessionData = await checkSession();
 
-        // localStorage에도 백업 저장 (UX 향상용)
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({
-          userName: sessionData.userName,
-          userPhone: sessionData.userPhone,
-          role: sessionData.role,
-        }));
-        localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true');
-        localStorage.setItem(STORAGE_KEYS.LOGIN_TIME, new Date().toISOString());
-      } else {
-        // 서버 세션이 없는 경우 localStorage 정리
-        localStorage.removeItem(STORAGE_KEYS.USER);
-        localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
-        localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
-        setUser(null);
-        setIsLoggedIn(false);
+        if (sessionData.isAuthenticated && sessionData.user) {
+
+          // 농장 리스트는 항상 최신 정보로 조회
+          let selectedFarm = null;
+          try {
+            const farmListResponse = await getUserFarms(sessionData.user.userPhone);
+            const farmList = farmListResponse.data;
+
+            // 세션에 저장된 농장 ID로 선택된 농장 찾기
+            const selectedFarmIdx = sessionData.user.selectedFarmIdx;
+            selectedFarm = farmList.find(farm => farm.farmIdx === selectedFarmIdx) || farmList[0] || null;
+
+          } catch (error) {
+            console.error('농장 리스트 조회 실패:', error);
+          }
+
+          setUser({
+            userName: sessionData.user.userName,
+            userPhone: sessionData.user.userPhone,
+            role: sessionData.user.role,
+            selectedFarm: selectedFarm,
+          });
+          setIsLoggedIn(true);
+
+          // localStorage에도 저장
+          localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({
+            ...sessionData.user,
+            selectedFarm: selectedFarm
+          }));
+          localStorage.setItem(STORAGE_KEYS.IS_LOGGED_IN, 'true');
+          localStorage.setItem(STORAGE_KEYS.LOGIN_TIME, new Date().toISOString());
+        } else {
+          // 서버 세션이 없는 경우 - localStorage 확인
+          const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
+          const savedLoginStatus = localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN);
+
+          if (savedUser && savedLoginStatus === 'true') {
+            const userData = JSON.parse(savedUser);
+            setUser(userData);
+            setIsLoggedIn(true);
+          } else {
+            console.log('🧹 localStorage 정리');
+            localStorage.removeItem(STORAGE_KEYS.USER);
+            localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
+            localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
+            setUser(null);
+            setIsLoggedIn(false);
+          }
+        }
+      } catch (error) {
+        // 오류 시 localStorage 기반으로 fallback
+        const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
+        const savedLoginStatus = localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN);
+
+        if (savedUser && savedLoginStatus === 'true') {
+          const userData = JSON.parse(savedUser);
+          setUser(userData);
+          setIsLoggedIn(true);
+        } else {
+          setUser(null);
+          setIsLoggedIn(false);
+        }
       }
     };
 
@@ -118,10 +145,8 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      // 서버에 로그아웃 요청
-      await axios.get('http://localhost:8095/api/home/logout', {
-        withCredentials: true
-      });
+      // auth.js의 logout 함수 사용 (POST 방식)
+      await apiLogout();
 
       // 로그아웃 시 초기화
       setUser(null);

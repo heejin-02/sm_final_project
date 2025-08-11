@@ -24,13 +24,13 @@ public class ReportController {
         return reportService.getDailyStats(farmIdx, date);
     }
 
-    
     @GetMapping("/monthly-stats")
     @Operation(summary = "월간 탐지 통계 조회")
     public MonthlyStatsDTO getMonthlyStats(@RequestParam Long farmIdx,
                                            @RequestParam String month) {
         return reportService.getMonthlyStats(farmIdx, month);
     }
+
     
     @GetMapping("/yearly-stats")
     @Operation(summary = "연간 탐지 통계 조회")
@@ -38,5 +38,6 @@ public class ReportController {
                                          @RequestParam String year) {
         return reportService.getYearlyStats(farmIdx, year);
     }
+
 
 }

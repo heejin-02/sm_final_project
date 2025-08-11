@@ -208,14 +208,14 @@ export default function AdminUserInfo() {
     <div className="section">
       <div className="inner inner_1080">
         <h1 className="tit-head">회원 상세 정보</h1>
-				<div className="flex items-center justify-end mb-6">
-					<button
-						onClick={handleGoBack}
-						className="btn btn-secondary"
-					>
-						목록으로
-					</button>		
-				</div>		
+            <div className="flex items-center justify-end mb-6">
+               <button
+                  onClick={handleGoBack}
+                  className="btn btn-secondary"
+               >
+                  목록으로
+               </button>      
+            </div>      
 
         {/* 회원 기본 정보 카드 */}
         <div className="admForm">
