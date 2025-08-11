@@ -6,7 +6,7 @@ import Loader from './Loader';
 import { useAuth } from '../contexts/AuthContext';
 
 
-const API_KEY = '019d414c565826322ad2f0b73af0129b';
+const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
 // 날씨 데이터 캐시 (30분 유지)
 const WEATHER_CACHE_DURATION = 30 * 60 * 1000; // 30분

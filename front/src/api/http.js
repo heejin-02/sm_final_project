@@ -11,3 +11,5 @@ export const GPT_API = axios.create({
   baseURL: import.meta.env.VITE_FASTAPI_URL,
   headers: { 'Content-Type': 'application/json' }
 });
+
+// console.log('API baseURL =', API.defaults.baseURL);
