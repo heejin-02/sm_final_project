@@ -1,3 +1,4 @@
+// hooks/useStatistics.js
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -15,25 +16,28 @@ export function useStatistics({ period, date }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 겹치는 호출 식별용
-  const callIdRef = useRef(0);
+  // (선택) 이전 요청 취소용
+  const abortRef = useRef(null);
 
   const fetchData = useCallback(async () => {
+    // 기본 가드
     if (!period || !date || !user?.selectedFarm?.farmIdx) {
       setStats(null);
       return;
     }
 
+    // 이전 요청 취소
+    abortRef.current?.abort?.();
+    abortRef.current = new AbortController();
+
     setLoading(true);
     setError(null);
 
-    // 이번 호출 id
-    const myId = ++callIdRef.current;
+    let formatted = null;
+    let fetchFn = null;
 
     try {
-      let formatted;
-      let fetchFn;
-
+      // period에 맞게 포맷/함수 세팅
       switch (period) {
         case 'daily': {
           formatted = formatDateForAPI(date);
@@ -50,30 +54,38 @@ export function useStatistics({ period, date }) {
           fetchFn = () => getYearlyStats(user.selectedFarm.farmIdx, formatted);
           break;
         }
-        default:
+        default: {
           throw new Error(`지원하지 않는 기간입니다: ${period}`);
+        }
       }
 
-      const label = `stats-${period}-${myId}`; // 라벨 유니크
+      // fetchFn이 없으면 즉시 중단 (타이머도 종료)
+      if (!fetchFn) {
+        throw new Error('내부 설정 오류: fetchFn 미할당');
+      }
 
-      const data = await fetchFn();            // axios timeout 10s면 여기서 취소될 수 있음
-          
-
-      // 더 최신 호출이 있으면 내 결과는 무시
-      if (myId !== callIdRef.current) return;
+      const timerLabel = `stats-${period}`;
+      console.time(timerLabel);
+      const data = await fetchFn({ signal: abortRef.current.signal }); // axios면 무시됨, fetch면 전달됨
+      console.timeEnd(timerLabel);
 
       setStats(data);
     } catch (e) {
-      if (myId !== callIdRef.current) return; // 최신 호출만 에러 반영
+      // 취소는 조용히 무시
+      if (e?.name === 'CanceledError' || e?.code === 'ERR_CANCELED' || e?.name === 'AbortError') {
+        return;
+      }
       setError(e?.message || '통계 데이터를 불러오는데 실패했습니다.');
       setStats(null);
     } finally {
-      if (myId === callIdRef.current) setLoading(false);
+      setLoading(false);
     }
-  }, [period, date, user?.selectedFarm?.farmIdx]);
+  }, [period, date, user]);
 
   useEffect(() => {
     fetchData();
+    // 언마운트 시 in-flight 취소
+    return () => abortRef.current?.abort?.();
   }, [fetchData]);
 
   return { stats, loading, error, refetch: fetchData };
