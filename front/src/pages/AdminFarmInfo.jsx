@@ -218,7 +218,7 @@ function AdminFarmInfo() {
             await loadRegionData(passedFarmInfo.farmIdx);
           } else {
             // 수정 모드이고 전달받은 데이터가 없으면 API 호출
-            const response = await axios.get(`http://localhost:8095/api/farms/${farmIdx}/detail`);
+            const response = await axios.get(`smfinalproject-production-88a2.up.railway.app/api/farms/${farmIdx}/detail`);
             setFarmInfo(response.data);
             setEditedFarmInfo({
               farmName: response.data.farmName || '',
@@ -288,7 +288,7 @@ function AdminFarmInfo() {
           formData.append('farmImg', selectedFile);
         }
 
-        const response = await axios.post('http://localhost:8095/api/farm/insertFarm', formData, {
+        const response = await axios.post('smfinalproject-production-88a2.up.railway.app/api/farm/insertFarm', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -300,7 +300,7 @@ function AdminFarmInfo() {
         }
       } else {
         // 농장 수정 모드
-        const response = await axios.put(`http://localhost:8095/api/admin/users/farms/${farmIdx}`, editedFarmInfo);
+        const response = await axios.put(`smfinalproject-production-88a2.up.railway.app/api/admin/users/farms/${farmIdx}`, editedFarmInfo);
 
         if (response.status === 200) {
           setFarmInfo({ ...farmInfo, ...editedFarmInfo });
@@ -318,7 +318,7 @@ function AdminFarmInfo() {
   const handleDeleteFarm = async () => {
     if (window.confirm(`정말로 "${farmInfo?.farmName}" 농장을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
       try {
-        const response = await axios.delete(`http://localhost:8095/api/admin/users/farm/${farmIdx}`);
+        const response = await axios.delete(`smfinalproject-production-88a2.up.railway.app/api/admin/users/farm/${farmIdx}`);
         
         if (response.status === 200) {
           alert('농장이 삭제되었습니다.');

@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8095',
+  baseURL: 'smfinalproject-production-88a2.up.railway.app',
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' }
 });

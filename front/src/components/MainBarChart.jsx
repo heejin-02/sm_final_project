@@ -58,7 +58,7 @@ export default function MainBarChart({ stats, period }) {
           <XAxis dataKey={period === 'monthly' ? 'period' : 'month'} />
           <YAxis />
           <Tooltip formatter={(value) => `${value}건`} />
-          <Bar dataKey="count" fill="#3b82f6" />
+          <Bar dataKey="count" fill="#44a1fe" />
         </BarChart>
       </ResponsiveContainer>
     </>

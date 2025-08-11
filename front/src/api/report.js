@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8095';
+const BASE_URL = 'smfinalproject-production-88a2.up.railway.app';
 
 // 서버 상태 체크
 export const checkServerHealth = async () => {
@@ -55,7 +55,7 @@ export const getTodayDate = () => {
 // 일별 통계 gpt 분석 요약
 export const getDailyGptSummary = async (farmIdx, date) => {
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/daily-gpt-summary', {
+    const response = await axios.get('smfinalproject-production-f008.up.railway.app/api/daily-gpt-summary', {
       params: {
         farm_idx: farmIdx,
         date: date
@@ -71,7 +71,7 @@ export const getDailyGptSummary = async (farmIdx, date) => {
 // 월별 통계 gpt 분석 요약
 export const getMonthlyGptSummary = async (farmIdx, date) => {
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/monthly-gpt-summary', {
+    const response = await axios.get('smfinalproject-production-f008.up.railway.app/api/monthly-gpt-summary', {
       params: {
         farm_idx: farmIdx,
         month: date
@@ -87,7 +87,7 @@ export const getMonthlyGptSummary = async (farmIdx, date) => {
 // 연간 통계 gpt 분석 요약
 export const getYearlyGptSummary = async (farmIdx, date) => {
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/yearly-gpt-summary', {
+    const response = await axios.get('smfinalproject-production-f008.up.railway.app/api/yearly-gpt-summary', {
       params: {
         farm_idx: farmIdx,
         year: date
@@ -104,7 +104,7 @@ export const getYearlyGptSummary = async (farmIdx, date) => {
 export const getDailyZoneSummary = async (farmIdx, date) => {
   const startTime = Date.now();
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/daily-gpt-summary', {
+    const response = await axios.get('smfinalproject-production-f008.up.railway.app/api/daily-gpt-summary', {
       params: {
         farm_idx: farmIdx,
         date: date

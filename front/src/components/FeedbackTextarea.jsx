@@ -15,7 +15,7 @@ export default function FeedbackTextarea({ anlsIdx, alertDetail }) {
     if (!anlsIdx) return;
 
     axios
-      .get(`http://localhost:8095/user/alert/feedback/${anlsIdx}`)  // 경로 변수로 요청
+      .get(`smfinalproject-production-88a2.up.railway.app/user/alert/feedback/${anlsIdx}`)  // 경로 변수로 요청
       .then((res) => {
         if (res.data?.feedbackContent) {
           setSavedFeedback(res.data);
@@ -35,7 +35,7 @@ export default function FeedbackTextarea({ anlsIdx, alertDetail }) {
     try {
       if (savedFeedback) {
         // PUT 요청으로 수정
-        await axios.put(`http://localhost:8095/user/alert/feedback/${anlsIdx}`, {
+        await axios.put(`smfinalproject-production-88a2.up.railway.app/user/alert/feedback/${anlsIdx}`, {
           feedbackIdx: savedFeedback.feedbackIdx,
           anlsIdx,
           feedbackContent: content,
@@ -44,7 +44,7 @@ export default function FeedbackTextarea({ anlsIdx, alertDetail }) {
         setAlertMessage('기록을 수정했습니다.');
       } else {
         // POST 요청으로 등록
-        await axios.post(`http://localhost:8095/user/alert/feedback`, {
+        await axios.post(`smfinalproject-production-88a2.up.railway.app/user/alert/feedback`, {
           anlsIdx,
           feedbackContent: content,
           createdAt: new Date().toISOString(),

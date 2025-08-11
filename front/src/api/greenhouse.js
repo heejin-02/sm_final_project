@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8095';
+const BASE_URL = 'smfinalproject-production-88a2.up.railway.app';
 
 // 농장의 구역 목록 조회
 export const getGreenhousesByFarm = async (farmIdx) => {

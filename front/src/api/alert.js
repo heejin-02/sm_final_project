@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8095/user/alert';
+const BASE_URL = 'smfinalproject-production-88a2.up.railway.app/user/alert';
 
 /**
  * 알림 목록 조회 (NotiList에서 사용)

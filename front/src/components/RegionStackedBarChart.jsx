@@ -1,31 +1,19 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid
 } from 'recharts';
 import { getTodayGreenhouseStats } from '../api/greenhouse';
 import { useAuth } from '../contexts/AuthContext';
+import { INSECT_COLOR, orderInsects, COLORS } from '../charts/constants';
 
-
-// 컴포넌트 밖: 순수 상수만
+// 차트 레이아웃 상수 (이 파일에서만 사용)
 const BAR_SIZE = 30;
 const ROW_GAP  = 6;
 const MARGIN   = { top: 16, right: 0, left: 0, bottom: 20 };
 const YPAD     = { top: 12, bottom: 12 };
 const LEGEND_H = 32;
 
-const COLORS = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e',
-  '#3b82f6', '#8b5cf6', '#14b8a6', '#f43f5e'
-];
-
-export default function RegionStackedBarChart({ stats, period }) {
+export default function RegionStackedBarChart({ stats }) {
   const { user } = useAuth();
   const [zoneList, setZoneList] = useState([]);
 
@@ -45,16 +33,18 @@ export default function RegionStackedBarChart({ stats, period }) {
     if (user?.selectedFarm?.farmIdx) fetchZones();
   }, [user?.selectedFarm?.farmIdx]);
 
-  // 1) 원본 -> regionData, insectTypes
+  // 원본 → 행(row) 데이터 + (정렬된) 해충 타입 배열
   const { regionData, insectTypes } = useMemo(() => {
     const zoneMap = {};
     const insectSet = new Set();
 
+    // 구역 초기화
     zoneList.forEach(zone => {
       const z = typeof zone === 'string' ? zone.trim() : '';
       if (z) zoneMap[z] = { region: z };
     });
 
+    // 카운트 누적
     stats?.details?.forEach(({ greenhouse, insect }) => {
       const region = typeof greenhouse === 'string' ? greenhouse.trim() : '';
       const name   = typeof insect === 'string' ? insect.trim() : '';
@@ -68,10 +58,13 @@ export default function RegionStackedBarChart({ stats, period }) {
       .filter(r => !!r.region)
       .sort((a, b) => a.region.localeCompare(b.region, 'ko'));
 
-    return { regionData: rows, insectTypes: Array.from(insectSet) };
+    // ✅ 지정한 우선순서대로 해충 타입 정렬
+    const sortedTypes = orderInsects(Array.from(insectSet));
+
+    return { regionData: rows, insectTypes: sortedTypes };
   }, [stats, zoneList]);
 
-  // 2) 안전 숫자 변환
+  // 숫자형 보정
   const safeRegionData = useMemo(() => {
     return regionData.map(row => {
       const r = { ...row };
@@ -80,13 +73,13 @@ export default function RegionStackedBarChart({ stats, period }) {
     });
   }, [regionData, insectTypes]);
 
-  // 높이 계산
+  // 높이 계산 (범례 높이 포함)
   const rowCount = safeRegionData.length;
   const chartHeight = useMemo(() => {
     if (!rowCount) return 180;
     const plot = MARGIN.top + MARGIN.bottom + YPAD.top + YPAD.bottom
       + rowCount * BAR_SIZE + Math.max(0, rowCount - 1) * ROW_GAP;
-    return plot + LEGEND_H; // ← 범례 자리까지 포함
+    return plot + LEGEND_H;
   }, [rowCount]);
 
   return (
@@ -121,7 +114,7 @@ export default function RegionStackedBarChart({ stats, period }) {
             <Legend
               verticalAlign="bottom"
               align="right"
-              height={LEGEND_H}       
+              height={LEGEND_H}
               iconType="square"
               wrapperStyle={{
                 paddingTop: '12px',
@@ -129,16 +122,19 @@ export default function RegionStackedBarChart({ stats, period }) {
                 marginLeft: 'auto',
                 display: 'flex',
                 justifyContent: 'flex-end',
-                whiteSpace: 'nowrap' 
+                whiteSpace: 'nowrap',
               }}
             />
+
+            {/* ✅ 같은 벌레 = 같은 색 */}
             {insectTypes.map((insect, idx) => (
               <Bar
                 key={insect}
                 dataKey={insect}
                 stackId="a"
-                fill={COLORS[idx % COLORS.length]}
-                barSize={BAR_SIZE}  // 바 두께 고정
+                fill={INSECT_COLOR[insect] ?? COLORS[idx % COLORS.length]}
+                barSize={BAR_SIZE}
+                // stroke="rgba(0,0,0,.12)" // 필요시 경계선
               />
             ))}
           </BarChart>
