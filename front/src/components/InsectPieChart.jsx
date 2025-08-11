@@ -3,13 +3,13 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
 
-export default function InsectPieChart({ data }) {
+export default function InsectPieChart({ stats }) {
   const pieData = useMemo(() => (
-    data.insectDistribution?.map(item => ({
+    stats.insectDistribution?.map(item => ({
       name: item.insect,
       value: item.count
     })) || []
-  ), [data]);
+  ), [stats]);
 
   return (
     <>

@@ -2230,6 +2230,10 @@
     border: 0;
   }
 
+  .predict-table td:last-child{
+    background: aliceblue;
+  }
+
   /* Recharts 툴팁 커스터마이징 */
   .recharts-tooltip-wrapper {
     border-radius: 8px;

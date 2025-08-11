@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { groupDataByWeek } from '../utils/groupDataByWeek';
 import { groupDataByMonth } from '../utils/groupDataByMonth';
 
-export default function GroupedDetailList({ data, period }) {
+export default function GroupedDetailList({ stats, period }) {
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   const navigate = useNavigate();
 
@@ -34,8 +34,8 @@ export default function GroupedDetailList({ data, period }) {
               </tr>
             </thead>
             <tbody>
-              {data?.details?.length > 0 ? (
-                data.details.map((item, index) => (
+              {stats?.details?.length > 0 ? (
+                stats.details.map((item, index) => (
                   <tr
                     key={index}
                     className="border-b hover:bg-gray-50 cursor-pointer"
@@ -64,9 +64,9 @@ export default function GroupedDetailList({ data, period }) {
   // 월간/연간: 주차 또는 월별로 그룹핑
   const groupedData =
     period === 'monthly'
-      ? groupDataByWeek(data.details)
+      ? groupDataByWeek(stats.details)
       : period === 'yearly'
-      ? groupDataByMonth(data.details)
+      ? groupDataByMonth(stats.details)
       : null;
 
   return (
