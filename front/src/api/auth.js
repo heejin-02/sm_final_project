@@ -1,30 +1,23 @@
 // 인증 관련 api
 import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'smfinalproject-production-88a2.up.railway.app',
-  withCredentials: true,
-  headers: { 'Content-Type': 'application/json' }
-});
+import { API } from './http';
 
 // 로그인
-export const loginCheck = (id, pw) =>
-  api.post('/api/home/loginCheck', null, { params: { id, pw } });
+export const loginCheck = (id, pw) => {
+  return API.post('/api/home/loginCheck', { id, pw });
+};
 
 // 사용자 - 농장 리스트 조회
 export const getUserFarms = (userPhone) => {
-  return api.get('/api/user/farms', { params: { userPhone } });
-}
-
+  return API.get('/api/user/farms', { params: { userPhone } });
+};
 // 세션 확인
-
 export const checkSession = async () => {
   try {
-    const response = await api.get('/api/home/check-session');
+    const response = await API.get('/api/home/check-session');
     return response.data;
   } catch (error) {
     console.error('세션 확인 실패:', error);
-    // 네트워크 오류 시 로그아웃 상태로 처리
     return {
       isAuthenticated: false,
       user: null
@@ -35,7 +28,7 @@ export const checkSession = async () => {
 // 로그아웃
 export const logout = async () => {
   try {
-    const response = await api.post('/api/home/logout');
+    const response = await API.post('/api/home/logout');
     return response.data;
   } catch (error) {
     throw error;

@@ -10,7 +10,7 @@ import BaseFarmMap from '../components/NotiFarmMap';
 import DetectionFeedback from '../components/DetectionFeedback';
 import Loader from '../components/Loader';
 
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function NotiDetail() {
   const { id } = useParams();
@@ -160,7 +160,7 @@ export default function NotiDetail() {
               <h3 className="tit-2 text-center">탐지 영상</h3>
               <div className="video_wrap">
                 {alertDetail.imageList?.[0]?.imgUrl ? (
-                  <video src={`smfinalproject-production-88a2.up.railway.app/videos${alertDetail.imageList[0].imgUrl}`} controls mute="true" autoPlay/>
+                  <video src={`${API_BASE_URL}/videos${alertDetail.imageList[0].imgUrl}`} controls muted autoPlay/>
                 ) : (
                   <div className="flex items-center justify-center h-64 bg-gray-100 text-gray-500">
                     동영상을 불러올 수 없습니다.
