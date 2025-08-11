@@ -29,7 +29,7 @@
 |------|------|
 | AI 모델 | YOLOv5 (PyTorch), OpenCV |
 | 실시간 처리 | FastAPI, WebSocket |
-| 음성 알림 | Twilio API, gTTS |
+| 음성 알림 | SignalWire API |
 | 챗봇·검색 | LangChain, ChromaDB (RAG 구조) |
 | 프론트엔드 | React, Tailwind CSS, Chart.js |
 | 백엔드 | Spring Boot, Oracle DB |
