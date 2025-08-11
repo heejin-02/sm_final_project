@@ -1,34 +1,15 @@
-// src\components\InsectPieChart.jsx
 import React, { useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
-import { INSECT_COLOR, orderInsects, COLORS, normalizeInsect } from '../charts/constants';
+
+const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
 
 export default function InsectPieChart({ stats }) {
-  const raw = Array.isArray(stats?.insectDistribution) ? stats.insectDistribution : [];
-
-  // 1) 이름 정규화
-  const normalized = useMemo(() => (
-    raw.map(({ insect, count }) => ({
-      name: normalizeInsect(insect),
-      value: Number(count ?? 0),
-    })).filter(d => d.name)
-  ), [raw]);
-
-  // 2) 고정 우선순서로 정렬
-  const insects = useMemo(
-    () => orderInsects(normalized.map(d => d.name)),
-    [normalized]
-  );
-
-  // 3) 정렬 순서대로 pie 데이터 구성
-  const byName = useMemo(() => new Map(normalized.map(d => [d.name, d.value])), [normalized]);
-  const pieData = useMemo(
-    () => insects.map(name => ({ name, value: byName.get(name) ?? 0 })),
-    [insects, byName]
-  );
-
-  // 디버깅(원인 추적용): 둘 다 같은 순서인지 확인
-  console.log('PIE order:', pieData.map(d => d.name));
+  const pieData = useMemo(() => (
+    stats.insectDistribution?.map(item => ({
+      name: item.insect,
+      value: item.count
+    })) || []
+  ), [stats]);
 
   return (
     <>
@@ -41,20 +22,15 @@ export default function InsectPieChart({ stats }) {
               cx="50%"
               cy="50%"
               outerRadius={80}
-              dataKey="value"
               labelLine={false}
-              label={({ name, value, percent }) =>
-                value > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ''
-              }
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              dataKey="value"
             >
-              {pieData.map((d, i) => (
-                <Cell
-                  key={d.name}
-                  fill={INSECT_COLOR[d.name] ?? COLORS[i % COLORS.length]}
-                />
+              {pieData.map((entry, idx) => (
+                <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(v) => `${v}건`} />
+            <Tooltip formatter={(value) => `${value}건`} />
           </PieChart>
         </ResponsiveContainer>
       </div>

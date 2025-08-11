@@ -1,4 +1,3 @@
-// src/components/RegionStackedBarChart.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   ResponsiveContainer,
@@ -8,36 +7,35 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  CartesianGrid,
+  CartesianGrid
 } from 'recharts';
 import { getTodayGreenhouseStats } from '../api/greenhouse';
 import { useAuth } from '../contexts/AuthContext';
-import {
-  INSECT_COLOR,
-  orderInsects,
-  COLORS,
-  normalizeInsect,
-} from '../charts/constants';
 
-// 레이아웃 상수
+
+// 컴포넌트 밖: 순수 상수만
 const BAR_SIZE = 30;
-const ROW_GAP = 6; // px
-const MARGIN = { top: 16, right: 0, left: 0, bottom: 20 };
-const YPAD = { top: 12, bottom: 12 };
+const ROW_GAP  = 6;
+const MARGIN   = { top: 16, right: 0, left: 0, bottom: 20 };
+const YPAD     = { top: 12, bottom: 12 };
 const LEGEND_H = 32;
 
-export default function RegionStackedBarChart({ stats }) {
+const COLORS = [
+  '#ef4444', '#f97316', '#eab308', '#22c55e',
+  '#3b82f6', '#8b5cf6', '#14b8a6', '#f43f5e'
+];
+
+export default function RegionStackedBarChart({ stats, period }) {
   const { user } = useAuth();
   const [zoneList, setZoneList] = useState([]);
 
-  // 구역 목록 가져오기 (중복 제거)
   useEffect(() => {
     const fetchZones = async () => {
       try {
         const res = await getTodayGreenhouseStats(user?.selectedFarm?.farmIdx);
         const zones = (Array.isArray(res) ? res : [])
-          .map((item) => item?.zone)
-          .filter((z) => typeof z === 'string' && z.trim() !== '');
+          .map(item => item?.zone)
+          .filter(z => typeof z === 'string' && z.trim() !== '');
         setZoneList([...new Set(zones)]);
       } catch (err) {
         console.error('구역 리스트 불러오기 실패:', err);
@@ -47,21 +45,19 @@ export default function RegionStackedBarChart({ stats }) {
     if (user?.selectedFarm?.farmIdx) fetchZones();
   }, [user?.selectedFarm?.farmIdx]);
 
-  // 데이터 가공: 행(row) + 해충 타입(정해둔 우선순서로 정렬)
+  // 1) 원본 -> regionData, insectTypes
   const { regionData, insectTypes } = useMemo(() => {
     const zoneMap = {};
     const insectSet = new Set();
 
-    // 구역 초기화
-    zoneList.forEach((zone) => {
+    zoneList.forEach(zone => {
       const z = typeof zone === 'string' ? zone.trim() : '';
       if (z) zoneMap[z] = { region: z };
     });
 
-    // 카운트 누적
     stats?.details?.forEach(({ greenhouse, insect }) => {
       const region = typeof greenhouse === 'string' ? greenhouse.trim() : '';
-      const name = normalizeInsect(insect);
+      const name   = typeof insect === 'string' ? insect.trim() : '';
       if (!region || !name) return;
       if (!zoneMap[region]) zoneMap[region] = { region };
       zoneMap[region][name] = (zoneMap[region][name] ?? 0) + 1;
@@ -69,38 +65,28 @@ export default function RegionStackedBarChart({ stats }) {
     });
 
     const rows = Object.values(zoneMap)
-      .filter((r) => !!r.region)
+      .filter(r => !!r.region)
       .sort((a, b) => a.region.localeCompare(b.region, 'ko'));
 
-    return {
-      regionData: rows,
-      insectTypes: orderInsects(Array.from(insectSet)), // ✅ 순서 고정
-    };
+    return { regionData: rows, insectTypes: Array.from(insectSet) };
   }, [stats, zoneList]);
 
-  // 숫자 보정
+  // 2) 안전 숫자 변환
   const safeRegionData = useMemo(() => {
-    return regionData.map((row) => {
+    return regionData.map(row => {
       const r = { ...row };
-      insectTypes.forEach((type) => {
-        r[type] = Number(r[type] ?? 0);
-      });
+      insectTypes.forEach(type => { r[type] = Number(r[type] ?? 0); });
       return r;
     });
   }, [regionData, insectTypes]);
 
-  // 바 두께 기준 차트 높이 계산(범례 포함)
+  // 높이 계산
   const rowCount = safeRegionData.length;
   const chartHeight = useMemo(() => {
     if (!rowCount) return 180;
-    const plot =
-      MARGIN.top +
-      MARGIN.bottom +
-      YPAD.top +
-      YPAD.bottom +
-      rowCount * BAR_SIZE +
-      Math.max(0, rowCount - 1) * ROW_GAP;
-    return plot + LEGEND_H;
+    const plot = MARGIN.top + MARGIN.bottom + YPAD.top + YPAD.bottom
+      + rowCount * BAR_SIZE + Math.max(0, rowCount - 1) * ROW_GAP;
+    return plot + LEGEND_H; // ← 범례 자리까지 포함
   }, [rowCount]);
 
   return (
@@ -135,7 +121,7 @@ export default function RegionStackedBarChart({ stats }) {
             <Legend
               verticalAlign="bottom"
               align="right"
-              height={LEGEND_H}
+              height={LEGEND_H}       
               iconType="square"
               wrapperStyle={{
                 paddingTop: '12px',
@@ -143,19 +129,16 @@ export default function RegionStackedBarChart({ stats }) {
                 marginLeft: 'auto',
                 display: 'flex',
                 justifyContent: 'flex-end',
-                whiteSpace: 'nowrap',
+                whiteSpace: 'nowrap' 
               }}
             />
-
-            {/* 같은 벌레 = 같은 색 */}
             {insectTypes.map((insect, idx) => (
               <Bar
                 key={insect}
                 dataKey={insect}
                 stackId="a"
-                fill={INSECT_COLOR[insect] ?? COLORS[idx % COLORS.length]}
-                barSize={BAR_SIZE}
-                // stroke="rgba(0,0,0,.12)" // 경계선이 필요하면 주석 해제
+                fill={COLORS[idx % COLORS.length]}
+                barSize={BAR_SIZE}  // 바 두께 고정
               />
             ))}
           </BarChart>
