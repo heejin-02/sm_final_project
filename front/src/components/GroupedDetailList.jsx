@@ -1,4 +1,3 @@
-// src/components/GroupedDetailList.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { groupDataByWeek } from '../utils/groupDataByWeek';
@@ -15,7 +14,7 @@ export default function GroupedDetailList({ stats, period }) {
   };
 
   const handleRowClick = (anlsIdx) => {
-    navigate(`/noti-detail/${anlsIdx}`);
+    navigate(`/notifications/${anlsIdx}`);
   };
 
   // 일간: 단순 리스트
@@ -35,11 +34,11 @@ export default function GroupedDetailList({ stats, period }) {
             </thead>
             <tbody>
               {stats?.details?.length > 0 ? (
-                stats.details.map((item, index) => (
+                stats.details.map((item) => (
                   <tr
-                    key={index}
+                    key={item.anlsIdx}
                     className="border-b hover:bg-gray-50 cursor-pointer"
-                    onClick={() => handleRowClick(item.anlsIdx || index)}
+                    onClick={() => handleRowClick(item.anlsIdx)}
                   >
                     <td>{item.time}</td>
                     <td>{item.greenhouse}</td>
@@ -108,9 +107,9 @@ export default function GroupedDetailList({ stats, period }) {
                           className="border-b hover:bg-blue-50 cursor-pointer"
                           onClick={() => handleRowClick(item.anlsIdx)}
                         >
-                          <td>{item.datetime}</td>
-                          <td>{item.region}</td>
-                          <td>{item.bugType}</td>
+                          <td>{item.time}</td>
+                          <td>{item.greenhouse}</td>
+                          <td>{item.insect}</td>
                           <td>{item.accuracy}%</td>
                         </tr>
                       ))}
