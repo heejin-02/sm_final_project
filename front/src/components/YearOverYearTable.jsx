@@ -1,35 +1,71 @@
 // src/components/YearOverYearTable.jsx
-import React from 'react';
+import React, { useMemo } from 'react';
 
-const YearOverYearTable = ({ stats }) => {
-  // 데이터 가공
-  const insectNames = [...new Set(stats.predictedInsectTrends.map(p => p.insectName))];
+// 시즌 키 정규화 맵
+const SEASON_KEYS = {
+  spring: 'spring', summer: 'summer', fall: 'fall', autumn: 'fall', winter: 'winter',
+  '봄': 'spring', '여름': 'summer', '가을': 'fall', '겨울': 'winter',
+};
 
-  const insectDataMap = {};
-  insectNames.forEach(name => {
-    insectDataMap[name] = {
-      spring: { count2024: 0, count2025: 0, predicted2026: 0 },
-      summer: { count2024: 0, count2025: 0, predicted2026: 0 },
-      fall:   { count2024: 0, count2025: 0, predicted2026: 0 },
-      winter: { count2024: 0, count2025: 0, predicted2026: 0 },
-    };
-  });
+const normalizeSeason = (s) => {
+  if (!s) return null;
+  const k = String(s).trim().toLowerCase();
+  return SEASON_KEYS[k] ?? null;
+};
 
-  stats.predictedInsectTrends.forEach(p => {
-    const season = p.season.toLowerCase();
-    if (insectDataMap[p.insectName]) {
-      insectDataMap[p.insectName][season] = {
-        count2024: p.count2024,
-        count2025: p.count2025,
-        predicted2026: p.predicted2026,
+export default function YearOverYearTable({ stats }) {
+  // 리스트 안전 가드
+  const list = Array.isArray(stats?.predictedInsectTrends)
+    ? stats.predictedInsectTrends
+    : [];
+
+  // 데이터 없으면 빈 상태 표시
+  if (list.length === 0) {
+    return (
+      <div className="mt-8">
+        <div className="bordered-box p-4 text-gray-500">예측 데이터가 없습니다.</div>
+      </div>
+    );
+  }
+
+  // 가공은 메모이즈
+  const { insectDataMap, insectNames } = useMemo(() => {
+    const names = [...new Set(list.map(p => p?.insectName).filter(Boolean))];
+
+    const base = () =>
+      ({ count2024: 0, count2025: 0, predicted2026: 0 });
+
+    const map = {};
+    names.forEach(name => {
+      map[name] = {
+        spring: base(),
+        summer: base(),
+        fall:   base(),
+        winter: base(),
       };
-    }
-  });
+    });
+
+    list.forEach(p => {
+      if (!p) return;
+      const seasonKey = normalizeSeason(p.season);
+      if (!seasonKey) return;
+      const name = p.insectName;
+      if (!map[name]) return;
+
+      map[name][seasonKey] = {
+        count2024: Number(p.count2024 ?? 0),
+        count2025: Number(p.count2025 ?? 0),
+        predicted2026: Number(p.predicted2026 ?? 0),
+      };
+    });
+
+    return { insectDataMap: map, insectNames: names };
+  }, [list]);
 
   return (
     <div className="mt-8">
       <div className="bordered-box">
-        <h3 className="text-lg font-bold mb-4">내년 해충 발생 예측</h3>    
+        <h3 className="text-lg font-bold mb-4">내년 해충 발생 예측</h3>
         <div className="table-overflow scrl-custom">
           <table className="table border">
             <thead>
@@ -41,39 +77,40 @@ const YearOverYearTable = ({ stats }) => {
                 <th colSpan="3">겨울</th>
               </tr>
               <tr>
-                <th>2024</th><th>2025</th><th style={{ backgroundColor: '#f9f9f9' }}>2026 <br/>예측</th>
-                <th>2024</th><th>2025</th><th style={{ backgroundColor: '#f9f9f9' }}>2026 <br/>예측</th>
-                <th>2024</th><th>2025</th><th style={{ backgroundColor: '#f9f9f9' }}>2026 <br/>예측</th>
-                <th>2024</th><th>2025</th><th style={{ backgroundColor: '#f9f9f9' }}>2026 <br/>예측</th>
+                <th>2024</th><th>2025</th><th>2026 <br/>예측</th>
+                <th>2024</th><th>2025</th><th>2026 <br/>예측</th>
+                <th>2024</th><th>2025</th><th>2026 <br/>예측</th>
+                <th>2024</th><th>2025</th><th>2026 <br/>예측</th>
               </tr>
             </thead>
             <tbody>
-              {Object.entries(insectDataMap).map(([name, seasons]) => (
-                <tr key={name}>
-                  <td>{name}</td>
-                  <td>{seasons.spring.count2024}</td>
-                  <td>{seasons.spring.count2025}</td>
-                  <td style={{ backgroundColor: '#f9f9f9' }}>{seasons.spring.predicted2026}</td>
+              {insectNames.map(name => {
+                const s = insectDataMap[name];
+                return (
+                  <tr key={name}>
+                    <td>{name}</td>
+                    <td>{s.spring.count2024}</td>
+                    <td>{s.spring.count2025}</td>
+                    <td style={{ backgroundColor: 'aliceblue' }}>{s.spring.predicted2026}</td>
 
-                  <td>{seasons.summer.count2024}</td>
-                  <td>{seasons.summer.count2025}</td>
-                  <td style={{ backgroundColor: '#f9f9f9' }}>{seasons.summer.predicted2026}</td>
+                    <td>{s.summer.count2024}</td>
+                    <td>{s.summer.count2025}</td>
+                    <td style={{ backgroundColor: 'aliceblue' }}>{s.summer.predicted2026}</td>
 
-                  <td>{seasons.fall.count2024}</td>
-                  <td>{seasons.fall.count2025}</td>
-                  <td style={{ backgroundColor: '#f9f9f9' }}>{seasons.fall.predicted2026}</td>
+                    <td>{s.fall.count2024}</td>
+                    <td>{s.fall.count2025}</td>
+                    <td style={{ backgroundColor: 'aliceblue' }}>{s.fall.predicted2026}</td>
 
-                  <td>{seasons.winter.count2024}</td>
-                  <td>{seasons.winter.count2025}</td>
-                  <td style={{ backgroundColor: '#f9f9f9' }}>{seasons.winter.predicted2026}</td>
-                </tr>
-              ))}
+                    <td>{s.winter.count2024}</td>
+                    <td>{s.winter.count2025}</td>
+                    <td style={{ backgroundColor: 'aliceblue' }}>{s.winter.predicted2026}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
     </div>
   );
-};
-
-export default YearOverYearTable;
+}

@@ -23,11 +23,7 @@ export default function Report() {
 
   const [currentDate, setCurrentDate] = useState(() => getDefaultDate());
 
-  const {
-    stats,
-    loading,
-    error,
-  } = useStatistics({ period, date: currentDate });
+  const { stats, loading, error, refetch }   = useStatistics({ period, date: currentDate });
 
   useEffect(() => {
     setCurrentDate(getDefaultDate());
@@ -171,12 +167,15 @@ export default function Report() {
 
               {/* 차트 */}
               <div className="mt-8">
-                <StatisticsChart data={stats} period={period} currentDate={currentDate} />
+                <StatisticsChart stats={stats} period={period} currentDate={currentDate} />
               </div>
 
               {/* 상세 현황 */}
               <div className="mt-8">
-                <GroupedDetailList data={stats} period={period} />
+                <GroupedDetailList 
+                  stats={stats} 
+                  period={period}
+                />
               </div>
             </div>
           )}

@@ -27,7 +27,7 @@ export default function MonthlyTable({ predictions }) {
       <div className="bordered-box">
         <h3 className="text-lg font-bold mb-4">내년 해충 발생 예측</h3>
         <div className="table-overflow scrl-custom">
-          <table className="table border text-center">
+          <table className="table border text-center predict-table">
             <thead>
               <tr>
                 <th className="">해충 종류</th>
