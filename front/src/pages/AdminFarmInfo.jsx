@@ -141,11 +141,11 @@ function AdminFarmInfo() {
       console.error('구역 저장 실패:', error);
 
       // API 실패 시 사용자에게 알림
-      if (error.response?.status === 404) {
-        alert('구역 저장 API가 아직 구현되지 않았습니다.\n백엔드 개발 완료 후 사용 가능합니다.');
-      } else {
-        alert('구역 저장에 실패했습니다.\n잠시 후 다시 시도해주세요.');
-      }
+      // if (error.response?.status === 404) {
+      //   alert('구역 저장 API가 아직 구현되지 않았습니다.\n백엔드 개발 완료 후 사용 가능합니다.');
+      // } else {
+      //   alert('구역 저장에 실패했습니다.\n잠시 후 다시 시도해주세요.');
+      // }
     }
   };
 
