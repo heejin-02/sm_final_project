@@ -172,7 +172,10 @@ export default function Report() {
 
               {/* 상세 현황 */}
               <div className="mt-8">
-                <GroupedDetailList stats={stats} period={period} />
+                <GroupedDetailList 
+                  stats={stats} 
+                  period={period}
+                />
               </div>
             </div>
           )}

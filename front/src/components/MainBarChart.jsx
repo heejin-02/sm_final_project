@@ -57,8 +57,12 @@ export default function MainBarChart({ stats, period }) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey={period === 'monthly' ? 'period' : 'month'} />
           <YAxis />
-          <Tooltip formatter={(value) => `${value}건`} />
-          <Bar dataKey="count" fill="#79bcff" />
+          <Tooltip 
+            // formatter={(value) => `${value}건`} 
+            formatter={(v) => [`${v}건`, '탐지 수']}
+          />
+          <Bar dataKey="count" fill="#ef4444" width="60"/>
+          {/* #79bcff */}
         </BarChart>
       </ResponsiveContainer>
     </>

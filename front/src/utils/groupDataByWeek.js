@@ -16,11 +16,11 @@ export function groupDataByWeek(details) {
     }
 
     grouped[key].items.push({
-      datetime: item.time,
-      region: item.greenhouse,
-      bugType: item.insect,
+      time: item.time,
+      greenhouse: item.greenhouse,
+      insect: item.insect,
       accuracy: item.accuracy,
-      anlsIdx: item.anlsIdx ?? `${item.time}-${item.greenhouse}-${item.insect}`
+      anlsIdx: item.anlsIdx
     });
     grouped[key].count += 1;
   });
