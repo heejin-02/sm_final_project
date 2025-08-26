@@ -24,7 +24,7 @@ load_dotenv()
 import re
 
 # 고정 GH_IDX
-gh_idx = 3
+gh_idx = 74
 
 
 # 전화번호 포맷 정규화 함수
@@ -55,7 +55,7 @@ SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
 SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
 SIGNALWIRE_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER")
 SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
-PUBLIC_FASTAPI_BASE = "https://41c3fa730a5f.ngrok-free.app"
+PUBLIC_FASTAPI_BASE = "https://7423eaa6814e.ngrok-free.app"
 
 
 def make_call_by_gh_idx(gh_idx: int):
@@ -234,7 +234,8 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    make_call_by_gh_idx(gh_idx)
+                    #make_call_by_gh_idx(gh_idx)
+                    # 주석 풀면 전화 가능
 
                     try:
                         gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")
