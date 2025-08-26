@@ -6,7 +6,6 @@ from datetime import datetime
 import torch
 import requests
 import cv2
-from twilio.rest import Client
 from models.common import DetectMultiBackend
 from utils.dataloaders import LoadStreams, LoadImages
 from utils.general import (
