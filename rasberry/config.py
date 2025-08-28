@@ -19,7 +19,7 @@ class CameraConfig:
     
     # 카메라 해상도 설정
     lq_resolution: Tuple[int, int] = (320, 240)    # Low Quality (움직임 감지용)
-    hq_resolution: Tuple[int, int] = (1024, 768)   # High Quality (탐지용)
+    hq_resolution: Tuple[int, int] = (640, 480)    # High Quality (탐지용) - 크기 줄임
     
     # 프레임 설정
     lq_fps: int = 10  # LQ 스트림 FPS
@@ -40,7 +40,7 @@ class CameraConfig:
     jpeg_quality_high: int = 60   # 높은 품질 (탐지용) - 크기 제한을 위해 낮춤
     
     # 네트워크 대역폭 조절
-    max_frame_size: int = 30 * 1024  # 최대 프레임 크기 (30KB)
+    max_frame_size: int = 20 * 1024  # 최대 프레임 크기 (20KB)
     auto_quality_adjust: bool = True  # 자동 품질 조절
     
     # 로컬 저장 설정
