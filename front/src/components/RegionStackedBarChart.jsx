@@ -80,14 +80,22 @@ export default function RegionStackedBarChart({ stats }) {
 
   // 숫자 보정
   const safeRegionData = useMemo(() => {
-    return regionData.map((row) => {
-      const r = { ...row };
-      insectTypes.forEach((type) => {
-        r[type] = Number(r[type] ?? 0);
-      });
+    const rows = regionData.map((row) => {
+      const r = { ...row, region: String(row.region || '') };
+      insectTypes.forEach(
+        (t) => (r[t] = Number.isFinite(Number(r[t])) ? Number(r[t]) : 0)
+      );
       return r;
     });
+
+    if (rows.length === 1) {
+      rows.push({ region: '__dummy__', ...Object.fromEntries(insectTypes.map((t) => [t, 0])) });
+    }
+    return rows;
   }, [regionData, insectTypes]);
+
+  // 보여줄 데이터에서는 dummy 제외
+  const chartData = safeRegionData.filter(r => r.region !== '__dummy__');
 
   // 바 두께 기준 차트 높이 계산(범례 포함)
   const rowCount = safeRegionData.length;
@@ -109,7 +117,7 @@ export default function RegionStackedBarChart({ stats }) {
       {rowCount > 0 ? (
         <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart
-            data={safeRegionData}
+            data={chartData}
             layout="vertical"
             margin={MARGIN}
             barCategoryGap={ROW_GAP}
@@ -126,9 +134,8 @@ export default function RegionStackedBarChart({ stats }) {
               type="category"
               dataKey="region"
               width={100}
-              tick={{ fontSize: rowCount > 8 ? 12 : 16 }}
               interval={0}
-              allowDuplicatedCategory={false}
+              allowDuplicatedCategory={true}
               padding={YPAD}
             />
             <Tooltip formatter={(v) => `${v}건`} />

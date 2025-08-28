@@ -80,7 +80,7 @@ export function AuthProvider({ children }) {
             setUser(userData);
             setIsLoggedIn(true);
           } else {
-            console.log('🧹 localStorage 정리');
+            // console.log('🧹 localStorage 정리');
             localStorage.removeItem(STORAGE_KEYS.USER);
             localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
             localStorage.removeItem(STORAGE_KEYS.LOGIN_TIME);
