@@ -165,6 +165,11 @@ class CameraClient:
         self.last_detection_time = 0
         self.websocket = None
         
+        # 영상 버퍼 (10초간 LQ+HQ 프레임 저장)
+        self.lq_buffer = []  # LQ 프레임 버퍼
+        self.hq_buffer = []  # HQ 프레임 버퍼
+        self.frame_timestamps = []  # 프레임 타임스탬프
+        
         # 카메라 초기화
         self.camera = None
         self.cap = None
@@ -389,8 +394,89 @@ class CameraClient:
         
         return motion_detected, motion_areas
     
+    async def add_frame_to_buffer(self, lq_frame: np.ndarray, hq_frame: np.ndarray, timestamp: float):
+        """프레임을 버퍼에 추가 (녹화 중일 때만)"""
+        if not self.is_recording:
+            return
+        
+        self.lq_buffer.append(lq_frame.copy())
+        self.hq_buffer.append(hq_frame.copy())
+        self.frame_timestamps.append(timestamp)
+        
+        # 메모리 관리: 최대 버퍼 크기 제한 (15초분)
+        max_frames = int(self.config.lq_fps * 15)  # 여유분 포함
+        if len(self.lq_buffer) > max_frames:
+            self.lq_buffer.pop(0)
+            self.hq_buffer.pop(0)
+            self.frame_timestamps.pop(0)
+        
+        # 녹화 종료 조건 확인
+        if time.time() - self.recording_start_time > self.config.recording_duration:
+            await self.finish_recording()
+    
+    async def finish_recording(self):
+        """녹화 종료 및 버퍼 데이터 전송"""
+        self.is_recording = False
+        logger.info("⏹️ 녹화 종료 - 버퍼 데이터 전송 시작")
+        
+        if len(self.lq_buffer) > 0 and len(self.hq_buffer) > 0:
+            await self.send_video_buffer()
+        
+        # 버퍼 클리어
+        self.lq_buffer.clear()
+        self.hq_buffer.clear() 
+        self.frame_timestamps.clear()
+        
+        await self.send_recording_event("recording_stop")
+    
+    async def send_video_buffer(self):
+        """녹화된 LQ+HQ 영상 데이터를 ML 서버로 전송"""
+        if not self.websocket:
+            logger.error("웹소켓 연결이 없습니다")
+            return
+            
+        logger.info(f"🎦 비디오 버퍼 전송: LQ {len(self.lq_buffer)}프레임, HQ {len(self.hq_buffer)}프레임")
+        
+        try:
+            # 프레임들을 Base64로 인코딩
+            lq_frames_b64 = []
+            hq_frames_b64 = []
+            
+            for i, (lq_frame, hq_frame) in enumerate(zip(self.lq_buffer, self.hq_buffer)):
+                # 압축률을 높여서 전송 크기 최소화
+                lq_b64, _ = self.frame_processor.encode_frame_base64(lq_frame, quality=30)
+                hq_b64, _ = self.frame_processor.encode_frame_base64(hq_frame, quality=50) 
+                
+                lq_frames_b64.append(lq_b64)
+                hq_frames_b64.append(hq_b64)
+                
+                # 중간 진행상황 로깅
+                if i % 20 == 0:
+                    logger.info(f"인코딩 진행: {i+1}/{len(self.lq_buffer)}")
+            
+            # 전송할 메시지 구성
+            video_message = {
+                "type": "video_buffer",
+                "camera_id": self.config.camera_id,
+                "gh_idx": self.config.gh_idx,
+                "recording_start_time": self.recording_start_time,
+                "recording_duration": self.config.recording_duration,
+                "frame_count": len(self.lq_buffer),
+                "lq_frames": lq_frames_b64,
+                "hq_frames": hq_frames_b64,
+                "timestamps": self.frame_timestamps,
+                "lq_resolution": self.config.lq_resolution,
+                "hq_resolution": self.config.hq_resolution
+            }
+            
+            await self.websocket.send(json.dumps(video_message))
+            logger.info("✅ 비디오 버퍼 전송 완료")
+            
+        except Exception as e:
+            logger.error(f"❌ 비디오 버퍼 전송 실패: {e}")
+    
     async def process_recording(self, hq_frame: np.ndarray):
-        """녹화 중 HQ 프레임 처리"""
+        """녹화 중 HQ 프레임 처리 (이전 버전과 호환성)"""
         if not self.is_recording:
             return
         
@@ -451,14 +537,28 @@ class CameraClient:
                 await self.send_frame_data(lq_frame, "lq", motion_detected, 
                                          [[int(x), int(y), int(w), int(h)] for x, y, w, h in motion_areas])
                 
-                # 녹화 중이면 HQ 프레임도 처리
+                # HQ 프레임 캐처 (항상)
+                hq_frame = self.capture_frame(high_quality=True)
+                if hq_frame is None:
+                    await asyncio.sleep(0.1)
+                    continue
+                
+                # 녹화 중이면 프레임을 버퍼에 저장
                 if self.is_recording:
-                    hq_frame = self.capture_frame(high_quality=True)
-                    if hq_frame is not None:
-                        await self.process_recording(hq_frame)
-                        
-                        # 로컬 백업 저장
+                    current_timestamp = time.time()
+                    await self.add_frame_to_buffer(lq_frame, hq_frame, current_timestamp)
+                    
+                    # 로컬 백업 저장 (선택사항)
+                    if frame_count % 10 == 0:  # 10프레임마다 저장
                         await self.save_local_backup(hq_frame, "hq")
+                
+                # 실시간 상태만 전송 (프레임 데이터는 10초 후 일괄 전송)
+                if motion_detected:
+                    await self.send_recording_event(
+                        "motion_frame",
+                        motion_areas=[[int(x), int(y), int(w), int(h)] for x, y, w, h in motion_areas],
+                        timestamp=time.time()
+                    )
                 
                 # 주기적 상태 로깅
                 if frame_count % 100 == 0:
