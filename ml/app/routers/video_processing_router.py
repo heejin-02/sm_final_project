@@ -62,37 +62,46 @@ async def process_video_buffer(request: VideoBufferRequest):
         if len(request.lq_frames) != request.frame_count:
             raise HTTPException(status_code=400, detail="프레임 수가 일치하지 않습니다")
         
-        # 모든 탐지 결과 저장
+        # 모든 탐지 결과 및 시각화된 프레임 저장
         all_detections = []
+        annotated_hq_frames = []  # YOLO 결과가 그려진 HQ 프레임들
         processed_frames = 0
         
         # 프레임별 처리
         for i, (lq_b64, hq_b64, timestamp) in enumerate(zip(request.lq_frames, request.hq_frames, request.timestamps)):
             try:
+                # HQ 프레임 디코딩 (맨 먼저 디코딩)
+                hq_frame = decode_base64_frame(hq_b64)
+                if hq_frame is None:
+                    logger.warning(f"HQ 프레임 {i} 디코딩 실패")
+                    # 빈 프레임이라도 저장 (비디오 동기화를 위해)
+                    annotated_hq_frames.append(None)
+                    continue
+                
                 # LQ 프레임 디코딩
                 lq_frame = decode_base64_frame(lq_b64)
                 if lq_frame is None:
                     logger.warning(f"LQ 프레임 {i} 디코딩 실패")
+                    # HQ 프레임만 저장 (탐지 결과 없음)
+                    annotated_hq_frames.append(hq_frame.copy())
                     continue
                 
-                # LQ 프레임에서 YOLO 탐지 수행
+                # LQ 프레임에서 YOLO 탐직 수행
                 detections = await yolo_service.detect_insects(lq_frame)
                 
+                # HQ 프레임에 탐직 결과 시각화
+                annotated_hq = draw_detections_on_hq_frame(detections, lq_frame, hq_frame) if detections else hq_frame.copy()
+                annotated_hq_frames.append(annotated_hq)
+                
                 if detections:
-                    # HQ 프레임 디코딩
-                    hq_frame = decode_base64_frame(hq_b64)
-                    if hq_frame is None:
-                        logger.warning(f"HQ 프레임 {i} 디코딩 실패")
-                        continue
-                    
-                    # 탐지 결과를 HQ 프레임과 동기화하여 처리
+                    # 탐직 결과를 HQ 프레임과 동기화하여 처리
                     frame_detections = await process_detections_with_hq_sync(
                         detections, lq_frame, hq_frame, request, timestamp, i
                     )
                     
                     all_detections.extend(frame_detections)
                     
-                    logger.info(f"프레임 {i}/{request.frame_count}: {len(detections)}개 탐지")
+                    logger.info(f"프레임 {i}/{request.frame_count}: {len(detections)}개 탐직")
                 
                 processed_frames += 1
                 
@@ -104,15 +113,23 @@ async def process_video_buffer(request: VideoBufferRequest):
                 logger.error(f"프레임 {i} 처리 중 오류: {e}")
                 continue
         
+        # YOLO 결과가 그려진 HQ 비디오 생성 및 Spring Boot로 전송
+        video_path = None
+        if len(annotated_hq_frames) > 0:
+            video_path = await create_annotated_video(annotated_hq_frames, request)
+            if video_path:
+                # Spring Boot로 비디오 전송
+                await send_video_to_spring_boot(video_path, request, len(all_detections))
+        
         # 처리 완료
         processing_time = (datetime.now() - start_time).total_seconds()
         
         logger.info(f"✅ 비디오 처리 완료: {processed_frames}/{request.frame_count}프레임, "
-                   f"{len(all_detections)}개 탐지, {processing_time:.2f}초 소요")
+                   f"{len(all_detections)}개 탐직, {processing_time:.2f}초 소요")
         
         return VideoProcessingResponse(
             success=True,
-            message=f"{len(all_detections)}개 해충 탐지 완료",
+            message=f"{len(all_detections)}개 해충 탐직 완료, 비디오 생성: {video_path}",
             camera_id=request.camera_id,
             total_frames=processed_frames,
             processing_time=processing_time,
@@ -268,6 +285,168 @@ async def send_detection_to_spring_boot(insect_name: str, confidence: float,
         
     except Exception as e:
         logger.error(f"Spring Boot 전송 실패: {e}")
+
+def draw_detections_on_hq_frame(detections: List[dict], lq_frame: np.ndarray, hq_frame: np.ndarray) -> np.ndarray:
+    """
+HQ 프레임에 LQ에서 탐지된 결과를 시각화
+    """
+    annotated_frame = hq_frame.copy()
+    
+    # 해상도 비율 계산 (LQ → HQ 스케일링)
+    lq_h, lq_w = lq_frame.shape[:2]
+    hq_h, hq_w = hq_frame.shape[:2]
+    
+    scale_x = hq_w / lq_w
+    scale_y = hq_h / lq_h
+    
+    # 곤충 종류별 색상 정의
+    colors = {
+        "꽃노랑총채벌레": (0, 255, 255),  # 노랑
+        "담배가루이": (255, 255, 255),      # 하얀
+        "비단노린재": (0, 255, 0),         # 초록
+        "알락수염노린재": (255, 0, 0)     # 빨강
+    }
+    
+    for detection in detections:
+        # LQ bbox를 HQ 좌표계로 변환
+        lq_bbox = detection["bbox"]  # [x_min, y_min, x_max, y_max]
+        
+        hq_x1 = int(lq_bbox[0] * scale_x)
+        hq_y1 = int(lq_bbox[1] * scale_y)
+        hq_x2 = int(lq_bbox[2] * scale_x)
+        hq_y2 = int(lq_bbox[3] * scale_y)
+        
+        # 경계 검사
+        hq_x1 = max(0, min(hq_x1, hq_w-1))
+        hq_y1 = max(0, min(hq_y1, hq_h-1))
+        hq_x2 = max(hq_x1+1, min(hq_x2, hq_w))
+        hq_y2 = max(hq_y1+1, min(hq_y2, hq_h))
+        
+        # 곤충 종류와 신뢰도
+        class_name = detection["class_name"]
+        confidence = detection["confidence"]
+        color = colors.get(class_name, (0, 255, 0))  # 기본 초록색
+        
+        # 바운딩 박스 그리기
+        cv2.rectangle(annotated_frame, (hq_x1, hq_y1), (hq_x2, hq_y2), color, 3)
+        
+        # 레이블 배경 그리기
+        label = f"{class_name} {confidence:.2f}"
+        (label_w, label_h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)
+        
+        # 레이블 배경 사각형
+        cv2.rectangle(annotated_frame, (hq_x1, hq_y1 - label_h - 10), 
+                     (hq_x1 + label_w + 10, hq_y1), color, -1)
+        
+        # 레이블 텍스트
+        cv2.putText(annotated_frame, label, (hq_x1 + 5, hq_y1 - 5),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+    
+    return annotated_frame
+
+async def create_annotated_video(annotated_frames: List[np.ndarray], request: VideoBufferRequest) -> str:
+    """
+시각화된 프레임들로 MP4 비디오 생성
+    """
+    try:
+        # 비디오 저장 디렉토리 생성
+        video_dir = Path("data/processed_videos") / request.camera_id
+        video_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 파일명 생성
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        video_filename = f"detection_{request.camera_id}_{timestamp}.mp4"
+        video_path = video_dir / video_filename
+        
+        # 비디오 라이터 설정 (OpenCV)
+        if len(annotated_frames) == 0:
+            logger.error("비디오 생성을 위한 프레임이 없습니다")
+            return None
+        
+        # 첫 번째 프레임에서 해상도 처영
+        valid_frame = None
+        for frame in annotated_frames:
+            if frame is not None:
+                valid_frame = frame
+                break
+        
+        if valid_frame is None:
+            logger.error("유효한 프레임이 없습니다")
+            return None
+        
+        height, width = valid_frame.shape[:2]
+        fps = 10  # 라즈베리파이의 LQ FPS와 동일
+        
+        # VideoWriter 설정
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(str(video_path), fourcc, fps, (width, height))
+        
+        if not out.isOpened():
+            logger.error("VideoWriter 열기 실패")
+            return None
+        
+        # 프레임들을 비디오로 작성
+        for i, frame in enumerate(annotated_frames):
+            if frame is not None:
+                # 해상도 통일
+                if frame.shape[:2] != (height, width):
+                    frame = cv2.resize(frame, (width, height))
+                out.write(frame)
+            else:
+                # 빈 프레임일 경우 이전 프레임 사용
+                if i > 0 and annotated_frames[i-1] is not None:
+                    prev_frame = annotated_frames[i-1]
+                    if prev_frame.shape[:2] != (height, width):
+                        prev_frame = cv2.resize(prev_frame, (width, height))
+                    out.write(prev_frame)
+        
+        out.release()
+        
+        logger.info(f"✅ 비디오 생성 완료: {video_path}")
+        return str(video_path)
+        
+    except Exception as e:
+        logger.error(f"❌ 비디오 생성 실패: {e}")
+        return None
+
+async def send_video_to_spring_boot(video_path: str, request: VideoBufferRequest, detection_count: int):
+    """
+생성된 비디오를 Spring Boot서버로 전송
+    """
+    import requests
+    from pathlib import Path
+    
+    try:
+        if not Path(video_path).exists():
+            logger.error(f"비디오 파일이 존재하지 않습니다: {video_path}")
+            return
+        
+        # Spring Boot 비디오 업로드 API
+        spring_boot_url = "http://localhost:8095/api/video/upload"
+        
+        # 비디오 파일 및 메타데이터 준비
+        with open(video_path, 'rb') as video_file:
+            files = {
+                'video': (Path(video_path).name, video_file, 'video/mp4')
+            }
+            
+            data = {
+                'camera_id': request.camera_id,
+                'gh_idx': request.gh_idx,
+                'detection_count': detection_count,
+                'recording_start_time': request.recording_start_time,
+                'frame_count': request.frame_count
+            }
+            
+            response = requests.post(spring_boot_url, files=files, data=data, timeout=30)
+            
+            if response.status_code == 200:
+                logger.info(f"✅ Spring Boot 비디오 전송 성공: {video_path}")
+            else:
+                logger.error(f"❌ Spring Boot 비디오 전송 실패: {response.status_code}")
+    
+    except Exception as e:
+        logger.error(f"❌ Spring Boot 비디오 전송 오류: {e}")
 
 async def make_call(gh_idx: int, insect_name: str, confidence: float):
     """전화 발신"""
