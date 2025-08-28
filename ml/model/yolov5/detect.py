@@ -233,7 +233,7 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    #make_call_by_gh_idx(gh_idx)
+                    # make_call_by_gh_idx(gh_idx)
                     # 주석 풀면 전화 가능
 
                     try:
