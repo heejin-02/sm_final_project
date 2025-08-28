@@ -167,10 +167,14 @@ public class MlApiController {
     @Operation(summary = "온실 ID로 사용자 전화번호 조회")
     public ResponseEntity<Map<String, Object>> getUserPhoneByGhIdx(
             @RequestParam("gh_idx") Long ghIdx) {
+        System.out.println("[API] 전화번호 조회 요청 받음 - GH_IDX: " + ghIdx);
+        
         try {
             Map<String, Object> result = mlApiService.getUserPhoneByGhIdx(ghIdx);
+            System.out.println("[API] ✅ 전화번호 조회 성공 응답 - GH_IDX: " + ghIdx);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
+            System.out.println("[API] ❌ 전화번호 조회 실패 - GH_IDX: " + ghIdx + ", 오류: " + e.getMessage());
             return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
         }
     }
@@ -201,11 +205,11 @@ public class MlApiController {
         }
     }
 
-    @GetMapping("/twilio-call-data")
-    @Operation(summary = "Twilio 전화 발신용 데이터 조회")
-    public ResponseEntity<Map<String, Object>> getTwilioCallData() {
+    @GetMapping("/signalwire-call-data")
+    @Operation(summary = "SignalWire 전화 발신용 데이터 조회")
+    public ResponseEntity<Map<String, Object>> getSignalWireCallData() {
         try {
-            Map<String, Object> result = mlApiService.getTwilioCallData();
+            Map<String, Object> result = mlApiService.getSignalWireCallData();
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));

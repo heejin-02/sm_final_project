@@ -47,7 +47,7 @@
 
   <!-- 온실 ID로 전화번호 조회 -->
   <select id="getUserPhoneByGhIdx" resultType="map">
-    SELECT U.USER_PHONE as userPhone
+    SELECT U.USER_PHONE as USERPHONE
     FROM QC_USER U
     JOIN QC_FARM F ON U.USER_PHONE = F.USER_PHONE
     JOIN QC_GREENHOUSE G ON F.FARM_IDX = G.FARM_IDX
@@ -90,8 +90,8 @@
     )
   </insert>
 
-  <!-- Twilio 전화 발신용 데이터 조회 -->
-  <select id="getTwilioCallData" resultType="map">
+  <!-- SignalWire 전화 발신용 데이터 조회 -->
+  <select id="getSignalWireCallData" resultType="map">
     SELECT gh_name as ghName, insect_name as insectName
     FROM (
         SELECT

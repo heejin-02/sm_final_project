@@ -48,9 +48,11 @@ async def root():
             "/api/monthly-gpt-summary",
             "/api/yearly-gpt-summary",
             "/api/get-phone",
+            "/api/make-call",
+            "/api/call-history",
             "/api/upload",
-            "/twilio-call",
-            "/twilio/voice"
+            "/api/signalwire-call",
+            "/api/signalwire/voice"
         ]
     }
 

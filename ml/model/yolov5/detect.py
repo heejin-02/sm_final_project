@@ -23,9 +23,51 @@ load_dotenv()
 gh_idx = 74
 
 
-# 전화번호와 전화 기능은 ML API 서버에서 처리하도록 이관
-
-# 전화 발신은 ML API 서버에서 Spring Boot를 통해 처리
+# 전화 발신 함수 
+def make_call_by_gh_idx(gh_idx, insect_name="해충", confidence=0.0):
+    """ML API 서버를 통한 전화 발신"""
+    print("=" * 60)
+    print(f"[DETECT] 🔔 전화 발신 요청 시작")
+    print(f"[DETECT] - GH_IDX: {gh_idx}")
+    print(f"[DETECT] - 해충명: {insect_name}")
+    print(f"[DETECT] - 신뢰도: {confidence:.2f}")
+    print("=" * 60)
+    
+    try:
+        ml_api_url = "http://localhost:8003/api/make-call"
+        params = {
+            "gh_idx": gh_idx,
+            "insect_name": insect_name,
+            "confidence": confidence
+        }
+        
+        print(f"[DETECT] ML API 호출 중... URL: {ml_api_url}")
+        print(f"[DETECT] 파라미터: {params}")
+        
+        response = requests.post(ml_api_url, params=params, timeout=10)
+        
+        print(f"[DETECT] API 응답 상태코드: {response.status_code}")
+        print(f"[DETECT] API 응답 내용: {response.text}")
+        
+        if response.status_code == 200:
+            print(f"[DETECT] ✅ 전화 발신 성공!")
+            print(f"[DETECT] - GH_IDX: {gh_idx}")
+            print(f"[DETECT] - 해충: {insect_name}")
+            print(f"[DETECT] - 신뢰도: {confidence:.2f}")
+            print("=" * 60)
+            return True
+        else:
+            print(f"[DETECT] ❌ 전화 발신 실패!")
+            print(f"[DETECT] - 상태코드: {response.status_code}")
+            print(f"[DETECT] - 응답: {response.text}")
+            print("=" * 60)
+            return False
+            
+    except Exception as e:
+        print(f"[DETECT] ⚠️ 전화 발신 오류 발생!")
+        print(f"[DETECT] - 오류 내용: {e}")
+        print("=" * 60)
+        return False
 
 
 def get_insect_idx(name):
@@ -190,8 +232,10 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    # make_call_by_gh_idx(gh_idx)
-                    # 주석 풀면 전화 가능
+                    
+                    # 🔔 전화 발신 실행
+                    make_call_by_gh_idx(gh_idx, insect_name, best_conf)
+                    print(f"[알림] {insect_name} 탐지로 인한 전화 발신 완료")
 
                     # GPT 요약은 프론트엔드에서 필요시 요청하도록 변경
                     print(f"[완료] 해충 탐지 및 영상 업로드 완료 | IMG_IDX: {img_idx}")
