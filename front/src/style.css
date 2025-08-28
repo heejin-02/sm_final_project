@@ -103,6 +103,10 @@
   html {
     font-size: 18px;
   }
+
+  .mobile{
+    display: none;
+  }  
 }
 
 /* ========================================
@@ -113,7 +117,7 @@
   /* ===== 앱 기본 레이아웃 ===== */
   #app {
     padding-top: var(--header-h);
-    max-width: 1920px;
+    /* max-width: 1920px; */
     margin: 0 auto;
   }
   .inner{
@@ -126,8 +130,11 @@
     width: 1080px;
   }
 
-  .logo{
+  .logo-area{
     width: 187px;
+  }
+  .logo-area .logo{
+    width: 100%;
   }
 
   .main-farm {
@@ -338,6 +345,7 @@
     max-width: 100%;
     margin: 0 auto;
     flex: 1;
+    padding: 2rem 0;
   }
 
   /* ===== 홈 화면 스타일 ===== */
@@ -368,6 +376,7 @@
     background: white;
     padding: 3rem 1.6rem;
     border-radius: 1rem;
+    max-width: 100%;
   }
   .home-rt .desc{
     font-size: 1.2rem;
@@ -1570,11 +1579,17 @@
     background: aliceblue;
     border: solid 1px #d2e9fe;
     border-radius: 1rem;
-    padding: 1rem;
+    padding: 1.25rem;
     color: #333;
-    width: 70%;
+    /* width: 70%; */
     max-width: 100%;
     min-height: 100px;
+  }
+
+  .baekgu-msg .title{
+    font-weight: 500;
+    font-size: 110%;
+    margin-bottom: .6rem;
   }
 
   .baekgu-msg-wrap.feedback{
@@ -1582,20 +1597,36 @@
   }
 
   .baekgu-msg-wrap.feedback .baekgu-msg{
-    background: #fffcf2;
-    border-color: #ededd4;
-    width: 80%;
+    /* background: #fffcf2; */
+    /* border-color: #ededd4; */
+    width: 100%;
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+  .baekgu-msg-wrap.feedback textarea{
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: .5rem;
+    background: #f9f9f9;
+  }
+  .baekgu-msg-wrap.feedback textarea:focus-visible{
+    border: 1px solid #eee;
+    background: #fff;
   }
   
   .baekgu-msg-wrap.feedback .btn{
     margin-left: auto;
-    background: #ffe387;
+    background: #fff;
     padding: .6rem 1.4rem;    
+  }
+  .baekgu-msg-wrap.feedback .btn:hover{
+    color: var(--color-primary);
   }
 
   .baekgu-msg-wrap textarea{
     width: 100%;
-    min-height: 130px;
+    min-height: 100px;
     resize: vertical;
     border: none;
     background: transparent;
@@ -2400,10 +2431,39 @@
       font-size: 1.125rem;
       min-height: 58px;
     }
-  }  
+  }
 
   /* 모바일 (768px 이하) */
   @media (max-width: 768px) {
+    html{
+      font-size: 17px;
+    }
+    /* ===== 공통 타이틀 ===== */
+    .tit-head{
+      font-size: 1.75rem;
+    }
+    .tit {
+      font-size: 1.2rem;
+    }
+    .tit-2{
+      font-size: 1.1rem;
+    }
+    .tit-3{
+      font-size: 1.55rem;
+    }
+
+    .home .login-form,
+    .home .login-form .input{
+      font-size: 1rem;
+    }
+
+    .farmList{
+      width: 400px;
+    }
+    .farmList-item{
+      font-size: 1.2rem;
+    }
+
     .feedback-options-simple {
       flex-direction: column;
       gap: 1rem;
@@ -2417,4 +2477,26 @@
       font-size: 1rem;
     }
   }
+
+  @media (max-width: 500px) {
+    html{
+      --header-h: 68px;
+    }
+    .logo-area {
+        width: 153px;
+    }
+    .home .cont-wrap{
+      padding: 2.5rem 1rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .mobile .home-desc{
+      font-size: 1.2rem;
+    }
+    .home .mobile .desc{
+      font-size: 1rem;
+    }    
+  }
+
 }
