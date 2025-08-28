@@ -35,12 +35,12 @@ class CameraConfig:
     recording_cooldown: int = 30  # 녹화 쿨다운 (초)
     
     # 압축 설정
-    jpeg_quality_low: int = 30    # 낮은 품질 (대역폭 절약)
-    jpeg_quality_medium: int = 60 # 중간 품질
-    jpeg_quality_high: int = 80   # 높은 품질 (탐지용)
+    jpeg_quality_low: int = 20    # 낮은 품질 (대역폭 절약)
+    jpeg_quality_medium: int = 40 # 중간 품질
+    jpeg_quality_high: int = 60   # 높은 품질 (탐지용) - 크기 제한을 위해 낮춤
     
     # 네트워크 대역폭 조절
-    max_frame_size: int = 50 * 1024  # 최대 프레임 크기 (50KB)
+    max_frame_size: int = 30 * 1024  # 최대 프레임 크기 (30KB)
     auto_quality_adjust: bool = True  # 자동 품질 조절
     
     # 로컬 저장 설정
