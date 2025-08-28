@@ -5,8 +5,10 @@
 ## 🏗️ 시스템 아키텍처
 
 ```
-라즈베리파이 카메라 → WebSocket → ML API 서버 → Spring Boot API → 알림/DB
+라즈베리파이 카메라 → WebSocket → Spring Boot API → ML API 서버 → 알림/DB
 ```
+
+**변경사항**: 보안 강화를 위해 ML API 서버는 외부 접근을 차단하고, Spring Boot를 통해서만 접근 가능하도록 구조 변경
 
 ### 주요 특징
 - **듀얼 스트림**: LQ(320x240) 움직임 감지 + HQ(1024x768) 해충 탐지
@@ -48,8 +50,10 @@ sudo raspi-config nonint do_camera 0
 CAMERA_ID=cam_001          # 각 라즈베리파이마다 고유 ID
 GH_IDX=74                  # 온실 인덱스
 
-# 네트워크
-SERVER_HOST=192.168.219.47 # ML API 서버 IP
+# 네트워크 (Spring Boot 서버로 변경)
+SERVER_HOST=192.168.219.47 # Spring Boot 서버 IP
+SERVER_PORT=8095           # Spring Boot 포트
+WEBSOCKET_ENDPOINT=/api/camera/websocket # 웹소켓 엔드포인트
 ```
 
 ### 카메라 설정 (config.py)
@@ -108,11 +112,12 @@ libcamera-vid -t 10000 --width 1024 --height 768 -o test.h264
 
 ## 🔧 API 엔드포인트
 
-### WebSocket
-- `ws://{server_host}:8003/ws/camera` - 카메라 연결
+### WebSocket (Spring Boot)
+- `ws://{server_host}:8095/api/camera/websocket` - 카메라 연결
 
-### REST API
+### REST API (Spring Boot)
 - `GET /api/camera/stats` - 카메라 통계 조회
+- `POST /api/camera/detect` - 해충 탐지 요청
 
 ## 📁 파일 구조
 
@@ -138,7 +143,8 @@ raspberry/
    ```
 
 2. **네트워크 연결 실패**
-   - ML API 서버(포트 8003) 실행 상태 확인
+   - Spring Boot 서버(포트 8095) 실행 상태 확인
+   - ML API 서버는 Spring Boot를 통해 접근됩니다
    - IP 주소 및 방화벽 설정 확인
 
 3. **성능 저하**

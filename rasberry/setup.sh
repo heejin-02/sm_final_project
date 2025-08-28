@@ -46,7 +46,11 @@ cat > .env << EOF
 # 카메라 설정
 CAMERA_ID=cam_001
 GH_IDX=74
+
+# Spring Boot 서버 설정 (변경됨)
 SERVER_HOST=192.168.219.47
+SERVER_PORT=8095
+WEBSOCKET_ENDPOINT=/api/camera/websocket
 
 # 네트워크 설정 (필요시 수정)
 # CAMERA_ID=cam_002
@@ -99,5 +103,6 @@ echo "- 카메라 테스트: libcamera-hello"
 echo ""
 echo "⚠️ 주의사항:"
 echo "- .env 파일에서 CAMERA_ID와 SERVER_HOST를 설정하세요"
-echo "- ML API 서버(8003 포트)가 실행 중인지 확인하세요"
+echo "- Spring Boot 서버(8095 포트)가 실행 중인지 확인하세요"
+echo "- ML API 서버는 Spring Boot를 통해 접근됩니다"
 echo "- 같은 와이파이 네트워크에 연결되어 있는지 확인하세요"

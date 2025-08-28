@@ -12,10 +12,10 @@ class CameraConfig:
     camera_id: str = "cam_001"  # 각 라즈베리파이마다 고유 ID
     gh_idx: int = 74  # 온실 인덱스
     
-    # 네트워크 설정
-    server_host: str = "192.168.219.47"  # ML API 서버 IP
-    server_port: int = 8003
-    websocket_endpoint: str = "/ws/camera"
+    # 네트워크 설정 (Spring Boot 서버로 변경)
+    server_host: str = "192.168.219.47"  # Spring Boot 서버 IP
+    server_port: int = 8095
+    websocket_endpoint: str = "/api/camera/websocket"
     
     # 카메라 해상도 설정
     lq_resolution: Tuple[int, int] = (320, 240)    # Low Quality (움직임 감지용)
@@ -55,6 +55,8 @@ def get_config() -> CameraConfig:
     # 환경 변수에서 설정 오버라이드
     config.camera_id = os.getenv("CAMERA_ID", config.camera_id)
     config.server_host = os.getenv("SERVER_HOST", config.server_host)
+    config.server_port = int(os.getenv("SERVER_PORT", config.server_port))
+    config.websocket_endpoint = os.getenv("WEBSOCKET_ENDPOINT", config.websocket_endpoint)
     config.gh_idx = int(os.getenv("GH_IDX", config.gh_idx))
     
     return config
