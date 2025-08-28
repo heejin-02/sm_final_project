@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
-from app.routers import rag_router, gpt_router, phone_router, upload_router, camera_websocket_router
+from app.routers import rag_router, gpt_router, phone_router, upload_router, camera_websocket_router, video_processing_router
 from app.core.config import settings
 
 # 로깅 설정
@@ -33,6 +33,7 @@ app.include_router(gpt_router.router, prefix="/api", tags=["GPT"])
 app.include_router(phone_router.router, prefix="/api", tags=["Phone"])
 app.include_router(upload_router.router, prefix="/api", tags=["Upload"])
 app.include_router(camera_websocket_router.router, tags=["Camera"])
+app.include_router(video_processing_router.router, prefix="/api", tags=["Video Processing"])
 
 @app.get("/")
 async def root():
@@ -55,7 +56,8 @@ async def root():
             "/api/signalwire-call",
             "/api/signalwire/voice",
             "/ws/camera",
-            "/api/camera/stats"
+            "/api/camera/stats",
+            "/api/process-video-buffer"
         ]
     }
 

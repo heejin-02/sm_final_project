@@ -17,12 +17,12 @@ public class WebConfig implements WebMvcConfigurer {
         configurer.mediaType("mp4", MediaType.valueOf("video/mp4"));
     }
 
-    // 로컬 비디오 파일 경로 매핑
+    // 로컬 비디오 파일 경로 매핑 - StaticResourceConfig에서 처리하므로 여기서는 제거
+    // StaticResourceConfig.java에서 @Value로 동적 경로 처리 중
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/videos/**")  // 클라이언트가 접근할 경로
-                .addResourceLocations("file:///C:/Users/smhrd1/Desktop/videos/")  // 실제 파일 위치
-                .setCachePeriod(3600); // 캐시 설정
+        // StaticResourceConfig에서 처리하므로 여기서는 비어둠
+        // 중복 설정 방지
     }
 
     // CORS 설정

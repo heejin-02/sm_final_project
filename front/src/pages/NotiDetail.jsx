@@ -160,16 +160,49 @@ export default function NotiDetail() {
               <h3 className="tit-2 text-center">탐지 영상</h3>
               <div className="video_wrap">
                 {alertDetail.imageList?.[0]?.imgUrl ? (
-                  <video 
-                    src={alertDetail.imageList[0].imgUrl} 
-                    controls 
-                    muted 
-                    autoPlay
-                    onError={(e) => console.error('Video load error:', e)}
-                  />
+                  <>
+                    <video 
+                      src={alertDetail.imageList[0].imgUrl} 
+                      controls 
+                      muted 
+                      autoPlay
+                      playsInline
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error('Video load error:', e);
+                        console.error('Failed video URL:', alertDetail.imageList[0].imgUrl);
+                        console.error('Video error code:', e.target.error?.code);
+                        console.error('Video error message:', e.target.error?.message);
+                        
+                        // 에러 코드별 메시지
+                        let errorMsg = '동영상을 로드할 수 없습니다.';
+                        if (e.target.error?.code === 1) errorMsg = '비디오 로딩이 중단되었습니다.';
+                        if (e.target.error?.code === 2) errorMsg = '네트워크 오류가 발생했습니다.';
+                        if (e.target.error?.code === 3) errorMsg = '비디오 디코딩 오류가 발생했습니다.';
+                        if (e.target.error?.code === 4) errorMsg = '지원되지 않는 비디오 형식입니다.';
+                        
+                        // 대체 컨텐츠 표시
+                        const fallbackDiv = document.createElement('div');
+                        fallbackDiv.className = 'flex flex-col items-center justify-center h-64 bg-gray-100 text-gray-600 p-4';
+                        fallbackDiv.innerHTML = `
+                          <p class="mb-2">🎥 ${errorMsg}</p>
+                          <p class="text-sm mb-4">URL: ${alertDetail.imageList[0].imgUrl}</p>
+                          <a href="${alertDetail.imageList[0].imgUrl}" target="_blank" class="text-blue-500 hover:underline">
+                            브라우저에서 직접 열기
+                          </a>
+                        `;
+                        e.target.parentNode.replaceChild(fallbackDiv, e.target);
+                      }}
+                      onLoadedData={(e) => {
+                        console.log('✅ Video loaded successfully');
+                        console.log('Video duration:', e.target.duration);
+                        console.log('Video dimensions:', e.target.videoWidth, 'x', e.target.videoHeight);
+                      }}
+                    />
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-64 bg-gray-100 text-gray-500">
-                    동영상을 불러올 수 없습니다.
+                    동영상이 없습니다.
                   </div>
                 )}
               </div>

@@ -12,9 +12,12 @@ import cv2
 from datetime import datetime
 from typing import List, Optional
 import asyncio
+from pathlib import Path
 
 from app.services.yolo_service import YOLOService
 from app.services.metadata_service import MetadataService
+from app.core.config import settings
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -115,11 +118,16 @@ async def process_video_buffer(request: VideoBufferRequest):
         
         # YOLO 결과가 그려진 HQ 비디오 생성 및 Spring Boot로 전송
         video_path = None
+        img_idx = None
         if len(annotated_hq_frames) > 0:
             video_path = await create_annotated_video(annotated_hq_frames, request)
             if video_path:
-                # Spring Boot로 비디오 전송
-                await send_video_to_spring_boot(video_path, request, len(all_detections))
+                # Spring Boot로 비디오 전송 및 IMG_IDX 획득
+                img_idx = await send_video_to_spring_boot(video_path, request, len(all_detections))
+                
+                # IMG_IDX가 있으면 모든 탐지 결과를 한 번에 Spring Boot로 전송
+                if img_idx and all_detections:
+                    await send_all_detections_to_spring_boot(all_detections, request.gh_idx, img_idx)
         
         # 처리 완료
         processing_time = (datetime.now() - start_time).total_seconds()
@@ -195,10 +203,11 @@ async def process_detections_with_hq_sync(detections, lq_frame, hq_frame, reques
                 metadata["track_id"], frame_idx, detection["class_name"]
             )
             
-            # Spring Boot로 결과 전송
-            await send_detection_to_spring_boot(
-                detection["class_name"], detection["confidence"], crop_path, request.gh_idx
-            )
+            # Spring Boot로 결과 전송 (임시로 각 탐지별로 전송)
+            # 나중에 img_idx를 전달하도록 수정 필요
+            # await send_detection_to_spring_boot(
+            #     detection["class_name"], detection["confidence"], crop_path, request.gh_idx, img_idx
+            # )
             
             frame_detections.append({
                 "class_name": detection["class_name"],
@@ -249,7 +258,7 @@ async def save_cropped_image(camera_id: str, cropped_frame: np.ndarray,
     return str(filepath)
 
 async def send_detection_to_spring_boot(insect_name: str, confidence: float, 
-                                      crop_path: str, gh_idx: int):
+                                      crop_path: str, gh_idx: int, img_idx: int = None):
     """Spring Boot API로 탐지 결과 전송"""
     import requests
     
@@ -270,14 +279,15 @@ async def send_detection_to_spring_boot(insect_name: str, confidence: float,
         "anlsResult": insect_name,
         "createdAt": created_at,
         "insectIdx": get_insect_idx(insect_name),
-        "imgIdx": 1,
+        "imgIdx": img_idx if img_idx else 1,  # IMG_IDX 사용 (대체값 1)
         "notiCheck": 'N',
         "ghIdx": gh_idx,
         "anlsAcc": int(confidence * 100)
     }
     
     try:
-        res = requests.post("http://localhost:8095/api/qc-classification", json=payload)
+        spring_boot_url = os.getenv("SPRING_BOOT_URL", "http://localhost:8095")
+        res = requests.post(f"{spring_boot_url}/api/qc-classification", json=payload)
         logger.info(f"Spring Boot 전송 완료: {insect_name} | 상태: {res.status_code}")
         
         # 전화 발신
@@ -377,13 +387,17 @@ async def create_annotated_video(annotated_frames: List[np.ndarray], request: Vi
         height, width = valid_frame.shape[:2]
         fps = 10  # 라즈베리파이의 LQ FPS와 동일
         
-        # VideoWriter 설정
+        # VideoWriter 설정 - MP4V 코덱만 사용 (원래대로)
+        # 브라우저 호환성 문제로 인해 비디오 생성 방식을 변경해야 함
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(str(video_path), fourcc, fps, (width, height))
         
         if not out.isOpened():
             logger.error("VideoWriter 열기 실패")
             return None
+        
+        logger.info(f"✅ VideoWriter 열기 성공 - 코덱: mp4v (임시)")
+        logger.warning("⚠️ 생성된 비디오는 브라우저에서 재생되지 않을 수 있습니다. FFmpeg 변환이 필요합니다.")
         
         # 프레임들을 비디오로 작성
         for i, frame in enumerate(annotated_frames):
@@ -403,7 +417,14 @@ async def create_annotated_video(annotated_frames: List[np.ndarray], request: Vi
         out.release()
         
         logger.info(f"✅ 비디오 생성 완료: {video_path}")
-        return str(video_path)
+        
+        # FFmpeg로 브라우저 호환 코덱으로 변환
+        converted_path = await convert_video_with_ffmpeg(str(video_path))
+        if converted_path:
+            return converted_path
+        else:
+            logger.warning("FFmpeg 변환 실패, 원본 비디오 반환")
+            return str(video_path)
         
     except Exception as e:
         logger.error(f"❌ 비디오 생성 실패: {e}")
@@ -422,7 +443,8 @@ async def send_video_to_spring_boot(video_path: str, request: VideoBufferRequest
             return
         
         # Spring Boot 비디오 업로드 API
-        spring_boot_url = "http://localhost:8095/api/video/upload"
+        base_url = os.getenv("SPRING_BOOT_URL", "http://localhost:8095")
+        spring_boot_url = f"{base_url}/api/video/upload"
         
         # 비디오 파일 및 메타데이터 준비
         with open(video_path, 'rb') as video_file:
@@ -441,12 +463,35 @@ async def send_video_to_spring_boot(video_path: str, request: VideoBufferRequest
             response = requests.post(spring_boot_url, files=files, data=data, timeout=30)
             
             if response.status_code == 200:
-                logger.info(f"✅ Spring Boot 비디오 전송 성공: {video_path}")
+                result = response.json()
+                img_idx = result.get('img_idx')
+                logger.info(f"✅ Spring Boot 비디오 전송 성공: {video_path}, IMG_IDX: {img_idx}")
+                return img_idx  # IMG_IDX 반환
             else:
                 logger.error(f"❌ Spring Boot 비디오 전송 실패: {response.status_code}")
+                return None
     
     except Exception as e:
         logger.error(f"❌ Spring Boot 비디오 전송 오류: {e}")
+
+async def send_all_detections_to_spring_boot(detections: List[dict], gh_idx: int, img_idx: int):
+    """모든 탐직 결과를 한 번에 Spring Boot로 전송"""
+    import requests
+    
+    try:
+        for detection in detections:
+            await send_detection_to_spring_boot(
+                detection["class_name"], detection["confidence"], 
+                detection["crop_path"], gh_idx, img_idx
+            )
+            
+        # 대표 해충으로 전화 발신 (신뢰도 가장 높은 것)
+        if detections:
+            best_detection = max(detections, key=lambda x: x["confidence"])
+            await make_call(gh_idx, best_detection["class_name"], best_detection["confidence"])
+            
+    except Exception as e:
+        logger.error(f"❌ 모든 탐직 결과 전송 실패: {e}")
 
 async def make_call(gh_idx: int, insect_name: str, confidence: float):
     """전화 발신"""
@@ -469,3 +514,69 @@ async def make_call(gh_idx: int, insect_name: str, confidence: float):
             
     except Exception as e:
         logger.error(f"전화 발신 오류: {e}")
+
+async def convert_video_with_ffmpeg(input_path: str) -> str:
+    """
+    FFmpeg를 사용하여 mp4v 코덱 비디오를 브라우저 호환 H.264 코덱으로 변환
+    """
+    import subprocess
+    import shutil
+    
+    try:
+        # FFmpeg 설치 확인
+        if not shutil.which("ffmpeg"):
+            logger.error("FFmpeg가 설치되지 않았습니다. 'apt install ffmpeg' 또는 'brew install ffmpeg'로 설치하세요.")
+            return None
+        
+        # 출력 파일 경로 생성 (h264 접미사 추가)
+        input_path_obj = Path(input_path)
+        output_path = input_path_obj.parent / f"{input_path_obj.stem}_h264.mp4"
+        
+        # FFmpeg 명령어 구성
+        # -c:v libx264: H.264 코덱 사용
+        # -preset fast: 빠른 인코딩
+        # -crf 22: 품질 설정 (0-51, 낮을수록 품질 높음)
+        # -pix_fmt yuv420p: 브라우저 호환성을 위한 픽셀 포맷
+        # -movflags +faststart: 웹 스트리밍을 위한 최적화
+        cmd = [
+            'ffmpeg',
+            '-i', str(input_path),  # 입력 파일
+            '-c:v', 'libx264',      # H.264 코덱
+            '-preset', 'fast',      # 빠른 인코딩
+            '-crf', '22',           # 품질 (좋음)
+            '-pix_fmt', 'yuv420p',  # 브라우저 호환 픽셀 포맷
+            '-movflags', '+faststart',  # 웹 스트리밍 최적화
+            '-y',                   # 기존 파일 덮어쓰기
+            str(output_path)        # 출력 파일
+        ]
+        
+        logger.info(f"🔄 FFmpeg 변환 시작: {input_path} → {output_path}")
+        
+        # FFmpeg 실행 (비동기)
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        # 변환 완료 대기
+        stdout, stderr = await process.communicate()
+        
+        if process.returncode == 0:
+            logger.info(f"✅ FFmpeg 변환 성공: {output_path}")
+            
+            # 원본 파일 삭제 (옵션)
+            try:
+                Path(input_path).unlink()
+                logger.info(f"🗑️ 원본 파일 삭제: {input_path}")
+            except Exception as e:
+                logger.warning(f"원본 파일 삭제 실패: {e}")
+            
+            return str(output_path)
+        else:
+            logger.error(f"❌ FFmpeg 변환 실패: {stderr.decode()}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"❌ FFmpeg 변환 중 오류: {e}")
+        return None
