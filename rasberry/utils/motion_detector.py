@@ -29,8 +29,13 @@ class MotionDetector:
         Returns:
             (motion_detected, bounding_boxes)
         """
-        # 그레이스케일 변환
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # 그레이스케일 변환 (이미 그레이스케일인 경우 스킵)
+        if len(frame.shape) == 3 and frame.shape[2] == 3:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        elif len(frame.shape) == 3 and frame.shape[2] == 1:
+            gray = frame[:, :, 0]  # 단일 채널 추출
+        else:
+            gray = frame  # 이미 그레이스케일
         
         # 가우시안 블러 적용
         blurred = cv2.GaussianBlur(gray, (self.blur_size, self.blur_size), 0)

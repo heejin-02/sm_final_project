@@ -198,7 +198,7 @@ class CameraClient:
                         },
                         lores={
                             "size": self.config.lq_resolution,
-                            "format": "RGB888"
+                            "format": "YUV420"
                         },
                         buffer_count=2  # 버퍼 수 조정
                     )
@@ -282,6 +282,9 @@ class CameraClient:
                     # RGB를 BGR로 변환 (OpenCV 호환성)
                     if len(frame.shape) == 3 and frame.shape[2] == 3:
                         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                    elif len(frame.shape) == 2:
+                        # 그레이스케일을 3채널 BGR로 변환
+                        frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
                     
                     return frame
             
