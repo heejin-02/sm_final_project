@@ -36,7 +36,9 @@ def normalize_phone(phone: str) -> str:
 # GH_IDX로 사용자 전화번호 가져오기 (QC_USER까지 조인)
 def get_user_phone_by_gh_idx(gh_idx: int) -> str | None:
     try:
-        res = requests.get(f"http://localhost:8000/api/get-phone?gh_idx={gh_idx}")
+        # 통합 API 서버 사용
+        ML_API_URL = os.getenv("ML_API_URL", "http://localhost:8000")
+        res = requests.get(f"{ML_API_URL}/api/get-phone?gh_idx={gh_idx}")
         if res.status_code == 200:
             raw_phone = res.json().get("phone")
             return normalize_phone(raw_phone)
@@ -76,7 +78,8 @@ def make_call_by_gh_idx(gh_idx: int):
             signalwire_space_url=SIGNALWIRE_SPACE_URL
         )
 
-        url = f"{PUBLIC_FASTAPI_BASE}/twilio-call"
+        ML_API_URL = os.getenv("ML_API_URL", "http://localhost:8000")
+        url = f"{ML_API_URL}/twilio-call"
 
         call = client.calls.create(
             from_=SIGNALWIRE_PHONE_NUMBER,
@@ -237,7 +240,9 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                     # 주석 풀면 전화 가능
 
                     try:
-                        gpt_res = requests.get(f"http://localhost:8000/api/summary-by-imgidx?imgIdx={img_idx}")
+                        # Spring Boot를 통해 ML API 호출
+                        SPRING_BOOT_URL = os.getenv("SPRING_BOOT_URL", "http://localhost:8095")
+                        gpt_res = requests.get(f"{SPRING_BOOT_URL}/ml/summary-by-imgidx?imgIdx={img_idx}")
                         if gpt_res.status_code == 200:
                             print("[GPT] 요약 응답 저장 완료")
                         else:

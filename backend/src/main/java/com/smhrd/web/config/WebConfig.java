@@ -29,7 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")  // 전체 경로 허용
-                .allowedOrigins("http://localhost:5173") // 프론트엔드 주소 (필요시 여러개 가능)
+                .allowedOriginPatterns("http://localhost:*", "http://192.168.219.*:*", "http://127.0.0.1:*") // 같은 네트워크의 모든 기기 허용
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true); // 인증 정보 허용
     }

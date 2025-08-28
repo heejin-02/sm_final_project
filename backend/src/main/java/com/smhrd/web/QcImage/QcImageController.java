@@ -31,6 +31,7 @@ public class QcImageController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> uploadVideo(@RequestParam("video") MultipartFile file, @RequestParam("classId") int classId, @RequestParam("ghIdx") Long ghIdx) {
+        
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -50,13 +51,13 @@ public class QcImageController {
             // 2. 파일 저장
  
             String filePath = new File(folder, fileName).getAbsolutePath();
-            System.out.println("저장될 파일 경로: " + filePath);
             file.transferTo(new File(filePath));
-            System.out.println("파일 저장 완료!");
 
 
-            // 3. DB 저장용 정보 구성
-            String videoUrl = "/" + dateFolder + "/" + fileName;
+            // 3. DB 저장용 정보 구성 (서버 IP 포함한 절대 URL)
+            String serverIp = java.net.InetAddress.getLocalHost().getHostAddress();
+            String serverPort = "8095";
+            String videoUrl = "http://" + serverIp + ":" + serverPort + "/videos/" + dateFolder + "/" + fileName;
 
             QcImageDTO image = new QcImageDTO();
             image.setImgName(fileName);
@@ -73,6 +74,7 @@ public class QcImageController {
             // 5. 응답 반환
             response.put("imgIdx", image.getImgIdx());
             response.put("videoUrl", videoUrl);
+            
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {

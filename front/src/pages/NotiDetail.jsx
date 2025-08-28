@@ -160,7 +160,13 @@ export default function NotiDetail() {
               <h3 className="tit-2 text-center">탐지 영상</h3>
               <div className="video_wrap">
                 {alertDetail.imageList?.[0]?.imgUrl ? (
-                  <video src={`http://192.168.219.72:8095/videos${alertDetail.imageList[0].imgUrl}`} controls mute="true" autoPlay/>
+                  <video 
+                    src={alertDetail.imageList[0].imgUrl} 
+                    controls 
+                    muted 
+                    autoPlay
+                    onError={(e) => console.error('Video load error:', e)}
+                  />
                 ) : (
                   <div className="flex items-center justify-center h-64 bg-gray-100 text-gray-500">
                     동영상을 불러올 수 없습니다.
