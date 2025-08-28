@@ -56,4 +56,4 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=settings.FASTAPI_HOST, port=8003)
+    uvicorn.run(app, host=settings.FASTAPI_HOST, port=settings.FASTAPI_PORT)

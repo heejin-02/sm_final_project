@@ -20,7 +20,7 @@ class Settings:
     SPRING_BOOT_URL: str = os.getenv("SPRING_BOOT_URL", "http://localhost:8095")
     
     # FastAPI 서버 설정
-    FASTAPI_PORT: int = int(os.getenv("FASTAPI_PORT", 8000))
+    FASTAPI_PORT: int = int(os.getenv("FASTAPI_PORT", 8003))
     FASTAPI_HOST: str = os.getenv("FASTAPI_HOST", "0.0.0.0")
     
     # SignalWire 설정
