@@ -16,7 +16,7 @@ class SpringBootRepository:
         """Spring Boot API 요청 공통 처리"""
         try:
             url = f"{self.base_url}{endpoint}"
-            response = requests.request(method, url, timeout=10, **kwargs)
+            response = requests.request(method, url, timeout=30, **kwargs)
             
             if response.status_code == 200:
                 return response.json()
