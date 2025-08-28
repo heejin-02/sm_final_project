@@ -64,6 +64,13 @@ backend/uploads/
 ml/uploads/
 ml/temp/
 
+# ML 서브모듈 변경사항 제외 (YOLOv5는 외부 라이브러리)
+ml/model/yolov5/
+
+# 백업 및 임시 API 파일들
+ml/unified_api_backup.py
+ml/*_backup.py
+
 # OS 생성 파일
 .DS_Store
 .DS_Store?
@@ -137,6 +144,11 @@ tensorboard_logs/
 
 # 문서화 빌드 결과
 docs/_build/
+
+# 프로젝트 문서 (커밋하지 않음)
+CLAUDE.md
+detailed_index.md
+general_index.md
 
 # 기타
 *.pid
