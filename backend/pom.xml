@@ -125,6 +125,12 @@
          <scope>test</scope>
       </dependency>
       
+      <!-- WebSocket 지원 -->
+      <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-websocket</artifactId>
+      </dependency>
+      
       
    </dependencies>
 
