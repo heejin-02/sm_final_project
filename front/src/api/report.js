@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8095';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095';
 
 // 서버 상태 체크
 export const checkServerHealth = async () => {
@@ -55,11 +55,12 @@ export const getTodayDate = () => {
 // 일별 통계 gpt 분석 요약
 export const getDailyGptSummary = async (farmIdx, date) => {
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/daily-gpt-summary', {
+    const response = await axios.get(`${BASE_URL}/ml/daily-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
         date: date
-      }
+      },
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -71,11 +72,12 @@ export const getDailyGptSummary = async (farmIdx, date) => {
 // 월별 통계 gpt 분석 요약
 export const getMonthlyGptSummary = async (farmIdx, date) => {
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/monthly-gpt-summary', {
+    const response = await axios.get(`${BASE_URL}/ml/monthly-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
         month: date
-      }
+      },
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -87,11 +89,12 @@ export const getMonthlyGptSummary = async (farmIdx, date) => {
 // 연간 통계 gpt 분석 요약
 export const getYearlyGptSummary = async (farmIdx, date) => {
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/yearly-gpt-summary', {
+    const response = await axios.get(`${BASE_URL}/ml/yearly-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
         year: date
-      }
+      },
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -104,16 +107,28 @@ export const getYearlyGptSummary = async (farmIdx, date) => {
 export const getDailyZoneSummary = async (farmIdx, date) => {
   const startTime = Date.now();
   try {
-    const response = await axios.get('http://192.168.219.72:8000/api/daily-gpt-summary', {
+    console.log(`[DEBUG] ML API 호출 시작: ${BASE_URL}/ml/daily-gpt-summary`);
+    console.log(`[DEBUG] 파라미터: farmIdx=${farmIdx}, date=${date}`);
+    
+    const response = await axios.get(`${BASE_URL}/ml/daily-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
         date: date
-      }
+      },
+      withCredentials: true,
+      timeout: 15000 // 15초 타임아웃
     });
+    
     const endTime = Date.now();
+    console.log(`[DEBUG] ML API 응답 성공: ${response.status}, 소요시간: ${endTime - startTime}ms`);
+    console.log(`[DEBUG] 응답 데이터:`, response.data);
+    
     return response.data;
   } catch (error) {
     const endTime = Date.now();
+    console.error(`[ERROR] ML API 호출 실패: ${error.message}, 소요시간: ${endTime - startTime}ms`);
+    console.error(`[ERROR] 에러 상세:`, error.response?.data);
+    console.error(`[ERROR] 요청 URL:`, `${BASE_URL}/ml/daily-gpt-summary?farm_idx=${farmIdx}&date=${date}`);
     throw error;
   }
 };

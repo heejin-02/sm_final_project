@@ -1,52 +1,30 @@
-# YOLOv5 requirements
+# YOLOv5 실시간 해충 탐지
 # Usage: pip install -r requirements.txt
 
-# Base ------------------------------------------------------------------------
-gitpython>=3.1.30
-matplotlib>=3.3
-numpy>=1.23.5
-opencv-python>=4.1.1
-pillow>=10.3.0
-psutil  # system resources
-PyYAML>=5.3.1
-requests>=2.32.2
-scipy>=1.4.1
-thop>=0.1.1  # FLOPs computation
-torch>=1.8.0  # see https://pytorch.org/get-started/locally (recommended)
-torchvision>=0.9.0
-tqdm>=4.66.3
-ultralytics>=8.2.64  # https://ultralytics.com
-# protobuf<=3.20.1  # https://github.com/ultralytics/yolov5/issues/8012
+# Core Dependencies
+# -----------------
+torch>=2.8.0
+torchvision>=0.23.0
+opencv-python>=4.12.0
+pillow>=11.3.0
+numpy>=2.2.6
+scipy>=1.16.1
+matplotlib>=3.10.5
+tqdm>=4.67.1
+ultralytics>=8.3.187
 
-# Logging ---------------------------------------------------------------------
-# tensorboard>=2.4.1
-# clearml>=1.2.0
-# comet
+# Utils
+# -----
+PyYAML>=6.0.2
+requests>=2.32.5
+psutil>=7.0.0
 
-# Plotting --------------------------------------------------------------------
-pandas>=1.1.4
-seaborn>=0.11.0
+# Data Analysis (Optional)
+# ------------------------
+pandas>=2.3.2
+seaborn>=0.13.2
 
-# Export ----------------------------------------------------------------------
-# coremltools>=6.0  # CoreML export
-# onnx>=1.10.0  # ONNX export
-# onnx-simplifier>=0.4.1  # ONNX simplifier
-# nvidia-pyindex  # TensorRT export
-# nvidia-tensorrt  # TensorRT export
-# scikit-learn<=1.1.2  # CoreML quantization
-# tensorflow>=2.4.0,<=2.13.1  # TF exports (-cpu, -aarch64, -macos)
-# tensorflowjs>=3.9.0  # TF.js export
-# openvino-dev>=2023.0  # OpenVINO export
-
-# Deploy ----------------------------------------------------------------------
-setuptools>=70.0.0 # Snyk vulnerability fix
-# tritonclient[all]~=2.24.0
-
-# Extras ----------------------------------------------------------------------
-# ipython  # interactive notebook
-# mss  # screenshots
-# albumentations>=1.0.3
-# pycocotools>=2.0.6  # COCO mAP
-
-python-dotenv
-signalwire
+# Configuration
+# -------------
+python-dotenv>=1.1.1
+signalwire>=2.1.1

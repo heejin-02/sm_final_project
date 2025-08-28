@@ -5,7 +5,7 @@ import axios from "axios";
 export async function fetchRegionCounts(farmId) {
   try {
     // 실제 API 호출 (getTodayGreenhouses와 동일한 엔드포인트 사용)
-    const response = await axios.get(`http://localhost:8095/user/today/today/greenhouses`, {
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095'}/user/today/today/greenhouses`, {
       params: { 
         farmIdx: farmId,
         _t: Date.now()

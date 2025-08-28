@@ -11,15 +11,18 @@ export const retryApiCall = async (apiFunction, maxRetries = 2, delay = 1000) =>
     } catch (error) {
       lastError = error;
       
+      console.error(`[RETRY] API 호출 실패 (${attempt + 1}/${maxRetries + 1}):`, error.message);
+      
       // 마지막 시도가 아니면 재시도
       if (attempt < maxRetries) {
-        console.log(`API 호출 실패 (${attempt + 1}/${maxRetries + 1}), ${delay}ms 후 재시도...`);
+        console.log(`[RETRY] ${delay}ms 후 재시도...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         delay *= 1.5; // 지수 백오프
       }
     }
   }
   
+  console.error(`[RETRY] 모든 재시도 실패:`, lastError.message);
   throw lastError;
 };
 

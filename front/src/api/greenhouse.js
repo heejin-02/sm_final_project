@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8095';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095';
 
 // 농장의 구역 목록 조회
 export const getGreenhousesByFarm = async (farmIdx) => {
