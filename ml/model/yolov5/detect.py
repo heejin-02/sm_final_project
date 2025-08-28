@@ -14,82 +14,60 @@ from utils.general import (
     scale_boxes
 )
 from utils.torch_utils import select_device, smart_inference_mode
-from urllib.parse import quote
-from signalwire.rest import Client as SignalWireClient
 from dotenv import load_dotenv
 import subprocess
 from ultralytics.utils.plotting import Annotator, colors
 load_dotenv()
-import re
 
 # 고정 GH_IDX
 gh_idx = 74
 
 
-# 전화번호 포맷 정규화 함수
-def normalize_phone(phone: str) -> str:
-    digits_only = re.sub(r"[^0-9]", "", phone)  # 숫자만 남김
-    if digits_only.startswith("0"):
-        digits_only = digits_only[1:]  # 0 제거
-    return f"+82{digits_only}"
-
-# GH_IDX로 사용자 전화번호 가져오기 (QC_USER까지 조인)
-def get_user_phone_by_gh_idx(gh_idx: int) -> str | None:
+# 전화 발신 함수 
+def make_call_by_gh_idx(gh_idx, insect_name="해충", confidence=0.0):
+    """ML API 서버를 통한 전화 발신"""
+    print("=" * 60)
+    print(f"[DETECT] 🔔 전화 발신 요청 시작")
+    print(f"[DETECT] - GH_IDX: {gh_idx}")
+    print(f"[DETECT] - 해충명: {insect_name}")
+    print(f"[DETECT] - 신뢰도: {confidence:.2f}")
+    print("=" * 60)
+    
     try:
-        # 통합 API 서버 사용
-        ML_API_URL = os.getenv("ML_API_URL", "http://localhost:8000")
-        res = requests.get(f"{ML_API_URL}/api/get-phone?gh_idx={gh_idx}")
-        if res.status_code == 200:
-            raw_phone = res.json().get("phone")
-            return normalize_phone(raw_phone)
+        ml_api_url = "http://localhost:8003/api/make-call"
+        params = {
+            "gh_idx": gh_idx,
+            "insect_name": insect_name,
+            "confidence": confidence
+        }
+        
+        print(f"[DETECT] ML API 호출 중... URL: {ml_api_url}")
+        print(f"[DETECT] 파라미터: {params}")
+        
+        response = requests.post(ml_api_url, params=params, timeout=10)
+        
+        print(f"[DETECT] API 응답 상태코드: {response.status_code}")
+        print(f"[DETECT] API 응답 내용: {response.text}")
+        
+        if response.status_code == 200:
+            print(f"[DETECT] ✅ 전화 발신 성공!")
+            print(f"[DETECT] - GH_IDX: {gh_idx}")
+            print(f"[DETECT] - 해충: {insect_name}")
+            print(f"[DETECT] - 신뢰도: {confidence:.2f}")
+            print("=" * 60)
+            return True
         else:
-            print("[전화번호 조회 실패]", res.status_code, res.text)
+            print(f"[DETECT] ❌ 전화 발신 실패!")
+            print(f"[DETECT] - 상태코드: {response.status_code}")
+            print(f"[DETECT] - 응답: {response.text}")
+            print("=" * 60)
+            return False
+            
     except Exception as e:
-        print("[전화번호 요청 오류]", e)
-    return None
-
-# 전화 쿨다운
-last_call_time = 0
-CALL_COOLDOWN = 60 #초단위 실사용시 10분으로 변경
-
-SIGNALWIRE_PROJECT_ID = os.getenv("SIGNALWIRE_PROJECT_ID")
-SIGNALWIRE_AUTH_TOKEN = os.getenv("SIGNALWIRE_AUTH_TOKEN")
-SIGNALWIRE_PHONE_NUMBER = os.getenv("SIGNALWIRE_PHONE_NUMBER")
-SIGNALWIRE_SPACE_URL = os.getenv("SIGNALWIRE_SPACE_URL")
-PUBLIC_FASTAPI_BASE = "https://7423eaa6814e.ngrok-free.app"
-
-
-def make_call_by_gh_idx(gh_idx: int):
-    global last_call_time
-    now = time.time()
-    if now - last_call_time < CALL_COOLDOWN:
-        print(f"[전화 건너뜀] 최근에 발신됨 ({now - last_call_time:.1f}s 전)")
-        return
-
-    user_phone = get_user_phone_by_gh_idx(gh_idx)
-    if not user_phone:
-        print(f"[오류] gh_idx={gh_idx}에 해당하는 사용자 전화번호가 없습니다.")
-        return
-
-    try:
-        client = SignalWireClient(
-            SIGNALWIRE_PROJECT_ID,
-            SIGNALWIRE_AUTH_TOKEN,
-            signalwire_space_url=SIGNALWIRE_SPACE_URL
-        )
-
-        ML_API_URL = os.getenv("ML_API_URL", "http://localhost:8000")
-        url = f"{ML_API_URL}/twilio-call"
-
-        call = client.calls.create(
-            from_=SIGNALWIRE_PHONE_NUMBER,
-            to=user_phone,
-            url=url
-        )
-        last_call_time = now
-        print(f"[전화 발신] 대상: {user_phone} | Call SID: {call.sid}")
-    except Exception as e:
-        print("[전화 발신 실패]", e)
+        print(f"[DETECT] ⚠️ 전화 발신 오류 발생!")
+        print(f"[DETECT] - 오류 내용: {e}")
+        print("=" * 60)
+        return False
 
 
 def get_insect_idx(name):
@@ -155,15 +133,24 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
     save_dir.mkdir(parents=True, exist_ok=True)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     
+    # 실제 웹캠 FPS 가져오기
+    cap = cv2.VideoCapture(source)
+    actual_fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()
+    
+    # YOLOv5 추론 속도에 맞게 낮은 FPS 설정
+    fps = 7  # 실제 처리 가능한 FPS로 고정
+    
+    print(f"[설정] 녹화 FPS: {fps}, 지속시간: 10초")
 
     frame_buffer = []
     recording = False
     start_time = None
-    fps = 30
     duration = 10
     insect_name = ""
     best_conf = 0
     video_path = ""
+    frame_count = 0  # 실제 녹화된 프레임 수 카운트
 
     # 벌레 탐지 쿨다운
     last_detection_time = 0
@@ -202,27 +189,36 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                         video_path = str(save_dir / video_name)
                         out = cv2.VideoWriter(video_path, fourcc, fps, (im0.shape[1], im0.shape[0]))
                         print(f"[녹화 시작] {video_path} | 탐지된 벌레: {insect_name} | 신뢰도: {confidence:.2f}")
+                        print(f"[설정] FPS: {fps}, 예상 프레임 수: {fps * duration}")
                         best_conf = confidence
                         recording = True
+                        frame_count = 0
 
         annotated_frame = annotator.result()
 
         if recording:
             out.write(annotated_frame)
+            frame_count += 1
             if time.time() - start_time > duration:
                 recording = False
                 out.release() 
-                print("[녹화 종료]")
+                actual_duration = time.time() - start_time
+                print(f"[녹화 종료] 실제 시간: {actual_duration:.1f}초, 프레임 수: {frame_count}, 실제 FPS: {frame_count/actual_duration:.1f}")
 
                 converted_path = video_path.replace(".mp4", "_h264.mp4")
-                 # 🔇 ffmpeg 로그 숨기기
+                
+                # VideoWriter FPS 그대로 유지하여 변환
+                print(f"[변환] 원본 FPS 유지: {fps}")
+                
+                # 🔇 ffmpeg 로그 숨기기
                 with open(os.devnull, 'w') as devnull:
                     subprocess.run(
                 [
                     'ffmpeg', '-y',
                     '-i', video_path,
-                    '-vcodec', 'libx264',
-                    '-acodec', 'aac',
+                    '-c:v', 'libx264',
+                    '-c:a', 'aac', 
+                    '-preset', 'fast',
                     converted_path
                 ],
                 stdout=devnull,
@@ -236,19 +232,13 @@ def run(weights=Path("best_clean.pt"), source=0, data=Path("data/coco128.yaml"),
                 if img_idx:
                     time.sleep(1)
                     send_detection_to_api(insect_name, best_conf, img_idx)
-                    # make_call_by_gh_idx(gh_idx)
-                    # 주석 풀면 전화 가능
+                    
+                    # 🔔 전화 발신 실행
+                    make_call_by_gh_idx(gh_idx, insect_name, best_conf)
+                    print(f"[알림] {insect_name} 탐지로 인한 전화 발신 완료")
 
-                    try:
-                        # Spring Boot를 통해 ML API 호출
-                        SPRING_BOOT_URL = os.getenv("SPRING_BOOT_URL", "http://localhost:8095")
-                        gpt_res = requests.get(f"{SPRING_BOOT_URL}/ml/summary-by-imgidx?imgIdx={img_idx}")
-                        if gpt_res.status_code == 200:
-                            print("[GPT] 요약 응답 저장 완료")
-                        else:
-                            print("[GPT] 요약 요청 실패", gpt_res.text)
-                    except Exception as e:
-                        print("[GPT] 요청 중 오류 발생:", e)
+                    # GPT 요약은 프론트엔드에서 필요시 요청하도록 변경
+                    print(f"[완료] 해충 탐지 및 영상 업로드 완료 | IMG_IDX: {img_idx}")
 
         if view_img:
             cv2.imshow("YOLOv5", annotated_frame)

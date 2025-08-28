@@ -22,5 +22,5 @@ public interface MlMapper {
     Map<String, Object> getExistingDashboardSummary();
     void updateDashboardSummary(@Param("gptIdx") Long gptIdx, @Param("gptContent") String gptContent);
     void insertDashboardSummary(@Param("gptContent") String gptContent, @Param("anlsIdx") Long anlsIdx);
-    Map<String, Object> getTwilioCallData();
+    Map<String, Object> getSignalWireCallData();
 }

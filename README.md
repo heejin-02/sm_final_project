@@ -45,7 +45,7 @@
 [YOLOv5 감지 서버] ──▶ 영상 저장 (10초)
    │
    ├▶ WebSocket → 프론트 실시간 알림
-   ├▶ Twilio TTS → 전화 음성 알림
+   ├▶ SignalWire TTS → 전화 음성 알림
    ├▶ GPT 요약 → 벌레 리포트 생성
    └▶ LangChain + ChromaDB → 방제 챗봇 응답
 ```

@@ -48,12 +48,14 @@ async def root():
             "/api/monthly-gpt-summary",
             "/api/yearly-gpt-summary",
             "/api/get-phone",
+            "/api/make-call",
+            "/api/call-history",
             "/api/upload",
-            "/twilio-call",
-            "/twilio/voice"
+            "/api/signalwire-call",
+            "/api/signalwire/voice"
         ]
     }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=settings.FASTAPI_HOST, port=8003)
+    uvicorn.run(app, host=settings.FASTAPI_HOST, port=settings.FASTAPI_PORT)

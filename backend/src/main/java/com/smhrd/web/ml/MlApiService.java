@@ -256,11 +256,28 @@ public class MlApiService {
      * 온실 ID로 사용자 전화번호 조회 (get_user_phone 대체)
      */
     public Map<String, Object> getUserPhoneByGhIdx(Long ghIdx) {
+        System.out.println("[SPRING] 전화번호 조회 시작 - GH_IDX: " + ghIdx);
+        System.out.println("[SPRING] 매퍼 메서드 호출 중...");
+        
         Map<String, Object> result = mlMapper.getUserPhoneByGhIdx(ghIdx);
-        if (result == null || result.get("userPhone") == null) {
+        
+        System.out.println("[SPRING] 매퍼 결과: " + result);
+        System.out.println("[SPRING] result == null: " + (result == null));
+        
+        if (result != null) {
+            System.out.println("[SPRING] result.get(\"USERPHONE\"): " + result.get("USERPHONE"));
+            System.out.println("[SPRING] USERPHONE == null: " + (result.get("USERPHONE") == null));
+        }
+        
+        if (result == null || result.get("USERPHONE") == null) {
+            System.out.println("[SPRING] ❌ 전화번호 조회 실패 - GH_IDX: " + ghIdx + " 데이터 없음");
             throw new RuntimeException("전화번호를 찾을 수 없습니다.");
         }
-        return Map.of("phone", result.get("userPhone"));
+        
+        String phoneNumber = (String) result.get("USERPHONE");
+        System.out.println("[SPRING] ✅ 전화번호 조회 성공 - GH_IDX: " + ghIdx + ", 전화번호: " + phoneNumber);
+        
+        return Map.of("phone", phoneNumber);
     }
 
     /**
@@ -291,10 +308,10 @@ public class MlApiService {
     }
 
     /**
-     * Twilio 전화 발신용 데이터 조회 (twilio_call 대체)
+     * SignalWire 전화 발신용 데이터 조회
      */
-    public Map<String, Object> getTwilioCallData() {
-        Map<String, Object> result = mlMapper.getTwilioCallData();
+    public Map<String, Object> getSignalWireCallData() {
+        Map<String, Object> result = mlMapper.getSignalWireCallData();
         if (result == null || result.isEmpty()) {
             return Map.of("message", "최근 탐지된 해충 정보가 없습니다.");
         }
