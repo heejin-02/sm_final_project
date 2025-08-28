@@ -1,0 +1,147 @@
+# 환경 설정 파일 (민감한 정보 포함)
+*.env
+.env*
+!.env.example
+
+# 빌드 디렉토리
+backend/target/
+backend/bin/
+front/dist/
+front/build/
+
+# 의존성 디렉토리
+node_modules/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE 설정 파일
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 이클립스 설정 파일
+backend/.metadata/
+backend/.settings/
+backend/.project
+backend/.classpath
+*.launch
+
+# 로그 파일
+*.log
+logs/
+backend/logs/
+ml/logs/
+
+# 임시 파일
+*.tmp
+*.temp
+*.cache
+.cache/
+
+# ML 모델 및 학습 결과
+ml/model/yolov5/weights/*.pt
+ml/model/yolov5/runs/
+*.weights
+*.onnx
+*.torchscript
+*.engine
+
+# 데이터베이스 파일
+*.db
+*.sqlite
+*.sqlite3
+
+# 업로드된 파일들
+backend/videos/
+backend/uploads/
+ml/uploads/
+ml/temp/
+
+# OS 생성 파일
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# JetBrains 설정
+.idea/
+*.iml
+*.iws
+
+# Maven 설정
+backend/target/
+backend/.mvn/timing.properties
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Gradle 설정
+.gradle
+backend/build/
+
+# 패키지 관리자
+package-lock.json
+yarn.lock
+*.tgz
+
+# 백업 파일
+*.bak
+*.backup
+*~
+
+# 테스트 결과
+/test-results/
+/coverage/
+/.nyc_output/
+
+# API 키 및 비밀 정보
+*secret*
+*key*
+*token*
+*password*
+config/secrets/
+
+# Spring Boot 설정 (민감한 정보가 있을 경우)
+# application-prod.properties
+# application-dev.properties
+
+# Python 관련
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# ML 실험 결과
+experiments/
+checkpoints/
+tensorboard_logs/
+
+# 영상/이미지 파일 (용량이 클 경우)
+# *.mp4
+# *.avi
+# *.mov
+# *.jpg
+# *.jpeg
+# *.png
+
+# 문서화 빌드 결과
+docs/_build/
+
+# 기타
+*.pid
+*.seed
+*.pid.lock
+.npm
+.node_repl_history
+.eslintcache
