@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.smhrd.web.ml.MlMapper">
+
+  <!-- 농장 이름 조회 -->
+  <select id="selectFarmName" resultType="map">
+    SELECT FARM_NAME as farm_name
+    FROM QC_FARM 
+    WHERE FARM_IDX = #{farmIdx}
+  </select>
+
+  <!-- GPT 요약 관련 -->
+  
+  <!-- 최근 3일간 해충 탐지 데이터 조회 -->
+  <select id="getAggregatedAnalysisData" resultType="map">
+    SELECT 
+        G.GH_NAME as ghName,
+        TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS detectionTime,
+        C.ANLS_ACC as confidence
+    FROM QC_CLASSIFICATION C
+    JOIN QC_IMAGES I ON C.IMG_IDX = I.IMG_IDX
+    JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
+    WHERE C.ANLS_RESULT = #{insectName}
+      AND C.CREATED_AT >= SYSDATE - 3
+    ORDER BY C.CREATED_AT DESC
+  </select>
+
+  <!-- GPT 응답 저장 -->
+  <insert id="insertGptSummary">
+    INSERT INTO QC_GPT (
+        GPT_IDX, USER_QES, GPT_CONTENT, CREATED_AT, ANLS_IDX
+    ) VALUES (
+        QC_GPT_SEQ.NEXTVAL, #{userQes}, #{gptContent}, SYSDATE, #{anlsIdx}
+    )
+  </insert>
+
+  <!-- 기본 기능 -->
+  
+  <!-- 이미지 인덱스로 해충 정보 조회 -->
+  <select id="getInsectInfoByImgIdx" resultType="map">
+    SELECT C.ANLS_RESULT as insectName, C.ANLS_IDX as anlsIdx
+    FROM QC_CLASSIFICATION C
+    WHERE C.IMG_IDX = #{imgIdx}
+  </select>
+
+  <!-- 온실 ID로 전화번호 조회 -->
+  <select id="getUserPhoneByGhIdx" resultType="map">
+    SELECT U.USER_PHONE as userPhone
+    FROM QC_USER U
+    JOIN QC_FARM F ON U.USER_PHONE = F.USER_PHONE
+    JOIN QC_GREENHOUSE G ON F.FARM_IDX = G.FARM_IDX
+    WHERE G.GH_IDX = #{ghIdx}
+  </select>
+
+  <!-- 부가 기능 -->
+  
+  <!-- 오늘 탐지 요약 데이터 조회 -->
+  <select id="getTodayDetectionSummary" resultType="map">
+    SELECT G.GH_NAME as ghName, N.INSECT_NAME as insectName, COUNT(*) AS detectionCount
+    FROM QC_CLASSIFICATION C
+    JOIN QC_IMAGES I ON C.IMG_IDX = I.IMG_IDX
+    JOIN QC_GREENHOUSE G ON I.GH_IDX = G.GH_IDX
+    JOIN QC_INSECT N ON C.INSECT_IDX = N.INSECT_IDX
+    WHERE TRUNC(I.CREATED_AT) = TRUNC(SYSDATE)
+    GROUP BY G.GH_NAME, N.INSECT_NAME
+    ORDER BY detectionCount DESC
+  </select>
+
+  <!-- 기존 대시보드 요약 조회 -->
+  <select id="getExistingDashboardSummary" resultType="map">
+    SELECT GPT_IDX as gptIdx FROM QC_GPT
+    WHERE USER_QES = '대시보드요약'
+      AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)
+  </select>
+
+  <!-- 대시보드 요약 업데이트 -->
+  <update id="updateDashboardSummary">
+    UPDATE QC_GPT SET GPT_CONTENT = #{gptContent}, CREATED_AT = SYSDATE
+    WHERE GPT_IDX = #{gptIdx}
+  </update>
+
+  <!-- 대시보드 요약 삽입 -->
+  <insert id="insertDashboardSummary">
+    INSERT INTO QC_GPT (
+        GPT_IDX, USER_QES, GPT_CONTENT, CREATED_AT, ANLS_IDX
+    ) VALUES (
+        QC_GPT_SEQ.NEXTVAL, '대시보드요약', #{gptContent}, SYSDATE, #{anlsIdx}
+    )
+  </insert>
+
+  <!-- Twilio 전화 발신용 데이터 조회 -->
+  <select id="getTwilioCallData" resultType="map">
+    SELECT gh_name as ghName, insect_name as insectName
+    FROM (
+        SELECT
+            GREATEST(CAST(c.created_at AS TIMESTAMP), CAST(i.created_at AS TIMESTAMP)) AS event_ts,
+            g.gh_name,
+            n.insect_name
+        FROM qc_classification c
+        JOIN qc_images i ON c.img_idx = i.img_idx
+        JOIN qc_greenhouse g ON i.gh_idx = g.gh_idx
+        JOIN qc_insect n ON c.insect_idx = n.insect_idx
+        WHERE c.noti_check = 'N'
+        ORDER BY event_ts DESC
+    )
+    WHERE ROWNUM = 1
+  </select>
+
+</mapper>
