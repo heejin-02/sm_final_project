@@ -187,8 +187,13 @@ class CameraHandler:
             except Exception as e:
                 logger.warning(f"초점 거리 설정 실패: {e}")
 
-    def capture_frame(self, high_quality: bool = False) -> Optional[np.ndarray]:
-        """프레임 캡처"""
+    def capture_frame(self, high_quality: bool = False, color_format: str = "BGR") -> Optional[np.ndarray]:
+        """프레임 캡처
+        
+        Args:
+            high_quality: 고화질 모드 여부
+            color_format: 출력 색상 포맷 ("BGR", "RGB")
+        """
         try:
             if RASPBERRY_PI and PICAMERA2_AVAILABLE and self.camera:
                 # Picamera2 사용
@@ -202,20 +207,30 @@ class CameraHandler:
                     else:
                         frame = self.camera.capture_array("main")
                     
-                    # RGB를 BGR로 변환 (OpenCV 호환성)
+                    # 색상 채널 변환 처리
                     if len(frame.shape) == 3 and frame.shape[2] == 3:
-                        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                        # Picamera2는 RGB로 출력
+                        if color_format == "BGR":
+                            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                        # RGB 요청이면 그대로 유지
                     elif len(frame.shape) == 2:
                         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+                        if color_format == "RGB":
+                            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     
                     return frame
             
             elif self.cap:
-                # OpenCV 웹캠 사용
+                # OpenCV 웹캠 사용 (기본 BGR)
                 ret, frame = self.cap.read()
                 if ret:
                     if not high_quality:
                         frame = cv2.resize(frame, self.lq_resolution)
+                    
+                    # BGR에서 RGB로 변환 (필요시)
+                    if color_format == "RGB":
+                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    
                     return frame
             
             return None
@@ -228,6 +243,14 @@ class CameraHandler:
         """카메라 타입 반환"""
         return "picamera2" if PICAMERA2_AVAILABLE else "opencv"
     
+    def capture_frame_for_ml(self, high_quality: bool = True) -> Optional[np.ndarray]:
+        """ML 모델 입력용 프레임 캡처 (BGR 고정)"""
+        return self.capture_frame(high_quality=high_quality, color_format="BGR")
+    
+    def capture_frame_for_user(self, high_quality: bool = False) -> Optional[np.ndarray]:
+        """사용자 전달용 프레임 캡처 (RGB)"""
+        return self.capture_frame(high_quality=high_quality, color_format="RGB")
+
     def get_focus_info(self) -> dict:
         """현재 AF 상태 정보 반환"""
         info = {

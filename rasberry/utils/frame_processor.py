@@ -37,13 +37,22 @@ class FrameProcessor:
         
         return compressed_data, len(compressed_data)
     
-    def encode_frame_base64(self, frame: np.ndarray, quality: int = 60) -> Tuple[str, int]:
+    def encode_frame_base64(self, frame: np.ndarray, quality: int = 60, convert_to_rgb: bool = False) -> Tuple[str, int]:
         """
         프레임을 Base64 인코딩
+        
+        Args:
+            frame: 입력 프레임 (BGR 또는 RGB)
+            quality: JPEG 품질 (1-100)
+            convert_to_rgb: 사용자 전달용 RGB로 변환 여부
         
         Returns:
             (base64_string, frame_size)
         """
+        # 사용자 전달용 RGB 변환
+        if convert_to_rgb and len(frame.shape) == 3 and frame.shape[2] == 3:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        
         compressed_data, size = self.compress_frame(frame, quality)
         base64_string = base64.b64encode(compressed_data).decode('utf-8')
         
@@ -52,29 +61,33 @@ class FrameProcessor:
         
         return base64_string, size
     
-    def auto_adjust_quality(self, frame: np.ndarray) -> Tuple[str, int, int]:
+    def auto_adjust_quality(self, frame: np.ndarray, convert_to_rgb: bool = False) -> Tuple[str, int, int]:
         """
         자동 품질 조절로 프레임 인코딩
+        
+        Args:
+            frame: 입력 프레임
+            convert_to_rgb: 사용자 전달용 RGB로 변환 여부
         
         Returns:
             (base64_string, frame_size, used_quality)
         """
         if not self.auto_quality_adjust:
-            return (*self.encode_frame_base64(frame, self.current_quality), self.current_quality)
+            return (*self.encode_frame_base64(frame, self.current_quality, convert_to_rgb), self.current_quality)
         
         # 초기 품질로 테스트
         test_quality = self.current_quality
-        base64_string, size = self.encode_frame_base64(frame, test_quality)
+        base64_string, size = self.encode_frame_base64(frame, test_quality, convert_to_rgb)
         
         # 크기가 너무 크면 품질 낮추기
         while size > self.max_frame_size and test_quality > 20:
             test_quality -= 10
-            base64_string, size = self.encode_frame_base64(frame, test_quality)
+            base64_string, size = self.encode_frame_base64(frame, test_quality, convert_to_rgb)
         
         # 크기가 너무 작으면 품질 높이기 (대역폭 여유가 있을 때)
         while size < self.max_frame_size * 0.7 and test_quality < 80:
             test_quality += 10
-            test_base64, test_size = self.encode_frame_base64(frame, test_quality)
+            test_base64, test_size = self.encode_frame_base64(frame, test_quality, convert_to_rgb)
             if test_size <= self.max_frame_size:
                 base64_string, size = test_base64, test_size
             else:
