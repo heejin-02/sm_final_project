@@ -132,12 +132,38 @@ checkpoints/
 tensorboard_logs/
 
 # 영상/이미지 파일 (용량이 클 경우)
-# *.mp4
-# *.avi
-# *.mov
-# *.jpg
-# *.jpeg
-# *.png
+*.mp4
+*.avi
+*.mov
+*.webm
+*.mkv
+*.flv
+*.wmv
+*.m4v
+
+# 이미지 파일 (아이콘과 정적 리소스 제외)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.tif
+*.raw
+*.svg
+
+# 정적 리소스는 포함 (프론트엔드 필요)
+!front/public/**/*.png
+!front/public/**/*.jpg
+!front/public/**/*.jpeg
+!front/public/**/*.svg
+!front/src/**/*.png
+!front/src/**/*.jpg  
+!front/src/**/*.jpeg
+!front/src/**/*.svg
+!front/*.png
+!front/*.jpg
+!front/*.ico
 
 # 문서화 빌드 결과
 docs/_build/
