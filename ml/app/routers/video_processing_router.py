@@ -378,12 +378,12 @@ async def create_annotated_video(annotated_frames: List[np.ndarray], request: Vi
         video_filename = f"detection_{request.camera_id}_{timestamp}.mp4"
         video_path = video_dir / video_filename
         
-        # 비디오 라이터 설정 (OpenCV)
+        # 비디오 라이터 설정
         if len(annotated_frames) == 0:
             logger.error("비디오 생성을 위한 프레임이 없습니다")
             return None
         
-        # 첫 번째 프레임에서 해상도 처영
+        # 첫 번째 프레임에서 해상도 확인
         valid_frame = None
         for frame in annotated_frames:
             if frame is not None:
@@ -397,46 +397,64 @@ async def create_annotated_video(annotated_frames: List[np.ndarray], request: Vi
         height, width = valid_frame.shape[:2]
         fps = 10  # 라즈베리파이의 LQ FPS와 동일
         
-        # VideoWriter 설정 - MP4V 코덱만 사용 (원래대로)
-        # 브라우저 호환성 문제로 인해 비디오 생성 방식을 변경해야 함
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter(str(video_path), fourcc, fps, (width, height))
-        
-        if not out.isOpened():
-            logger.error("VideoWriter 열기 실패")
-            return None
-        
-        logger.info(f"✅ VideoWriter 열기 성공 - 코덱: mp4v (임시)")
-        logger.warning("⚠️ 생성된 비디오는 브라우저에서 재생되지 않을 수 있습니다. FFmpeg 변환이 필요합니다.")
-        
-        # 프레임들을 비디오로 작성
-        for i, frame in enumerate(annotated_frames):
-            if frame is not None:
-                # 해상도 통일
-                if frame.shape[:2] != (height, width):
-                    frame = cv2.resize(frame, (width, height))
-                
-                # OpenCV VideoWriter는 BGR을 요구하므로 프레임 그대로 저장
-                out.write(frame)
-            else:
-                # 빈 프레임일 경우 이전 프레임 사용
-                if i > 0 and annotated_frames[i-1] is not None:
-                    prev_frame = annotated_frames[i-1]
-                    if prev_frame.shape[:2] != (height, width):
-                        prev_frame = cv2.resize(prev_frame, (width, height))
-                    
-                    out.write(prev_frame)
-        
-        out.release()
-        
-        logger.info(f"✅ 비디오 생성 완료: {video_path}")
-        
-        # FFmpeg로 브라우저 호환 코덱으로 변환
-        converted_path = await convert_video_with_ffmpeg(str(video_path))
-        if converted_path:
-            return converted_path
-        else:
-            logger.warning("FFmpeg 변환 실패, 원본 비디오 반환")
+        # imageio-ffmpeg 사용 여부 확인
+        try:
+            import imageio
+            # imageio로 H.264 코덱 비디오 생성
+            logger.info("🎬 imageio-ffmpeg를 사용하여 H.264 비디오 생성 시작")
+            
+            # 프레임 준비 (BGR → RGB 변환 필요)
+            rgb_frames = []
+            for i, frame in enumerate(annotated_frames):
+                if frame is not None:
+                    # 해상도 통일
+                    if frame.shape[:2] != (height, width):
+                        frame = cv2.resize(frame, (width, height))
+                    # BGR → RGB 변환 (imageio는 RGB 예상)
+                    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    rgb_frames.append(rgb_frame)
+                else:
+                    # 빈 프레임일 경우 이전 프레임 사용
+                    if i > 0 and len(rgb_frames) > 0:
+                        rgb_frames.append(rgb_frames[-1])
+            
+            # imageio로 비디오 저장 (H.264 코덱)
+            imageio.mimwrite(str(video_path), rgb_frames, fps=fps, codec='libx264', pixelformat='yuv420p')
+            logger.info(f"✅ imageio-ffmpeg로 H.264 비디오 생성 완료: {video_path}")
+            return str(video_path)
+            
+        except ImportError:
+            logger.warning("⚠️ imageio-ffmpeg가 설치되지 않음. OpenCV mp4v 코덱 사용")
+            
+            # OpenCV 폴백 (mp4v 코덱)
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            out = cv2.VideoWriter(str(video_path), fourcc, fps, (width, height))
+            
+            if not out.isOpened():
+                logger.error("VideoWriter 열기 실패")
+                return None
+            
+            logger.info(f"✅ VideoWriter 열기 성공 - 코덱: mp4v (폴백)")
+            
+            # 프레임들을 비디오로 작성
+            for i, frame in enumerate(annotated_frames):
+                if frame is not None:
+                    # 해상도 통일
+                    if frame.shape[:2] != (height, width):
+                        frame = cv2.resize(frame, (width, height))
+                    out.write(frame)
+                else:
+                    # 빈 프레임일 경우 이전 프레임 사용
+                    if i > 0 and annotated_frames[i-1] is not None:
+                        prev_frame = annotated_frames[i-1]
+                        if prev_frame.shape[:2] != (height, width):
+                            prev_frame = cv2.resize(prev_frame, (width, height))
+                        out.write(prev_frame)
+            
+            out.release()
+            
+            logger.info(f"✅ 비디오 생성 완료: {video_path}")
+            logger.warning("⚠️ mp4v 코덱 사용 - 브라우저 재생 불가능할 수 있음")
             return str(video_path)
         
     except Exception as e:
@@ -527,71 +545,3 @@ async def make_call(gh_idx: int, insect_name: str, confidence: float):
             
     except Exception as e:
         logger.error(f"전화 발신 오류: {e}")
-
-async def convert_video_with_ffmpeg(input_path: str) -> str:
-    """
-    FFmpeg를 사용하여 mp4v 코덱 비디오를 브라우저 호환 H.264 코덱으로 변환
-    """
-    import subprocess
-    import shutil
-    
-    try:
-        # FFmpeg 설치 확인
-        if not shutil.which("ffmpeg"):
-            logger.error("FFmpeg가 설치되지 않았습니다. 'apt install ffmpeg' 또는 'brew install ffmpeg'로 설치하세요.")
-            return None
-        
-        # 출력 파일 경로 생성 (h264 접미사 추가)
-        input_path_obj = Path(input_path)
-        output_path = input_path_obj.parent / f"{input_path_obj.stem}_h264.mp4"
-        
-        # FFmpeg 명령어 구성
-        # -c:v libx264: H.264 코덱 사용
-        # -preset fast: 빠른 인코딩
-        # -crf 22: 품질 설정 (0-51, 낮을수록 품질 높음)
-        # -vf "colorspace=bt709:iall=bt601-6-625:fast=1": 색상 공간 변환 (BGR→RGB 보정)
-        # -pix_fmt yuv420p: 브라우저 호환성을 위한 픽셀 포맷
-        # -movflags +faststart: 웹 스트리밍을 위한 최적화
-        cmd = [
-            'ffmpeg',
-            '-i', str(input_path),  # 입력 파일
-            '-c:v', 'libx264',      # H.264 코덱
-            '-preset', 'fast',      # 빠른 인코딩
-            '-crf', '22',           # 품질 (좋음)
-            '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1',  # 색상 공간 변환
-            '-pix_fmt', 'yuv420p',  # 브라우저 호환 픽셀 포맷
-            '-movflags', '+faststart',  # 웹 스트리밍 최적화
-            '-y',                   # 기존 파일 덮어쓰기
-            str(output_path)        # 출력 파일
-        ]
-        
-        logger.info(f"🔄 FFmpeg 변환 시작: {input_path} → {output_path}")
-        
-        # FFmpeg 실행 (비동기)
-        process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        
-        # 변환 완료 대기
-        stdout, stderr = await process.communicate()
-        
-        if process.returncode == 0:
-            logger.info(f"✅ FFmpeg 변환 성공: {output_path}")
-            
-            # 원본 파일 삭제 (옵션)
-            try:
-                Path(input_path).unlink()
-                logger.info(f"🗑️ 원본 파일 삭제: {input_path}")
-            except Exception as e:
-                logger.warning(f"원본 파일 삭제 실패: {e}")
-            
-            return str(output_path)
-        else:
-            logger.error(f"❌ FFmpeg 변환 실패: {stderr.decode()}")
-            return None
-            
-    except Exception as e:
-        logger.error(f"❌ FFmpeg 변환 중 오류: {e}")
-        return None

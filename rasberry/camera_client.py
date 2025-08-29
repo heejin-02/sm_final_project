@@ -191,8 +191,8 @@ class CameraClient:
         
         while True:
             try:
-                # LQ 프레임 캡처
-                lq_frame = self.camera_handler.capture_frame(high_quality=False)
+                # LQ 프레임 캡처 (ML용 BGR)
+                lq_frame = self.camera_handler.capture_frame_for_ml(high_quality=False)
                 if lq_frame is None:
                     error_count += 1
                     if error_count > max_errors:
@@ -217,8 +217,8 @@ class CameraClient:
                     lq_size, quality, lq_frame.shape
                 )
                 
-                # HQ 프레임 캡처
-                hq_frame = self.camera_handler.capture_frame(high_quality=True)
+                # HQ 프레임 캡처 (ML용 BGR)
+                hq_frame = self.camera_handler.capture_frame_for_ml(high_quality=True)
                 if hq_frame is None:
                     await asyncio.sleep(0.1)
                     continue
