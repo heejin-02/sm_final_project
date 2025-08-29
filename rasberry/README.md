@@ -51,7 +51,7 @@ CAMERA_ID=cam_001          # 각 라즈베리파이마다 고유 ID
 GH_IDX=74                  # 온실 인덱스
 
 # 네트워크 (Spring Boot 서버로 변경)
-SERVER_HOST=192.168.219.47 # Spring Boot 서버 IP
+SERVER_HOST=192.168.219.43 # Spring Boot 서버 IP
 SERVER_PORT=8095           # Spring Boot 포트
 WEBSOCKET_ENDPOINT=/api/camera/websocket # 웹소켓 엔드포인트
 ```
