@@ -285,32 +285,32 @@ class CameraConnectionManager:
             logger.info(f"Spring Boot 전송 완료: {insect_name} | 상태: {res.status_code}")
             
             # 전화 발신
-            await self._make_call(gh_idx, insect_name, confidence)
+            #await self._make_call(gh_idx, insect_name, confidence)
             
         except Exception as e:
             logger.error(f"Spring Boot 전송 실패: {e}")
     
-    async def _make_call(self, gh_idx: int, insect_name: str, confidence: float):
-        """전화 발신"""
-        import requests
+    # async def _make_call(self, gh_idx: int, insect_name: str, confidence: float):
+    #     """전화 발신"""
+    #     import requests
         
-        try:
-            ml_api_url = "http://localhost:8003/api/make-call"
-            params = {
-                "gh_idx": gh_idx,
-                "insect_name": insect_name,
-                "confidence": confidence
-            }
+    #     try:
+    #         ml_api_url = "http://localhost:8003/api/make-call"
+    #         params = {
+    #             "gh_idx": gh_idx,
+    #             "insect_name": insect_name,
+    #             "confidence": confidence
+    #         }
             
-            response = requests.post(ml_api_url, params=params, timeout=10)
+    #         response = requests.post(ml_api_url, params=params, timeout=10)
             
-            if response.status_code == 200:
-                logger.info(f"전화 발신 성공: {insect_name} (신뢰도: {confidence:.2f})")
-            else:
-                logger.error(f"전화 발신 실패: {response.status_code}")
+    #         if response.status_code == 200:
+    #             logger.info(f"전화 발신 성공: {insect_name} (신뢰도: {confidence:.2f})")
+    #         else:
+    #             logger.error(f"전화 발신 실패: {response.status_code}")
                 
-        except Exception as e:
-            logger.error(f"전화 발신 오류: {e}")
+    #     except Exception as e:
+    #         logger.error(f"전화 발신 오류: {e}")
     
     def get_camera_stats(self) -> dict:
         """카메라 통계 반환"""

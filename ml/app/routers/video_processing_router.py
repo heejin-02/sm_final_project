@@ -18,6 +18,7 @@ from app.services.yolo_service import YOLOService
 from app.services.metadata_service import MetadataService
 from app.core.config import settings
 import os
+from PIL import ImageFont, ImageDraw, Image
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ async def process_video_buffer(request: VideoBufferRequest):
                     
                     all_detections.extend(frame_detections)
                     
-                    logger.info(f"프레임 {i}/{request.frame_count}: {len(detections)}개 탐직")
+                    logger.info(f"프레임 {i}/{request.frame_count}: {len(detections)}개 탐지")
                 
                 processed_frames += 1
                 
@@ -133,11 +134,11 @@ async def process_video_buffer(request: VideoBufferRequest):
         processing_time = (datetime.now() - start_time).total_seconds()
         
         logger.info(f"✅ 비디오 처리 완료: {processed_frames}/{request.frame_count}프레임, "
-                   f"{len(all_detections)}개 탐직, {processing_time:.2f}초 소요")
+                   f"{len(all_detections)}개 탐지, {processing_time:.2f}초 소요")
         
         return VideoProcessingResponse(
             success=True,
-            message=f"{len(all_detections)}개 해충 탐직 완료, 비디오 생성: {video_path}",
+            message=f"{len(all_detections)}개 해충 탐지 완료, 비디오 생성: {video_path}",
             camera_id=request.camera_id,
             total_frames=processed_frames,
             processing_time=processing_time,
@@ -291,10 +292,26 @@ async def send_detection_to_spring_boot(insect_name: str, confidence: float,
         logger.info(f"Spring Boot 전송 완료: {insect_name} | 상태: {res.status_code}")
         
         # 전화 발신
-        await make_call(gh_idx, insect_name, confidence)
+        #await make_call(gh_idx, insect_name, confidence)
         
     except Exception as e:
         logger.error(f"Spring Boot 전송 실패: {e}")
+
+def draw_text_korean(img, text, org, font_size=20, color=(0, 0, 0)):
+    """이미지에 한글 텍스트 출력 (PIL 사용)"""
+    try:
+        # Windows 기본 폰트 (맑은 고딕)
+        font_path = "/mnt/c/Users/spdlq/OneDrive/Desktop/sm_final_project/ml/fonts/NanumGothic.ttf"
+        font = ImageFont.truetype(font_path, font_size)
+
+        img_pil = Image.fromarray(img)
+        draw = ImageDraw.Draw(img_pil)
+        draw.text(org, text, font=font, fill=color)
+        return np.array(img_pil)
+    except Exception as e:
+        logger.error(f"한글 텍스트 출력 오류: {e}")
+        return img
+
 
 def draw_detections_on_hq_frame(detections: List[dict], lq_frame: np.ndarray, hq_frame: np.ndarray, convert_to_rgb: bool = False) -> np.ndarray:
     """
@@ -354,10 +371,10 @@ HQ 프레임에 LQ에서 탐지된 결과를 시각화
         cv2.rectangle(annotated_frame, (hq_x1, hq_y1 - label_h - 10), 
                      (hq_x1 + label_w + 10, hq_y1), color, -1)
         
-        # 레이블 텍스트
-        cv2.putText(annotated_frame, label, (hq_x1 + 5, hq_y1 - 5),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-    
+        # 레이블 텍스트 (기존 cv2.putText 대신 PIL 함수 사용) 한글 나오도록 수정
+        annotated_frame = draw_text_korean(
+            annotated_frame, label, (hq_x1 + 5, hq_y1 - 25), font_size=20, color=(0, 0, 0)
+        )
     # 사용자 전달용 RGB 변환
     if convert_to_rgb:
         annotated_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
@@ -519,10 +536,10 @@ async def send_all_detections_to_spring_boot(detections: List[dict], gh_idx: int
         # 대표 해충으로 전화 발신 (신뢰도 가장 높은 것)
         if detections:
             best_detection = max(detections, key=lambda x: x["confidence"])
-            await make_call(gh_idx, best_detection["class_name"], best_detection["confidence"])
+            #await make_call(gh_idx, best_detection["class_name"], best_detection["confidence"])
             
     except Exception as e:
-        logger.error(f"❌ 모든 탐직 결과 전송 실패: {e}")
+        logger.error(f"❌ 모든 탐지 결과 전송 실패: {e}")
 
 async def make_call(gh_idx: int, insect_name: str, confidence: float):
     """전화 발신"""
