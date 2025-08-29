@@ -157,15 +157,22 @@ class YOLOService:
         
         return detections
     
-    def draw_detections(self, frame: np.ndarray, detections: List[Dict]) -> np.ndarray:
-        """탐지 결과를 프레임에 그리기"""
+    def draw_detections(self, frame: np.ndarray, detections: List[Dict], convert_to_rgb: bool = False) -> np.ndarray:
+        """탐지 결과를 프레임에 그리기
+        
+        Args:
+            frame: 입력 프레임 (BGR)
+            detections: 탐지 결과 리스트
+            convert_to_rgb: 사용자 전달용 RGB로 변환 여부
+        """
+        # BGR 프레임에 시각화 (OpenCV는 BGR 기준)
         for detection in detections:
             class_name = detection["class_name"]
             confidence = detection["confidence"]
             x_min, y_min, x_max, y_max = detection["bbox"]
             
             # 바운딩 박스 그리기
-            color = (0, 255, 0)  # 초록색
+            color = (0, 255, 0)  # 초록색 (BGR)
             cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), color, 2)
             
             # 라벨 그리기
@@ -179,6 +186,10 @@ class YOLOService:
             # 라벨 텍스트
             cv2.putText(frame, label, (x_min, y_min - 5), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        
+        # 사용자 전달용 RGB 변환
+        if convert_to_rgb:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
         return frame
     

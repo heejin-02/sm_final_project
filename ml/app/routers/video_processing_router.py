@@ -296,9 +296,15 @@ async def send_detection_to_spring_boot(insect_name: str, confidence: float,
     except Exception as e:
         logger.error(f"Spring Boot 전송 실패: {e}")
 
-def draw_detections_on_hq_frame(detections: List[dict], lq_frame: np.ndarray, hq_frame: np.ndarray) -> np.ndarray:
+def draw_detections_on_hq_frame(detections: List[dict], lq_frame: np.ndarray, hq_frame: np.ndarray, convert_to_rgb: bool = False) -> np.ndarray:
     """
 HQ 프레임에 LQ에서 탐지된 결과를 시각화
+    
+    Args:
+        detections: 탐지 결과 리스트
+        lq_frame: 저화질 프레임
+        hq_frame: 고화질 프레임
+        convert_to_rgb: 사용자 전달용 RGB 변환 여부
     """
     annotated_frame = hq_frame.copy()
     
@@ -351,6 +357,10 @@ HQ 프레임에 LQ에서 탐지된 결과를 시각화
         # 레이블 텍스트
         cv2.putText(annotated_frame, label, (hq_x1 + 5, hq_y1 - 5),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+    
+    # 사용자 전달용 RGB 변환
+    if convert_to_rgb:
+        annotated_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
     
     return annotated_frame
 
@@ -405,6 +415,8 @@ async def create_annotated_video(annotated_frames: List[np.ndarray], request: Vi
                 # 해상도 통일
                 if frame.shape[:2] != (height, width):
                     frame = cv2.resize(frame, (width, height))
+                
+                # OpenCV VideoWriter는 BGR을 요구하므로 프레임 그대로 저장
                 out.write(frame)
             else:
                 # 빈 프레임일 경우 이전 프레임 사용
@@ -412,6 +424,7 @@ async def create_annotated_video(annotated_frames: List[np.ndarray], request: Vi
                     prev_frame = annotated_frames[i-1]
                     if prev_frame.shape[:2] != (height, width):
                         prev_frame = cv2.resize(prev_frame, (width, height))
+                    
                     out.write(prev_frame)
         
         out.release()
@@ -536,6 +549,7 @@ async def convert_video_with_ffmpeg(input_path: str) -> str:
         # -c:v libx264: H.264 코덱 사용
         # -preset fast: 빠른 인코딩
         # -crf 22: 품질 설정 (0-51, 낮을수록 품질 높음)
+        # -vf "colorspace=bt709:iall=bt601-6-625:fast=1": 색상 공간 변환 (BGR→RGB 보정)
         # -pix_fmt yuv420p: 브라우저 호환성을 위한 픽셀 포맷
         # -movflags +faststart: 웹 스트리밍을 위한 최적화
         cmd = [
@@ -544,6 +558,7 @@ async def convert_video_with_ffmpeg(input_path: str) -> str:
             '-c:v', 'libx264',      # H.264 코덱
             '-preset', 'fast',      # 빠른 인코딩
             '-crf', '22',           # 품질 (좋음)
+            '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1',  # 색상 공간 변환
             '-pix_fmt', 'yuv420p',  # 브라우저 호환 픽셀 포맷
             '-movflags', '+faststart',  # 웹 스트리밍 최적화
             '-y',                   # 기존 파일 덮어쓰기
