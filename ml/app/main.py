@@ -30,7 +30,7 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(rag_router.router, prefix="/api", tags=["RAG"])
 app.include_router(gpt_router.router, prefix="/api", tags=["GPT"])
-app.include_router(phone_router.router, prefix="/api", tags=["Phone"])
+# app.include_router(phone_router.router, prefix="/api", tags=["Phone"])
 app.include_router(upload_router.router, prefix="/api", tags=["Upload"])
 app.include_router(camera_websocket_router.router, tags=["Camera"])
 app.include_router(video_processing_router.router, prefix="/api", tags=["Video Processing"])
@@ -53,8 +53,8 @@ async def root():
             "/api/make-call",
             "/api/call-history",
             "/api/upload",
-            "/api/signalwire-call",
-            "/api/signalwire/voice",
+            # "/api/signalwire-call",
+            # "/api/signalwire/voice",
             "/ws/camera",
             "/api/camera/stats",
             "/api/process-video-buffer"
