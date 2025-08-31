@@ -48,6 +48,7 @@ ml/logs/
 # ML 모델 및 학습 결과
 ml/model/yolov5/weights/*.pt
 ml/model/yolov5/runs/
+ml/data
 *.weights
 *.onnx
 *.torchscript
@@ -130,6 +131,7 @@ build/
 experiments/
 checkpoints/
 tensorboard_logs/
+ml/data/metadata/*.csv
 
 # 영상/이미지 파일 (용량이 클 경우)
 *.mp4
@@ -169,6 +171,7 @@ tensorboard_logs/
 docs/_build/
 
 # 프로젝트 문서 (커밋하지 않음)
+.claude/*.json
 CLAUDE.md
 detailed_index.md
 general_index.md
