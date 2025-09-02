@@ -2,17 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import logo from '/images/logo-horizon.svg';
-import { LuLogOut } from 'react-icons/lu';
+import { LuLogOut, LuMenu, LuMinus, LuPlus } from 'react-icons/lu';
 
 export default function Header() {
     const { user, logout } = useAuth(); // logout 함수도 가져옴
     const navigate = useNavigate();
     const [zoomLevel, setZoomLevel] = useState('100%');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    window.addEventListener('scroll', () => {
-        const bwLeft = window.scrollX;
-        document.querySelector('.header-in').style.transform = `translateX(-${bwLeft}px)`;
-    });
+    // 스크롤 이벤트
+    useEffect(() => {
+        const handleScroll = () => {
+            const bwLeft = window.scrollX;
+            document.querySelector('.header-in').style.transform = `translateX(-${bwLeft}px)`;
+        };
+        window.addEventListener('scroll', handleScroll);
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // 컴포넌트 마운트 시 저장된 확대/축소 레벨 불러오기
     useEffect(() => {
@@ -80,7 +87,7 @@ export default function Header() {
     };
 
     return (
-        <header className='header'>
+        <header className={`header ${isMenuOpen ? 'open' : ''}`}>
             <div className='header-in'>
                 {/* 왼쪽 영역 - 로고 */}
                 <div className='header-left'>
@@ -113,11 +120,13 @@ export default function Header() {
 
                 {/* 오른쪽 영역 - 사용자 정보 & 날씨 */}
                 <div className='header-right'>
-                    {user?.role == 'user' && (
+                    {user?.role === 'admin' ? (
+                        <div className='flex items-center justify-end gap-2'>
+                            <span>관리자 모드</span>
+                            <LuLogOut size={24} onClick={handleLogout} className='cursor-pointer' />
+                        </div>
+                    ) : (
                         <div className='user'>
-                            <div className='mobile'>
-                                <div>메뉴</div>
-                            </div>
                             <div className='pc'>
                                 <div className='view-control'>
                                     <button className='btn' onClick={handleZoomOut} disabled={zoomLevel === '90%'}>
@@ -128,7 +137,8 @@ export default function Header() {
                                         크게
                                     </button>
                                 </div>
-                                {user?.userName && user.role !== 'admin' && (
+
+                                {user?.userName && (
                                     <div className='flex items-center gap-5'>
                                         <span className='header-text'>{user.userName}님 환영합니다</span>
                                         <button className='color-80 cursor-pointer' onClick={handleLogout}>
@@ -137,15 +147,45 @@ export default function Header() {
                                     </div>
                                 )}
                             </div>
+                            <div className='mobile'>
+                                <div className='m-menu cursor-pointer' onClick={() => setIsMenuOpen((prev) => !prev)}>
+                                    <LuMenu size={24} />
+                                    <div>메뉴</div>
+                                </div>
+                            </div>
                         </div>
                     )}
-
-                    {user?.role == 'admin' && (
-                        <div className='flex items-center gap-2'>
-                            <span className=''>관리자 모드</span>
-                            <LuLogOut size={24} onClick={handleLogout} className='cursor-pointer' />
+                </div>
+            </div>
+            <div className='m-nav'>
+                <div className='nav-cont flex flex-col space-y-4 scrl-custom'>
+                    <div className='view-control justify-end gap-4'>
+                        <div>화면</div>
+                        <div className='flex gap-1'>
+                            <button className='btn' onClick={handleZoomOut} disabled={zoomLevel === '90%'}>
+                                <LuMinus size={20} />
+                                작게 보기
+                            </button>
+                            <button className='btn' onClick={handleZoomIn} disabled={zoomLevel === '120%'}>
+                                <LuPlus size={20} />
+                                크게 보기
+                            </button>
+                        </div>
+                    </div>
+                    {user?.userName && (
+                        <div className='nav-user'>
+                            <div className='header-text'>{user.userName}님 환영합니다</div>
+                            <button className='color-80 cursor-pointer' onClick={handleLogout}>
+                                로그아웃
+                            </button>
                         </div>
                     )}
+                    <div className='nav-link'>
+                        <div>다른 농장 선택</div>
+                        <br />
+                        <div>오늘의 알림</div>
+                        <div></div>
+                    </div>
                 </div>
             </div>
         </header>

@@ -209,9 +209,10 @@
         background-color: white;
         box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         height: var(--header-h);
-        padding: 1.25rem 3.25rem;
         max-width: var(--window-max-width);
         min-width: var(--window-min-width);
+        display: flex;
+        align-items: center;
     }
 
     .header-in {
@@ -221,6 +222,7 @@
         display: grid;
         grid-template-columns: 1fr auto 1fr;
         align-items: center;
+        padding: 1.25rem 3.25rem;
     }
 
     .header-left {
@@ -238,12 +240,20 @@
         color: var(--color-primary);
     }
 
-    .header-right {
-    }
     .header-right .pc {
         justify-self: end;
         display: flex;
         align-items: center;
+        gap: 1rem;
+    }
+
+    .header-right .m-menu {
+        display: none;
+    }
+    .header-right .user {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
         gap: 1rem;
     }
 
@@ -259,6 +269,34 @@
     .view-control .btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+
+    .m-nav {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 100vw;
+        height: calc(100vh - var(--header-h));
+        z-index: 50;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all 0.3s ease-out;
+    }
+    .nav-cont {
+        width: 360px;
+        height: 100%;
+        max-width: 100%;
+        padding: 1.4rem 1.2rem;
+        background: #fff;
+        position: absolute;
+        top: 0;
+        right: 0;
+        border-top: solid 1px #efefef;
+        transform: translateX(100%);
+        transition: all 0.2s ease-out;
     }
 
     /* ===== 확대/축소 유틸리티 ===== */
@@ -2380,6 +2418,48 @@
         }
     }
 
+    @media (max-width: 1400px) {
+        .header {
+            display: flex;
+            align-items: center;
+        }
+        .header-in {
+            padding: 0 1rem;
+        }
+        .header-right .pc {
+            display: none;
+        }
+        .header-right .mobile {
+            display: block;
+        }
+        .header-right .m-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 1.125rem;
+            background: #fff;
+            border: solid 1px #d0d0d0;
+            padding: 0.3rem 0.4rem;
+            border-radius: 0.2rem;
+        }
+        .header.open .m-nav {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .header.open .nav-cont {
+            transform: translateX(0);
+        }
+
+        .view-control {
+            font-size: 0.95rem;
+        }
+        .view-control .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.85rem;
+        }
+    }
+
     @media (max-width: 1280px) {
         .cont-wrap {
             width: 100%;
@@ -2418,7 +2498,6 @@
         }
 
         .header {
-            padding: 1rem;
             display: flex;
             align-items: center;
         }

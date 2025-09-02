@@ -53,12 +53,27 @@ export default function NotiDetail() {
         return null;
     }, [alertDetail, farmIdx, findGhIdxByName, regions]);
 
-    // 페이지 진입 시 body 스크롤 막기
+    // 페이지 진입 시 body 스크롤 제어 (1400px 초과일 때만)
     useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
+        const handleResize = () => {
+            if (window.innerWidth > 1400) {
+                document.body.style.overflow = 'hidden';
+                document.documentElement.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'unset';
+                document.documentElement.style.overflow = 'unset';
+            }
+        };
+
+        // 초기 실행
+        handleResize();
+
+        // resize 이벤트 등록
+        window.addEventListener('resize', handleResize);
 
         return () => {
+            window.removeEventListener('resize', handleResize);
+            // 컴포넌트 언마운트 시 원래대로
             document.body.style.overflow = 'unset';
             document.documentElement.style.overflow = 'unset';
         };
