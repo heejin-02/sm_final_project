@@ -239,6 +239,8 @@
     }
 
     .header-right {
+    }
+    .header-right .pc {
         justify-self: end;
         display: flex;
         align-items: center;
@@ -2417,9 +2419,15 @@
 
         .header {
             padding: 1rem;
+            display: flex;
+            align-items: center;
         }
-        .logo {
-            width: 170px;
+        .header-in {
+            display: flex;
+            justify-content: space-between;
+        }
+        .logo-area {
+            width: 50px;
         }
         .view-control {
             gap: 0.4rem;
@@ -2619,9 +2627,6 @@
     @media (max-width: 500px) {
         html {
             --header-h: 68px;
-        }
-        .logo-area {
-            width: 153px;
         }
         .home .cont-wrap {
             padding: 2.5rem 1rem;
