@@ -9,7 +9,7 @@ export default function NotiList() {
     const { user } = useAuth();
     const farmIdx = user?.selectedFarm?.farmIdx;
     const { alerts, loading, error, markAsRead } = useAlertList(farmIdx);
-    const { isNotiOpen, setIsNotiOpen } = useNoti();
+    const { isNotiOpen, setIsNotiOpen, setUnreadCount } = useNoti();
 
     // 알림 정렬: 안읽은 알림 우선 + 각각 최신순
     const sortedAlerts = [...alerts].sort((a, b) => {
@@ -54,6 +54,11 @@ export default function NotiList() {
             }
         }
     }, [currentNotiId, sortedAlerts]); // sortedAlerts가 변경될 때도 스크롤
+
+    // unreadCount 변할 때마다 Context에 반영
+    useEffect(() => {
+        setUnreadCount(unreadCount);
+    }, [unreadCount, setUnreadCount]);
 
     const handleSelect = async (alert) => {
         // 읽음 처리

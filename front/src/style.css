@@ -2464,6 +2464,9 @@
             font-size: 0.85rem;
         }
 
+        .main-farm {
+            position: relative;
+        }
         .noti-area,
         .main-farm .noti-area {
             position: absolute;
@@ -2474,6 +2477,12 @@
             border-radius: 0;
             border: 0;
             box-shadow: 2px 0px 4px 0px rgb(157 156 156 / 60%);
+            height: 100%;
+            transform: translateX(-100%);
+            transition: all 0.2s ease-out;
+        }
+        .noti-area.open {
+            transform: translateX(0);
         }
     }
 

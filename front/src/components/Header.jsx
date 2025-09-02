@@ -10,7 +10,7 @@ export default function Header() {
     const navigate = useNavigate();
     const [zoomLevel, setZoomLevel] = useState('100%');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { isNotiOpen, setIsNotiOpen } = useNoti();
+    const { isNotiOpen, setIsNotiOpen, unreadCount } = useNoti();
 
     const location = useLocation();
     const hideNoti = location.pathname === '/' || location.pathname === '/selectFarm';
@@ -155,14 +155,23 @@ export default function Header() {
                             <div className='m-header-btn'>
                                 {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
                                     <div className='m-menu cursor-pointer' onClick={() => setIsNotiOpen((prev) => !prev)}>
-                                        <LuBell size={24} />
+                                        <div className='relative'>
+                                            <LuBell size={22} />
+                                            {unreadCount > 0 && (
+                                                <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>
+                                                    {/* {unreadCount} */}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div>알림</div>
                                     </div>
                                 )}
-                                <div className='m-menu cursor-pointer' onClick={() => setIsMenuOpen((prev) => !prev)}>
-                                    <LuMenu size={24} />
-                                    <div>메뉴</div>
-                                </div>
+                                {location.pathname !== '/' && (
+                                    <div className='m-menu cursor-pointer' onClick={() => setIsMenuOpen((prev) => !prev)}>
+                                        <LuMenu size={22} />
+                                        <div>메뉴</div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -191,12 +200,14 @@ export default function Header() {
                             </button>
                         </div>
                     )}
-                    <div className='nav-link'>
-                        <div>다른 농장 선택</div>
-                        <br />
-                        <div>오늘의 알림</div>
-                        <div></div>
-                    </div>
+                    {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
+                        <div className='nav-link'>
+                            <div>다른 농장 선택</div>
+                            <br />
+                            <div>오늘의 알림</div>
+                            <div></div>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>
