@@ -141,7 +141,7 @@ class MobileNetDetector:
 class SpringBootIntegratedMonitor:
     """Spring Boot 연동 통합 모니터링 시스템"""
     
-    def __init__(self, camera_id=0, spring_url="http://192.168.219.43:8095", ml_url="http://192.168.219.43:8003"):
+    def __init__(self, camera_id=0, spring_url="http://192.168.219.49:8095", ml_url="http://192.168.219.49:8003"):
         self.camera_id = camera_id
         self.spring_url = spring_url
         self.ml_url = ml_url
@@ -479,8 +479,8 @@ if __name__ == "__main__":
     # 실행
     monitor = SpringBootIntegratedMonitor(
         camera_id=0,
-        spring_url="http://192.168.219.47:8095",
-        ml_url="http://192.168.219.47:8003"
+        spring_url="http://192.168.219.49:8095",
+        ml_url="http://192.168.219.49:8003"
     )
     asyncio.run(monitor.run())
 

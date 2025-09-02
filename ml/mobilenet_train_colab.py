@@ -183,6 +183,41 @@ def export_to_onnx(model, dummy_input, filename='mobilenet_insect.onnx'):
     )
     print(f"✅ ONNX 모델 저장: {filename}")
 
+def test_model(model, test_loader):
+    """최종 테스트 함수"""
+    model.eval()
+    correct = 0
+    total = 0
+    class_correct = list(0. for i in range(10))
+    class_total = list(0. for i in range(10))
+    
+    with torch.no_grad():
+        for images, labels in tqdm(test_loader, desc='Testing'):
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = torch.max(outputs, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+            
+            # 클래스별 정확도
+            c = (predicted == labels).squeeze()
+            for i in range(labels.size(0)):
+                label = labels[i]
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
+    
+    # 전체 정확도
+    print(f'\n📊 Test Accuracy: {100 * correct/total:.2f}%')
+    
+    # 클래스별 정확도
+    print('\n클래스별 정확도:')
+    for i in range(10):
+        if class_total[i] > 0:
+            acc = 100 * class_correct[i]/class_total[i]
+            print(f'{INSECT_CLASSES[i]}: {acc:.2f}%')
+    
+    return 100 * correct/total    
+
 def main():
     """메인 실행 함수"""
     # 데이터 변환 정의
@@ -209,9 +244,15 @@ def main():
     train_dataset = InsectDataset(data_root, transform=transform_train, mode='train')
     val_dataset = InsectDataset(data_root, transform=transform_val, mode='val')
     
+    # Test 데이터셋 추가 ✨
+    test_dataset = InsectDataset(data_root, transform=transform_val, mode='test')
+    
     # 데이터로더
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=2)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=2)
+    
+    # Test 데이터로더 추가 ✨
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=2)
     
     # 모델 생성
     model = MobileNetInsectClassifier(num_classes=10, pretrained=True)
@@ -221,19 +262,42 @@ def main():
     print("\n🚀 학습 시작...")
     history = train_model(model, train_loader, val_loader, epochs=30)
     
-    # 최종 모델 저장
+    # 최고 성능 모델 로드 ✨
+    print("\n📂 최고 성능 모델 로드 중...")
+    checkpoint = torch.load('best_mobilenet_insect.pt')
+    model.load_state_dict(checkpoint['model_state_dict'])
+    print(f"✅ Epoch {checkpoint['epoch']+1}의 모델 로드 (Val Acc: {checkpoint['val_acc']:.2f}%)")
+    
+    # Test 데이터셋으로 최종 평가 ✨
+    print("\n🔍 Test 데이터셋으로 최종 평가 중...")
+    test_accuracy = test_model(model, test_loader)
+    
+    # 최종 모델 저장 (best 모델 기준)
     torch.save(model.state_dict(), 'final_mobilenet_insect.pt')
     
-    # ONNX 내보내기
+    # ONNX 내보내기 (best 모델 기준)
     dummy_input = torch.randn(1, 3, 224, 224).to(device)
     export_to_onnx(model, dummy_input)
     
-    # 학습 기록 저장
+    # 학습 기록 저장 (test 결과 포함) ✨
+    history['test_acc'] = test_accuracy
     with open('training_history.json', 'w') as f:
         json.dump(history, f)
     
-    print("\n✅ 학습 완료!")
-    print(f"최고 검증 정확도: {max(history['val_acc']):.2f}%")
+    # 최종 결과 출력 ✨
+    print("\n" + "="*50)
+    print("✅ 학습 및 평가 완료!")
+    print("="*50)
+    print(f"📊 최고 Validation 정확도: {max(history['val_acc']):.2f}%")
+    print(f"📊 최종 Test 정확도: {test_accuracy:.2f}%")
+    print("="*50)
+    
+    # 과적합 확인 ✨
+    if max(history['val_acc']) - test_accuracy > 5:
+        print("⚠️ 주의: Validation과 Test 정확도 차이가 5% 이상입니다.")
+        print("   과적합(Overfitting) 가능성이 있습니다.")
+    else:
+        print("✅ 모델이 잘 일반화되었습니다!")
 
 if __name__ == "__main__":
     main()

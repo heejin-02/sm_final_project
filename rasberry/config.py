@@ -13,7 +13,7 @@ class CameraConfig:
     gh_idx: int = 74  # 온실 인덱스
     
     # 네트워크 설정 (Spring Boot 서버로 변경)
-    server_host: str = "192.168.219.43"  # Spring Boot 서버 IP
+    server_host: str = "192.168.219.49"  # Spring Boot 서버 IP
     server_port: int = 8095
     websocket_endpoint: str = "/api/camera/websocket"
     

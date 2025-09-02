@@ -12,7 +12,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/ml")
 @Tag(name = "ML API Controller", description = "ML 서버 프록시 API")
-@CrossOrigin(origins = {"http://localhost:5173", "http://192.168.219.47:5173"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173", "http://192.168.219.49:5173"}, allowCredentials = "true")
 public class MlApiController {
 
     @Autowired

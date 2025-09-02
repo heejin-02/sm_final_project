@@ -192,7 +192,7 @@ class MobileNetDetector:
 
 class InsectMonitor:
     """통합 해충 모니터링 시스템"""
-    def __init__(self, camera_id=0, server_url="http://192.168.219.47:8095"):
+    def __init__(self, camera_id=0, server_url="http://192.168.219.49:8095"):
         self.camera_id = camera_id
         self.server_url = server_url
         self.greenhouse_id = 1  # 설정 필요

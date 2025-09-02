@@ -80,9 +80,11 @@ export default function NotiDetail() {
   // 로딩 중
   if (alertLoading || regionsLoading) {
     return (
-      <div className="flex h-screen">
-        <LeftPanel />
-        <div className="flex-1 flex items-center justify-center">
+      <div className="noti-detail-container">
+        <div className="left-panel-wrapper">
+          <LeftPanel />
+        </div>
+        <div className="right-section flex items-center justify-center">
           <Loader message="알림 상세 정보를 불러오는 중..." />
         </div>
       </div>
@@ -92,8 +94,10 @@ export default function NotiDetail() {
   // 에러 또는 알림을 찾지 못한 경우
   if (error || !alertDetail) {
     return (
-      <div className="flex h-screen">
-        <LeftPanel />
+      <div className="noti-detail-container">
+        <div className="left-panel-wrapper">
+          <LeftPanel />
+        </div>
         <div className="right-section">
           <div className="text-center p-8">
             <h1 className="text-2xl font-bold mb-4">알림을 찾을 수 없습니다</h1>
@@ -111,9 +115,11 @@ export default function NotiDetail() {
   }
 
   return (
-    <div className="flex h-screen">
-      {/* 왼쪽 패널 */}
-      <LeftPanel />
+    <div className="noti-detail-container">
+      {/* 왼쪽 패널 - 모바일에서는 숨김 */}
+      <div className="left-panel-wrapper">
+        <LeftPanel />
+      </div>
       
       {/* 오른쪽 컨텐츠 영역 */}
       <div className="right-section space-y-6">
@@ -132,8 +138,8 @@ export default function NotiDetail() {
           </div>
 
           {/* 탐지 영상 */}
-          <div className="flex gap-4">
-            <div className="bordered-box flex-1/2 flex flex-col">
+          <div className="detection-content-wrapper">
+            <div className="bordered-box detection-box">
               {/* <h3 className="tit-2 text-center">탐지 구역</h3> */}
               <div className="text-center mb-3">
                 <span className="text-gray-600 text-lg">
@@ -156,7 +162,7 @@ export default function NotiDetail() {
               />
 
             </div>            
-            <div className="bordered-box flex-1/2">
+            <div className="bordered-box detection-box">
               <h3 className="tit-2 text-center">탐지 영상</h3>
               <div className="video_wrap">
                 {alertDetail.imageList?.[0]?.imgUrl ? (
