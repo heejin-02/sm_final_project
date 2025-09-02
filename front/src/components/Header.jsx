@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import logo from '/images/logo-horizon.svg';
-import { LuLogOut, LuMenu, LuMinus, LuPlus } from 'react-icons/lu';
+import { LuLogOut, LuMenu, LuMinus, LuPlus, LuBell } from 'react-icons/lu';
+import { useNoti } from '../contexts/NotiContext';
 
 export default function Header() {
     const { user, logout } = useAuth(); // logout 함수도 가져옴
     const navigate = useNavigate();
     const [zoomLevel, setZoomLevel] = useState('100%');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { isNotiOpen, setIsNotiOpen } = useNoti();
+
+    const location = useLocation();
+    const hideNoti = location.pathname === '/' || location.pathname === '/selectFarm';
 
     // 스크롤 이벤트
     useEffect(() => {
@@ -147,7 +152,13 @@ export default function Header() {
                                     </div>
                                 )}
                             </div>
-                            <div className='mobile'>
+                            <div className='m-header-btn'>
+                                {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
+                                    <div className='m-menu cursor-pointer' onClick={() => setIsNotiOpen((prev) => !prev)}>
+                                        <LuBell size={24} />
+                                        <div>알림</div>
+                                    </div>
+                                )}
                                 <div className='m-menu cursor-pointer' onClick={() => setIsMenuOpen((prev) => !prev)}>
                                     <LuMenu size={24} />
                                     <div>메뉴</div>

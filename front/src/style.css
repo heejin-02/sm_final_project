@@ -271,6 +271,10 @@
         cursor: not-allowed;
     }
 
+    /* mobile 레이아웃  */
+    .m-header-btn {
+        display: none;
+    }
     .m-nav {
         position: absolute;
         top: 100%;
@@ -2429,8 +2433,9 @@
         .header-right .pc {
             display: none;
         }
-        .header-right .mobile {
-            display: block;
+        .m-header-btn {
+            display: flex;
+            gap: 0.5rem;
         }
         .header-right .m-menu {
             display: flex;
@@ -2457,6 +2462,18 @@
         .view-control .btn {
             padding: 0.2rem 0.4rem;
             font-size: 0.85rem;
+        }
+
+        .noti-area,
+        .main-farm .noti-area {
+            position: absolute;
+            z-index: 30;
+            background: #fff;
+            top: 0;
+            left: 0;
+            border-radius: 0;
+            border: 0;
+            box-shadow: 2px 0px 4px 0px rgb(157 156 156 / 60%);
         }
     }
 
@@ -2500,10 +2517,6 @@
         .header {
             display: flex;
             align-items: center;
-        }
-        .header-in {
-            display: flex;
-            justify-content: space-between;
         }
         .logo-area {
             width: 50px;
