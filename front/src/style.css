@@ -2485,10 +2485,10 @@
     }
     .noti-area,
     .main-farm .noti-area {
-      position: absolute;
+      position: fixed;
       z-index: 30;
       background: #fff;
-      top: 4px;
+      top: calc(var(--header-h) + 4px);
       left: 0;
       border-radius: 0.6rem;
       border: 0;
@@ -2543,7 +2543,7 @@
       width: 320px;
       max-width: 100%;
       min-width: auto;
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       height: calc(100vh - var(--header-h));
