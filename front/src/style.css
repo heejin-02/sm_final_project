@@ -275,6 +275,8 @@
     .m-header-btn {
         display: none;
     }
+    .m-header-btn .red-dot {
+    }
     .m-nav {
         position: absolute;
         top: 100%;

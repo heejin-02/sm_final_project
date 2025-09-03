@@ -157,11 +157,7 @@ export default function Header() {
                                     <div className='m-menu cursor-pointer' onClick={() => setIsNotiOpen((prev) => !prev)}>
                                         <div className='relative'>
                                             <LuBell size={22} />
-                                            {unreadCount > 0 && (
-                                                <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full'>
-                                                    {/* {unreadCount} */}
-                                                </span>
-                                            )}
+                                            {unreadCount > 0 && <span className='red-dot'>{/* {unreadCount} */}</span>}
                                         </div>
                                         <div>알림</div>
                                     </div>
