@@ -70,7 +70,11 @@ export default function NotiList() {
     // 로딩 중이거나 농장 정보가 없으면 로딩 표시
     if (loading || !farmIdx) {
         return (
-            <div className={`noti-area ${isNotiOpen ? 'open' : ''}`}>
+            <div className={`noti-area 
+                ${isNotiOpen ? 'open' : ''}
+                ${location.pathname === '/mainFarm' ? 'main' : ''}
+                `}
+            >
                 <div className='noti-header'>
                     <div className='tit'>오늘의 알림</div>
                     <div className='text-sm'>로딩 중...</div>
@@ -85,7 +89,11 @@ export default function NotiList() {
     // 에러 처리
     if (error) {
         return (
-            <div className={`noti-area ${isNotiOpen ? 'open' : ''}`}>
+            <div className={`noti-area 
+                ${isNotiOpen ? 'open' : ''}
+                ${location.pathname === '/mainFarm' ? 'main' : ''}
+                `}
+            >
                 <div className='noti-header'>
                     <div className='tit'>오늘의 알림</div>
                     <div className='text-sm text-red-500'>오류 발생</div>
@@ -96,7 +104,11 @@ export default function NotiList() {
     }
 
     return (
-        <div className={`noti-area ${isNotiOpen ? 'open' : ''}`}>
+            <div className={`noti-area 
+                ${isNotiOpen ? 'open' : ''}
+                ${location.pathname === '/mainFarm' ? 'main' : ''}
+                `}
+            >
             <div className='noti-header'>
                 <div className='tit'>오늘의 알림</div>
                 <div className='text-sm'>
