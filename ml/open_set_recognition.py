@@ -163,7 +163,10 @@ class ImprovedOpenSetRecognizer:
         self._adjust_thresholds()
     
     def _adjust_thresholds(self):
-        """임계값을 실용적인 값으로 조정"""
+        """임계값을 실용적인 값으로 조정 - 데이터셋 크기 고려"""
+        # 데이터셋 크기 (각 클래스당 약 600장)
+        dataset_size_factor = 600 / 10000  # 일반적인 대규모 데이터셋 대비 비율
+        
         # 실제 저장된 임계값 (Colab에서 확인):
         # max_prob: 0.5
         # entropy: 0.2  
@@ -180,13 +183,14 @@ class ImprovedOpenSetRecognizer:
         # entropy는 적절해 보임 (0.2 유지하되 살짝 완화)
         self.thresholds['entropy'] = 0.3
         
-        # mahal_distance 조정 (57.75 -> 80)
-        self.thresholds['mahal_distance'] = 80.0
+        # mahal_distance 조정 (정규화된 특징 공간에서의 거리)
+        # 정규화 후 일반적 범위: 0~10
+        self.thresholds['mahal_distance'] = 3.0  # 엄격한 기준
         
         # recon_error 조정 (0.064 -> 0.1)
         self.thresholds['recon_error'] = 0.1
         
-        self.logger.info("📈 조정된 임계값:")
+        self.logger.info("📈 조정된 임계값 (600장 데이터셋 최적화):")
         for key, value in self.thresholds.items():
             original = self.original_thresholds.get(key, 'N/A')
             if isinstance(original, float):
@@ -195,19 +199,37 @@ class ImprovedOpenSetRecognizer:
                 self.logger.info(f"   - {key}: {original} -> {value:.3f}")
     
     def calculate_mahalanobis_distance(self, features):
+        """개선된 마할라노비스 거리 계산 - 학습 시와 동일한 방식 적용"""
         min_mahal = float('inf')
         best_class = -1
         
+        # 특징 정규화 (중요!)
+        features_norm = features / (np.linalg.norm(features) + 1e-8)
+        
         for class_id, stats in self.class_statistics.items():
             if stats is not None:
-                diff = features - stats['mean']
+                # 정규화된 평균 사용 (학습 시 저장된 값)
+                if 'mean_normalized' in stats:
+                    mean_norm = stats['mean_normalized']
+                else:
+                    # Fallback: 정규화
+                    mean_norm = stats['mean'] / (np.linalg.norm(stats['mean']) + 1e-8)
+                
+                diff = features_norm - mean_norm
+                
                 if 'precision' in stats and stats['precision'] is not None:
                     try:
+                        # 마할라노비스 거리 계산 (이미 regularized precision 사용)
                         mahal = np.sqrt(np.abs(diff @ stats['precision'] @ diff))
-                    except:
-                        mahal = np.linalg.norm(diff)
+                        
+                        # 스케일 조정 - 정규화된 특징은 이미 0-1 범위
+                        # 추가 스케일링 불필요
+                        
+                    except Exception as e:
+                        # 유클리드 거리 대체 (정규화됨)
+                        mahal = np.linalg.norm(diff) * 10  # 스케일 맞춤
                 else:
-                    mahal = np.linalg.norm(diff)
+                    mahal = np.linalg.norm(diff) * 10
                 
                 if mahal < min_mahal:
                     min_mahal = mahal

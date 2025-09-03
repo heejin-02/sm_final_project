@@ -677,10 +677,11 @@ class MultiMetricThresholdOptimizer:
         self.class_statistics = {}
 
     def compute_class_statistics(self, train_loader):
-        """클래스별 통계 계산"""
+        """클래스별 통계 계산 - 정규화 적용"""
         self.model.eval()
 
         class_features = {i: [] for i in range(NUM_KNOWN)}
+        class_features_normalized = {i: [] for i in range(NUM_KNOWN)}
 
         with torch.no_grad():
             for images, labels, is_known in tqdm(train_loader, desc="Computing statistics"):
@@ -695,23 +696,48 @@ class MultiMetricThresholdOptimizer:
 
                 for i, (label, known) in enumerate(zip(labels, is_known)):
                     if known and label >= 0:
+                        # 원본 특징
                         class_features[label.item()].append(features[i])
+                        # L2 정규화된 특징
+                        normalized = features[i] / (np.linalg.norm(features[i]) + 1e-8)
+                        class_features_normalized[label.item()].append(normalized)
 
-        # Compute mean and covariance
+        # Compute mean and covariance with regularization
         for class_id in range(NUM_KNOWN):
             if len(class_features[class_id]) > 0:
+                # 원본 특징
                 features = np.array(class_features[class_id])
+                # 정규화된 특징
+                features_norm = np.array(class_features_normalized[class_id])
+                
                 mean = features.mean(axis=0)
+                mean_norm = features_norm.mean(axis=0)
 
-                cov = EmpiricalCovariance(assume_centered=False).fit(features)
+                # Regularized covariance (작은 데이터셋 대응)
+                try:
+                    from sklearn.covariance import LedoitWolf
+                    # LedoitWolf로 더 안정적인 공분산 추정
+                    cov = LedoitWolf(assume_centered=False).fit(features_norm)
+                    precision = cov.precision_
+                    covariance = cov.covariance_
+                except:
+                    # Fallback to EmpiricalCovariance with regularization
+                    cov = EmpiricalCovariance(assume_centered=False).fit(features_norm)
+                    # Add regularization
+                    reg_factor = 0.01
+                    covariance = cov.covariance_ + reg_factor * np.eye(features_norm.shape[1])
+                    precision = np.linalg.inv(covariance)
 
                 self.class_statistics[class_id] = {
                     'mean': mean,
-                    'precision': cov.precision_,
-                    'covariance': cov.covariance_
+                    'mean_normalized': mean_norm,
+                    'precision': precision,
+                    'covariance': covariance,
+                    'std': features_norm.std(axis=0),
+                    'num_samples': len(features)
                 }
 
-        print(f"✅ Computed statistics for {len(self.class_statistics)} classes")
+        print(f"✅ Computed normalized statistics for {len(self.class_statistics)} classes")
 
     def extract_validation_scores(self, val_loader):
         """검증 세트에서 점수 추출"""
