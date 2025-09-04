@@ -6,17 +6,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.smhrd.web.websocket.DetectionWebSocketService;
+
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/ml")
 @Tag(name = "ML API Controller", description = "ML 서버 프록시 API")
-@CrossOrigin(origins = {"http://localhost:5173", "http://192.168.219.49:5173"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173", "http://192.168.219.46:5173"}, allowCredentials = "true")
 public class MlApiController {
 
     @Autowired
     private MlApiService mlApiService;
+    
+    @Autowired
+    private DetectionWebSocketService webSocketService;
 
     @GetMapping("/daily-gpt-summary")
     @Operation(summary = "일간 GPT 요약 조회")
@@ -227,6 +232,36 @@ public class MlApiController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/detection-alert")
+    @Operation(summary = "해충 탐지 알림 저장 및 WebSocket 전송")
+    public ResponseEntity<Map<String, Object>> saveDetectionAndNotify(
+            @RequestBody Map<String, Object> request) {
+        try {
+            // 파라미터 추출
+            Long ghIdx = ((Number) request.get("greenhouse_idx")).longValue();
+            Long alertId = ((Number) request.get("anls_idx")).longValue();
+            
+            // 온실 ID로 사용자 전화번호 조회
+            Map<String, Object> userInfo = mlApiService.getUserPhoneByGhIdx(ghIdx);
+            String userPhone = (String) userInfo.get("phone");
+            
+            // WebSocket으로 알림 전송
+            webSocketService.sendDetectionAlert(userPhone, alertId);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "탐지 알림이 전송되었습니다.",
+                "user_phone", userPhone,
+                "anls_idx", alertId
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
         }
     }
 }

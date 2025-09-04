@@ -610,7 +610,7 @@ if __name__ == "__main__":
                        format='%(asctime)s - %(levelname)s - %(message)s')
     
     # 1. 모델 로드
-    MODEL_PATH = 'model/improved_model_resnet50.pth'
+    MODEL_PATH = '/content/drive/MyDrive/open_set/improved_model_resnet50.pth'
     
     recognizer = ImprovedOpenSetRecognizer(
         model_path=MODEL_PATH,
@@ -619,9 +619,9 @@ if __name__ == "__main__":
     
     # 2. 테스트할 이미지 목록
     test_images = [
-        ('image/test_unknown.jpg', '완전 처음 보는 이미지'),
-        ('image/test_image.jpg', 'Test 데이터셋 이미지'),
-        ('image/train_image.jpg', 'Train 데이터셋 이미지'),
+        ('test_unknown.jpg', '완전 처음 보는 이미지'),
+        ('test_image.jpg', 'Test 데이터셋 이미지'),
+        ('train_image.jpg', 'Train 데이터셋 이미지'),
     ]
     
     # 3. 각 이미지 테스트
