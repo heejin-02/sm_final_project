@@ -235,18 +235,11 @@ MyBatis Mapper XML 작성 시 `<`, `>`, `<=` 등의 연산자 사용으로 XML �
 - 프로젝트 완료 후에도 **회고(리트로스펙티브)**를 정례화하여 개선점을 팀 차원에서 축적.
 - 개인적 성장뿐만 아니라, 조직 차원의 노하우로 전환해 다음 프로젝트에 재활용 가능하게 시스템화되도록 구축해보기
 
-### 팀원 소개
-| 주연진 <br/> 팀장/DB/백엔드 개발 | 오희진 <br/> ML/AI모델링/FAST API | 한수연 <br/> 기획/프론트엔드 | 
-|:--:|:--:|:--:|
-| __ | ++ | __ |
-| RESTful API 개발, Web 설계 및 비즈니스 로직, 게시판 CRUD기능 구현, 페이징/검색 처리 | 해충데이터 전처리, YOLOv5학습 및 탐지 구현, 전화API 연동 및 기능 구현, RAG시스템 구축, GPT API통합 | 서비스 화면 기획, 고령자 대상 UI/UX 설계, 서비스 화면구현, 데이터 시각화 및 API연동 | 
-
-
-
-
-
-
-
+### 팀원 소개 
+| 주연진 <br/> 팀장/DB/백엔드 개발 | 오희진 <br/> ML/AI모델링/FAST API | 한수연 <br/> 기획/프론트엔드 |
+| -- | -- | -- |
+| <div align="center"><img width="134" height="134" src="https://github.com/user-attachments/assets/07970ed8-7bd8-48d8-8d06-269e33ffd0ad" /></div> | <div align="center"><img width="142" height="142" src="https://github.com/user-attachments/assets/e61177dc-24e4-4cb3-a13e-44f9c74a5ad9" /></div> | <div align="center"><img width="144" height="144" src="https://github.com/user-attachments/assets/8e58633c-8b6e-4f44-bd27-02a40b3cc08c" /></div> |
+| **주요역할**<br/>Spring Boot 기반 RESTful API 서버 구축, DB 연동, 비즈니스 로직 처리<br/>**주요기술**<br/>Java, Spring Web MVC, MyBatis, Oracle DB, Maven, Swagger, Jackson, Lombok, Tomcat, Spring Multipart<br/>**주요기능**<br/>게시판 CRUD, 페이징/검색 처리, API 문서화, 파일 업로드 | **주요역할**<br/>해충 탐지 모델 학습 및 RAG 시스템 구축, GPT API 연동<br/>**주요기술**<br/>YOLOv5, PyTorch, OpenCV, FFmpeg, Twilio/SignalWire, FastAPI, Chroma DB<br/>**주요기능**<br/>실시간 해충 탐지 및 영상 클립 생성, 전화 알림, 문서 기반 방제 답변 생성 | **주요역할**<br/>React SPA UI 개발, 데이터 시각화, 고령자 대상 UX 설계<br/>**주요기술**<br/>React, Context API, Axios, IndexedDB/세션 스토리지, 히트맵/차트, useMemo/useCallback, WebP, lazy loading<br/>**주요기능**<br/>서비스 화면 구현, 실시간 데이터 반영, 오류 처리, 데이터 캐싱, 성능 최적화 |
 
 
 
