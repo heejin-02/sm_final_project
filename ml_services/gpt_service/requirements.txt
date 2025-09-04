@@ -1,0 +1,16 @@
+# GPT 요약 서비스 Requirements
+# Port: 8004
+# 기능: 일간/월간/연간 통계 요약
+
+# Core
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+
+# OpenAI
+openai==1.102.0
+
+# Utils
+python-dotenv==1.1.1
+requests==2.32.5
+python-dateutil==2.9.0.post0

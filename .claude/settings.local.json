@@ -2,9 +2,20 @@
   "permissions": {
     "allow": [
       "Bash(cat:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
+  },
+  "mcpServers": {
+    "serena": {
+      "command": "npx",
+      "args": ["-y", "@serena/mcp-server"],
+      "env": {
+        "WORKING_DIR": ".",
+        "PROJECT_ROOT": "${PWD}"
+      }
+    }
   }
 }

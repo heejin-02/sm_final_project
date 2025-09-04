@@ -20,8 +20,20 @@ public class MlApiService {
     @Autowired
     private MlMapper mlMapper;
 
-    @Value("${ml.api.base-url}")
-    private String mlApiBaseUrl;
+    @Value("${ml.api.rag-url}")
+    private String ragApiUrl;
+    
+    @Value("${ml.api.gpt-url}")
+    private String gptApiUrl;
+    
+    @Value("${ml.api.phone-url}")
+    private String phoneApiUrl;
+    
+    @Value("${ml.api.proxy-url}")
+    private String proxyApiUrl;
+    
+    @Value("${ml.api.openset-url:http://localhost:8007}")
+    private String opensetApiUrl;
 
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
@@ -33,7 +45,7 @@ public class MlApiService {
      * 일간 GPT 요약 조회
      */
     public Map<String, Object> getDailyGptSummary(Long farmIdx, String date) {
-        String url = UriComponentsBuilder.fromHttpUrl(mlApiBaseUrl + "/api/daily-gpt-summary")
+        String url = UriComponentsBuilder.fromHttpUrl(gptApiUrl + "/api/daily-gpt-summary")
                 .queryParam("farm_idx", farmIdx)
                 .queryParam("date", date)
                 .toUriString();
@@ -55,7 +67,7 @@ public class MlApiService {
      * 월간 GPT 요약 조회
      */
     public Map<String, Object> getMonthlyGptSummary(Long farmIdx, String month) {
-        String url = UriComponentsBuilder.fromHttpUrl(mlApiBaseUrl + "/api/monthly-gpt-summary")
+        String url = UriComponentsBuilder.fromHttpUrl(gptApiUrl + "/api/monthly-gpt-summary")
                 .queryParam("farm_idx", farmIdx)
                 .queryParam("month", month)
                 .toUriString();
@@ -72,7 +84,7 @@ public class MlApiService {
      * 연간 GPT 요약 조회
      */
     public Map<String, Object> getYearlyGptSummary(Long farmIdx, String year) {
-        String url = UriComponentsBuilder.fromHttpUrl(mlApiBaseUrl + "/api/yearly-gpt-summary")
+        String url = UriComponentsBuilder.fromHttpUrl(gptApiUrl + "/api/yearly-gpt-summary")
                 .queryParam("farm_idx", farmIdx)
                 .queryParam("year", year)
                 .toUriString();
@@ -89,7 +101,7 @@ public class MlApiService {
      * 이미지 인덱스 기반 해충 요약
      */
     public Map<String, Object> getSummaryByImgIdx(Long imgIdx) {
-        String url = UriComponentsBuilder.fromHttpUrl(mlApiBaseUrl + "/api/summary-by-imgidx")
+        String url = UriComponentsBuilder.fromHttpUrl(ragApiUrl + "/api/summary-by-imgidx")
                 .queryParam("imgIdx", imgIdx)
                 .toUriString();
 
@@ -105,10 +117,13 @@ public class MlApiService {
      * 해충 방제 정보 요약
      */
     public Map<String, Object> getInsectSummary(String insectName) {
-        String url = mlApiBaseUrl + "/api/insect-summary";
+        String url = ragApiUrl + "/api/chat";
         
         HttpHeaders headers = createHeaders();
-        Map<String, String> requestBody = Map.of("insect_name", insectName);
+        Map<String, String> requestBody = Map.of(
+            "insect", insectName,
+            "question", "이 해충의 방제 방법을 알려주세요"
+        );
         HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
 
         try {
@@ -123,7 +138,7 @@ public class MlApiService {
      * RAG 질문 응답
      */
     public Map<String, Object> askQuestion(String question) {
-        String url = mlApiBaseUrl + "/api/ask";
+        String url = ragApiUrl + "/api/ask";
         
         HttpHeaders headers = createHeaders();
         Map<String, String> requestBody = Map.of("question", question);
@@ -138,10 +153,31 @@ public class MlApiService {
     }
 
     /**
+     * RAG 해충 정보 대화
+     */
+    public Map<String, Object> chatWithInsect(String insect, String question) {
+        String url = ragApiUrl + "/api/chat";
+        
+        HttpHeaders headers = createHeaders();
+        Map<String, String> requestBody = Map.of(
+            "insect", insect,
+            "question", question
+        );
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            return response.getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("ML API 호출 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * 온실 ID로 전화번호 조회
      */
     public Map<String, Object> getUserPhone(Long ghIdx) {
-        String url = UriComponentsBuilder.fromHttpUrl(mlApiBaseUrl + "/api/get-phone")
+        String url = UriComponentsBuilder.fromHttpUrl(phoneApiUrl + "/api/get-phone")
                 .queryParam("gh_idx", ghIdx)
                 .toUriString();
 
@@ -158,7 +194,8 @@ public class MlApiService {
      */
     public boolean checkMlApiHealth() {
         try {
-            String url = mlApiBaseUrl + "/";
+            // RAG 서비스를 기본 헬스체크로 사용
+            String url = ragApiUrl + "/";
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
             return response.getStatusCode() == HttpStatus.OK;
         } catch (Exception e) {

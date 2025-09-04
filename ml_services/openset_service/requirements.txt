@@ -1,0 +1,22 @@
+# Open Set Recognition 서비스 Requirements
+# Port: 8007
+# 기능: 미확인 해충 탐지 (Known 4종 외)
+
+# Core
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+python-multipart==0.0.20
+
+# Deep Learning (CPU-only version for faster installation)
+torch==2.5.1
+torchvision==0.20.1
+numpy>=2.0.0,<2.3.0
+scikit-learn==1.5.2
+
+# Image Processing
+opencv-python==4.10.0.84
+Pillow==11.3.0
+
+# Utils
+python-dotenv==1.1.1

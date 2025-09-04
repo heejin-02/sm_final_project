@@ -83,7 +83,7 @@ public class MlApiController {
     }
 
     @PostMapping("/ask")
-    @Operation(summary = "RAG 질문 응답")
+    @Operation(summary = "RAG 일반 질문")
     public ResponseEntity<Map<String, Object>> askQuestion(
             @RequestBody Map<String, String> request) {
         try {
@@ -116,6 +116,20 @@ public class MlApiController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/chat")
+    @Operation(summary = "RAG 해충 정보 질문")
+    public ResponseEntity<Map<String, Object>> chatWithInsect(
+            @RequestBody Map<String, String> request) {
+        try {
+            String insect = request.get("insect");
+            String question = request.get("question");
+            Map<String, Object> result = mlApiService.chatWithInsect(insect, question);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 

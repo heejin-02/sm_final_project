@@ -1,0 +1,23 @@
+# RAG 서비스 Requirements
+# Port: 8003
+# 기능: 해충 방제 챗봇, 질의응답
+
+# Core
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+
+# LangChain & RAG
+langchain==0.3.27
+langchain-openai==0.3.32
+langchain-community==0.3.29
+langchain-chroma==0.2.5
+chromadb==1.0.20
+tiktoken==0.11.0
+
+# OpenAI
+openai==1.102.0
+
+# Utils
+python-dotenv==1.1.1
+requests==2.32.5

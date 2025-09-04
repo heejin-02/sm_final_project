@@ -1,0 +1,15 @@
+# 전화 알림 서비스 Requirements
+# Port: 8005
+# 기능: SignalWire 음성 전화 알림
+
+# Core
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+
+# SignalWire
+signalwire==2.1.1
+
+# Utils
+python-dotenv==1.1.1
+requests==2.32.5

@@ -1,0 +1,13 @@
+# 파일 프록시 서비스 Requirements
+# Port: 8006
+# 기능: Spring Boot 파일 업로드 프록시
+
+# Core
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+python-multipart==0.0.20
+
+# Utils
+python-dotenv==1.1.1
+requests==2.32.5
