@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import logo from "/images/logo-horizon.svg";
 import { LuLogOut, LuMenu, LuMinus, LuPlus, LuBell } from "react-icons/lu";
 import { useNoti } from "../contexts/NotiContext";
+import { getUserFarms } from "../api/auth";
 
 export default function Header() {
   const { user, logout } = useAuth(); // logout 함수도 가져옴
@@ -11,6 +12,7 @@ export default function Header() {
   const [zoomLevel, setZoomLevel] = useState("100%");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isNotiOpen, setIsNotiOpen, unreadCount } = useNoti();
+  const [farms, setFarms] = useState([]);
 
   const location = useLocation();
   const hideNoti =
@@ -44,6 +46,14 @@ export default function Header() {
     setIsNotiOpen(false);
     setIsMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!user?.userPhone) return;
+
+    getUserFarms(user.userPhone)
+      .then((res) => setFarms(res.data))
+      .catch(() => setFarms([]));
+  }, [user?.userPhone]);
 
   // 컴포넌트 마운트 시 저장된 확대/축소 레벨 불러오기
   useEffect(() => {
@@ -274,10 +284,49 @@ export default function Header() {
           )}
           {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
             <div className="nav-link">
-              <div>다른 농장 선택</div>
-              <br />
-              <div>오늘의 알림</div>
-              <div></div>
+              <div className="nav-link">
+                {farms.length > 1 && (
+                  <div
+                    onClick={() => navigate("/selectFarm")}
+                    className="cursor-pointer"
+                  >
+                    다른 농장 선택
+                  </div>
+                )}
+                <div
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (
+                      window.location.pathname ===
+                      `/mainFarm/${user.selectedFarm?.farmIdx}`
+                    ) {
+                      window.location.reload();
+                    } else {
+                      navigate(`/mainFarm/${user.selectedFarm?.farmIdx}`);
+                    }
+                  }}
+                >
+                  오늘 농장 보기
+                </div>
+                <div
+                  onClick={() => navigate("/report/daily")}
+                  className="cursor-pointer"
+                >
+                  일간 통계
+                </div>
+                <div
+                  onClick={() => navigate("/report/monthly")}
+                  className="cursor-pointer"
+                >
+                  월간 통계
+                </div>
+                <div
+                  onClick={() => navigate("/report/yearly")}
+                  className="cursor-pointer"
+                >
+                  연간 통계
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -89,13 +89,16 @@ export default function RegionStackedBarChart({ stats }) {
     });
 
     if (rows.length === 1) {
-      rows.push({ region: '__dummy__', ...Object.fromEntries(insectTypes.map((t) => [t, 0])) });
+      rows.push({
+        region: '__dummy__',
+        ...Object.fromEntries(insectTypes.map((t) => [t, 0])),
+      });
     }
     return rows;
   }, [regionData, insectTypes]);
 
   // 보여줄 데이터에서는 dummy 제외
-  const chartData = safeRegionData.filter(r => r.region !== '__dummy__');
+  const chartData = safeRegionData.filter((r) => r.region !== '__dummy__');
 
   // 바 두께 기준 차트 높이 계산(범례 포함)
   const rowCount = safeRegionData.length;
@@ -113,26 +116,26 @@ export default function RegionStackedBarChart({ stats }) {
 
   return (
     <>
-      <h3 className="text-lg font-bold mb-4">구역별 탐지 현황</h3>
+      <h3 className='text-lg font-bold mb-4'>구역별 탐지 현황</h3>
       {rowCount > 0 ? (
-        <ResponsiveContainer width="100%" height={chartHeight}>
+        <ResponsiveContainer width='100%' height={chartHeight}>
           <BarChart
             data={chartData}
-            layout="vertical"
+            layout='vertical'
             margin={MARGIN}
             barCategoryGap={ROW_GAP}
             barGap={0}
           >
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray='3 3' />
             <XAxis
-              type="number"
+              type='number'
               allowDecimals={false}
               tick={{ fontSize: 16 }}
               tickFormatter={(v) => `${v}건`}
             />
             <YAxis
-              type="category"
-              dataKey="region"
+              type='category'
+              dataKey='region'
               width={100}
               interval={0}
               allowDuplicatedCategory={true}
@@ -140,10 +143,10 @@ export default function RegionStackedBarChart({ stats }) {
             />
             <Tooltip formatter={(v) => `${v}건`} />
             <Legend
-              verticalAlign="bottom"
-              align="right"
+              verticalAlign='bottom'
+              align='right'
               height={LEGEND_H}
-              iconType="square"
+              iconType='square'
               wrapperStyle={{
                 paddingTop: '12px',
                 fontSize: 16,
@@ -159,7 +162,7 @@ export default function RegionStackedBarChart({ stats }) {
               <Bar
                 key={insect}
                 dataKey={insect}
-                stackId="a"
+                stackId='a'
                 fill={INSECT_COLOR[insect] ?? COLORS[idx % COLORS.length]}
                 barSize={BAR_SIZE}
                 // stroke="rgba(0,0,0,.12)" // 경계선이 필요하면 주석 해제
@@ -168,7 +171,7 @@ export default function RegionStackedBarChart({ stats }) {
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <div className="flex items-center justify-center h-48 text-gray-500">
+        <div className='flex items-center justify-center h-48 text-gray-500'>
           구역별 데이터가 없습니다.
         </div>
       )}

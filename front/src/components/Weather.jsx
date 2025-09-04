@@ -5,7 +5,6 @@ import axios from 'axios';
 import Loader from './Loader';
 import { useAuth } from '../contexts/AuthContext';
 
-
 const API_KEY = '019d414c565826322ad2f0b73af0129b';
 
 // 날씨 데이터 캐시 (30분 유지)
@@ -72,7 +71,9 @@ const customWeatherIcons = {
 // 주소를 좌표로 변환하는 함수
 const getCoordinatesFromAddress = async (address) => {
   try {
-    const geocodeUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(address)}&limit=1&appid=${API_KEY}`;
+    const geocodeUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
+      address
+    )}&limit=1&appid=${API_KEY}`;
     const response = await axios.get(geocodeUrl);
 
     if (response.data && response.data.length > 0) {
@@ -107,10 +108,12 @@ const getWindDirection = (degrees) => {
     { min: 281.25, max: 303.75, text: '서북서풍' },
     { min: 303.75, max: 326.25, text: '북서풍' },
     { min: 326.25, max: 348.75, text: '북북서풍' },
-    { min: 348.75, max: 360, text: '북풍' }
+    { min: 348.75, max: 360, text: '북풍' },
   ];
 
-  const direction = directions.find(dir => degrees >= dir.min && degrees < dir.max);
+  const direction = directions.find(
+    (dir) => degrees >= dir.min && degrees < dir.max
+  );
   return direction ? direction.text : '북풍';
 };
 
@@ -125,17 +128,17 @@ const getAddressFromCoordinates = async (lat, lon) => {
       const location = response.data[0];
       // 한국어 도시명 매핑
       const cityMapping = {
-        'Seoul': '서울',
-        'Busan': '부산',
-        'Incheon': '인천',
-        'Daegu': '대구',
-        'Daejeon': '대전',
-        'Gwangju': '광주',
-        'Ulsan': '울산',
-        'Suwon': '수원',
-        'Goyang': '고양',
-        'Yongin': '용인',
-        'Seongnam': '성남'
+        Seoul: '서울',
+        Busan: '부산',
+        Incheon: '인천',
+        Daegu: '대구',
+        Daejeon: '대전',
+        Gwangju: '광주',
+        Ulsan: '울산',
+        Suwon: '수원',
+        Goyang: '고양',
+        Yongin: '용인',
+        Seongnam: '성남',
       };
 
       const cityName = location.name;
@@ -144,7 +147,7 @@ const getAddressFromCoordinates = async (lat, lon) => {
       return {
         cityName: cityName,
         cityKorean: koreanCity,
-        locationName: koreanCity
+        locationName: koreanCity,
       };
     }
     return null;
@@ -167,14 +170,17 @@ const getCurrentLocation = async () => {
         const { latitude, longitude } = position.coords;
 
         // 좌표를 주소로 변환 시도
-        const addressInfo = await getAddressFromCoordinates(latitude, longitude);
+        const addressInfo = await getAddressFromCoordinates(
+          latitude,
+          longitude
+        );
 
         resolve({
           lat: latitude,
           lon: longitude,
           locationName: addressInfo?.locationName || '현재 위치',
           cityName: addressInfo?.cityName || 'Current Location',
-          cityKorean: addressInfo?.cityKorean || '현재 위치'
+          cityKorean: addressInfo?.cityKorean || '현재 위치',
         });
       },
       (error) => {
@@ -184,7 +190,7 @@ const getCurrentLocation = async () => {
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000 // 5분간 캐시
+        maximumAge: 300000, // 5분간 캐시
       }
     );
   });
@@ -214,7 +220,10 @@ function WeatherBox() {
 
       // 캐시된 데이터 확인
       const cachedData = weatherCache.get(cacheKey);
-      if (cachedData && (Date.now() - cachedData.timestamp) < WEATHER_CACHE_DURATION) {
+      if (
+        cachedData &&
+        Date.now() - cachedData.timestamp < WEATHER_CACHE_DURATION
+      ) {
         // console.log('캐시된 날씨 데이터 사용');
         setWeather(cachedData.data);
         setLoading(false);
@@ -283,7 +292,9 @@ function WeatherBox() {
         // 예보 데이터는 선택적으로 가져오기 (강수확률이 필요한 경우만)
         let forecastData = null;
         try {
-          const forecastResponse = await axios.get(weatherUrl.replace('/weather?', '/forecast?'));
+          const forecastResponse = await axios.get(
+            weatherUrl.replace('/weather?', '/forecast?')
+          );
           forecastData = forecastResponse.data;
         } catch (forecastError) {
           // console.log('예보 데이터 로딩 실패, 현재 날씨만 표시');
@@ -298,18 +309,20 @@ function WeatherBox() {
 
         if (forecastData && forecastData.list) {
           const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-          const todayForecasts = forecastData.list.filter(item =>
+          const todayForecasts = forecastData.list.filter((item) =>
             item.dt_txt.startsWith(today)
           );
 
           if (todayForecasts.length > 0) {
-            const temps = todayForecasts.map(item => item.main.temp);
+            const temps = todayForecasts.map((item) => item.main.temp);
             tempMin = Math.min(...temps, currentData.main.temp);
             tempMax = Math.max(...temps, currentData.main.temp);
 
             // 가장 가까운 시간의 강수 확률 가져오기
             const nextForecast = todayForecasts[0]; // 가장 가까운 예보
-            precipitationProbability = nextForecast.pop ? Math.round(nextForecast.pop * 100) : 0;
+            precipitationProbability = nextForecast.pop
+              ? Math.round(nextForecast.pop * 100)
+              : 0;
           }
         }
 
@@ -321,7 +334,10 @@ function WeatherBox() {
         let cityKorean = cityKoreanMap[cityName] || locationName;
 
         // 현재 위치 기반인 경우 저장된 정보 사용
-        if (window.currentLocationInfo && window.currentLocationInfo.cityKorean) {
+        if (
+          window.currentLocationInfo &&
+          window.currentLocationInfo.cityKorean
+        ) {
           cityKorean = window.currentLocationInfo.cityKorean;
         }
 
@@ -345,7 +361,7 @@ function WeatherBox() {
         // 캐시에 저장
         weatherCache.set(cacheKey, {
           data: weatherData,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
 
         // localStorage에도 저장 (다음 방문 시 즉시 표시용)
@@ -365,7 +381,8 @@ function WeatherBox() {
           const data = response.data;
 
           const englishCondition = data.weather[0].main;
-          const koreanCondition = weatherKoreanMap[englishCondition] || englishCondition;
+          const koreanCondition =
+            weatherKoreanMap[englishCondition] || englishCondition;
           const cityName = data.name;
           const cityKorean = cityKoreanMap[cityName] || locationName;
 
@@ -392,7 +409,7 @@ function WeatherBox() {
             farmAddr: farmAddr || '위치 정보 없음',
             temp: '--',
             condition: '정보 없음',
-            iconUrl: null
+            iconUrl: null,
           });
         }
       } finally {
@@ -411,8 +428,8 @@ function WeatherBox() {
 
   if (loading || !weather)
     return (
-      <div className="weather-box">
-        <Loader size="text-lg" message="날씨 불러오는 중..." />
+      <div className='weather-box'>
+        <Loader size='text-lg' message='날씨 불러오는 중...' />
       </div>
     );
 
@@ -427,7 +444,10 @@ function WeatherBox() {
         return `${parts[0]} ${parts[1]}`;
       }
       return `${weather.farmAddr}`;
-    } else if (weather.cityKorean === '현재 위치' || weather.locationName === '현재 위치') {
+    } else if (
+      weather.cityKorean === '현재 위치' ||
+      weather.locationName === '현재 위치'
+    ) {
       // 현재 위치 기반인 경우
       return `현재 위치 (${weather.cityKorean})`;
     }
@@ -435,58 +455,66 @@ function WeatherBox() {
   };
 
   return (
-    <div className="weather-box">
-      <div className="weather-top">
-        <div className="weather-location">
-          {getLocationDisplay()}
-        </div>
+    <div className='weather-box'>
+      <div className='weather-top'>
+        <div className='weather-location'>{getLocationDisplay()}</div>
 
-        <div className="weather-condition">
+        <div className='weather-condition'>
           {weather.iconUrl && (
-            <img src={weather.iconUrl} alt={weather.condition} className="w-6 h-6" />
+            <img
+              src={weather.iconUrl}
+              alt={weather.condition}
+              className='w-6 h-6'
+            />
           )}
           <span>{weather.condition}</span>
           <span>·</span>
-          <span>{typeof weather.temp === 'number' ? `${Math.round(weather.temp)}°` : weather.temp}</span>
+          <span>
+            {typeof weather.temp === 'number'
+              ? `${Math.round(weather.temp)}°`
+              : weather.temp}
+          </span>
         </div>
       </div>
-      
-      <div className="weather-btm">
-        {typeof weather.tempMin === 'number' && typeof weather.tempMax === 'number' && (
-          <div className="weather-range">
-            최저 {Math.round(weather.tempMin)}° · 최고 {Math.round(weather.tempMax)}°
-          </div>
-        )}
+
+      <div className='weather-btm'>
+        {typeof weather.tempMin === 'number' &&
+          typeof weather.tempMax === 'number' && (
+            <div className='weather-range'>
+              최저 {Math.round(weather.tempMin)}° · 최고{' '}
+              {Math.round(weather.tempMax)}°
+            </div>
+          )}
 
         {(weather.humidity || weather.wind || weather.rain !== undefined) && (
-          <div className="weather-details flex gap-1">
+          <div className='weather-details flex gap-1'>
             {weather.rain !== undefined && (
-              <div className="flex items-center gap-1">
+              <div className='flex items-center gap-1'>
                 강수
-                <span className="flex-none">
+                <span className='flex-none'>
                   {weather.precipitationProbability}% / {weather.rain} mm
                 </span>
               </div>
-            )}          
+            )}
             <span>·</span>
             {weather.humidity && (
-              <div className="flex items-center gap-1">
+              <div className='flex items-center gap-1'>
                 <span>습도</span>
-                <span className="flex-none">{weather.humidity}%</span>
+                <span className='flex-none'>{weather.humidity}%</span>
               </div>
             )}
             <span>·</span>
             {weather.wind && (
-              <div className="flex items-center gap-1">
-                <span className="flex-none">
-                  {weather.windDirection} {Math.round(weather.wind * 10) / 10} m/s
+              <div className='flex items-center gap-1'>
+                <span className='flex-none'>
+                  {weather.windDirection} {Math.round(weather.wind * 10) / 10}{' '}
+                  m/s
                 </span>
               </div>
             )}
           </div>
-         )}
+        )}
       </div>
-
     </div>
   );
 }

@@ -41,14 +41,16 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
       return isFutureDate(next);
     }
     if (period === 'monthly') {
-      return sel.getFullYear() === today.getFullYear()
-          && sel.getMonth()    === today.getMonth();
+      return (
+        sel.getFullYear() === today.getFullYear() &&
+        sel.getMonth() === today.getMonth()
+      );
     }
     if (period === 'yearly') {
       return sel.getFullYear() === today.getFullYear();
     }
     return false;
-  })();  
+  })();
 
   // 이전/다음 날짜로 이동
   const handlePrevious = () => {
@@ -144,25 +146,33 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
   };
 
   return (
-    <div className="date-navigation">
-      <div className="date-controls">
+    <div className='date-navigation'>
+      <div className='date-controls'>
         {/* 이전 버튼 */}
         <button
-          className="date-nav-btn"
+          className='date-nav-btn'
           onClick={handlePrevious}
-          title={`이전 ${period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}`}
+          title={`이전 ${
+            period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'
+          }`}
         >
-          ◀ <span>이전 {period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}</span>
+          ◀{' '}
+          <span>
+            이전{' '}
+            {period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}
+          </span>
         </button>
 
         {/* 연도 선택 */}
         <select
           value={year}
           onChange={(e) => setYear(parseInt(e.target.value))}
-          className="date-select"
+          className='date-select'
         >
-          {getYearOptions().map(y => (
-            <option key={y} value={y}>{y}년</option>
+          {getYearOptions().map((y) => (
+            <option key={y} value={y}>
+              {y}년
+            </option>
           ))}
         </select>
 
@@ -171,10 +181,12 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value))}
-            className="date-select"
+            className='date-select'
           >
-            {getMonthOptions().map(m => (
-              <option key={m} value={m}>{m}월</option>
+            {getMonthOptions().map((m) => (
+              <option key={m} value={m}>
+                {m}월
+              </option>
             ))}
           </select>
         )}
@@ -184,17 +196,19 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
           <select
             value={day}
             onChange={(e) => setDay(parseInt(e.target.value))}
-            className="date-select"
+            className='date-select'
           >
-            {getDayOptions().map(d => (
-              <option key={d} value={d}>{d}일</option>
+            {getDayOptions().map((d) => (
+              <option key={d} value={d}>
+                {d}일
+              </option>
             ))}
           </select>
         )}
 
         {/* 날짜 변경 버튼 */}
         <button
-          className="btn btn-accent date-change-btn"
+          className='btn btn-accent date-change-btn'
           onClick={handleDateChange}
         >
           날짜변경
@@ -206,9 +220,15 @@ export default function DateNavigation({ period, currentDate, onDateChange }) {
           style={{ visibility: isNextDisabled ? 'hidden' : 'visible' }}
           onClick={handleNext}
           disabled={isNextDisabled}
-          title={`다음 ${period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}`}
+          title={`다음 ${
+            period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'
+          }`}
         >
-          <span>다음 {period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}</span> ▶
+          <span>
+            다음{' '}
+            {period === 'daily' ? '일' : period === 'monthly' ? '월' : '연도'}
+          </span>{' '}
+          ▶
         </button>
       </div>
     </div>

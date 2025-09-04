@@ -3,7 +3,9 @@
 
 import axios from 'axios';
 
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095'}/user/alert`;
+const BASE_URL = `${
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095'
+}/user/alert`;
 
 /**
  * 알림 목록 조회 (NotiList에서 사용)
@@ -13,7 +15,7 @@ const BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095'
 export const getAlertList = async (farmIdx) => {
   try {
     const response = await axios.get(`${BASE_URL}/list/${farmIdx}`, {
-      withCredentials: true
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
@@ -30,7 +32,7 @@ export const getAlertList = async (farmIdx) => {
 export const readAndGetAlertDetail = async (anlsIdx) => {
   try {
     const response = await axios.get(`${BASE_URL}/read-and-detail/${anlsIdx}`, {
-      withCredentials: true
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
@@ -49,20 +51,23 @@ export const getAlertDetail = async (anlsIdx) => {
   try {
     console.log('🔍 [API] 알림 상세 정보 요청:', anlsIdx);
     console.log('🔍 [API] 요청 URL:', `${BASE_URL}/detail/${anlsIdx}`);
-    
+
     const response = await axios.get(`${BASE_URL}/detail/${anlsIdx}`, {
-      withCredentials: true
+      withCredentials: true,
     });
-    
+
     console.log('✅ [API] 알림 상세 정보 응답:', response.data);
     console.log('🎬 [API] 이미지 리스트:', response.data.imageList);
-    
+
     if (response.data.imageList && response.data.imageList.length > 0) {
-      console.log('🎬 [API] 첫 번째 영상 URL:', response.data.imageList[0].imgUrl);
+      console.log(
+        '🎬 [API] 첫 번째 영상 URL:',
+        response.data.imageList[0].imgUrl
+      );
     } else {
       console.warn('⚠️ [API] 이미지 리스트가 비어있습니다');
     }
-    
+
     return response.data;
   } catch (error) {
     console.error('❌ [API] 알림 상세 정보 조회 실패:', error);

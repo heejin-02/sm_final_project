@@ -2,11 +2,10 @@
 import React from 'react';
 
 export default function MonthlyTable({ predictions }) {
-
   if (!predictions || predictions.length === 0) {
     return (
-      <div className="mt-8">
-        <div className="bordered-box">
+      <div className='mt-8'>
+        <div className='bordered-box'>
           <p>📉 예측 데이터가 없습니다.</p>
         </div>
       </div>
@@ -19,30 +18,32 @@ export default function MonthlyTable({ predictions }) {
   const colHeaders = [
     `${baseYear - 1}.${baseMonth}`,
     `${baseYear}.${baseMonth}`,
-    `${Number(baseYear) + 1} 예측`
+    `${Number(baseYear) + 1} 예측`,
   ];
 
   return (
-    <div className="mt-8">
-      <div className="bordered-box">
-        <h3 className="text-lg font-bold mb-4">내년 해충 발생 예측</h3>
-        <div className="table-overflow scrl-custom">
-          <table className="table border text-center predict-table">
+    <div className='mt-8'>
+      <div className='bordered-box'>
+        <h3 className='text-lg font-bold mb-4'>내년 해충 발생 예측</h3>
+        <div className='table-overflow scrl-custom'>
+          <table className='table border text-center predict-table'>
             <thead>
               <tr>
-                <th className="">해충 종류</th>
+                <th className=''>해충 종류</th>
                 {colHeaders.map((label, idx) => (
-                  <th key={idx} className="">{label}</th>
+                  <th key={idx} className=''>
+                    {label}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {predictions.map((row, idx) => (
                 <tr key={idx}>
-                  <td className="">{row.insectName}</td>
-                  <td className="">{row.count2024}</td>
-                  <td className="">{row.count2025}</td>
-                  <td className="">{row.predicted2026}</td>
+                  <td className=''>{row.insectName}</td>
+                  <td className=''>{row.count2024}</td>
+                  <td className=''>{row.count2025}</td>
+                  <td className=''>{row.predicted2026}</td>
                 </tr>
               ))}
             </tbody>
