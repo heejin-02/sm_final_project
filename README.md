@@ -42,13 +42,17 @@
 
 
 ### 🖼 화면 구성
-| 실시간 탐지 페이지 | 탐지 이력/통계 대시보드 |
+| #메인 페이지 | #큰글씨 모드 |
 |:---:|:---:|
-| (이미지/영상 링크 자리) | (이미지/영상 링크 자리) |
-| 제목 | 제목 |
-| (이미지/영상 링크 자리) | (이미지/영상 링크 자리) |
-| (이미지/영상 링크 자리) | (이미지/영상 링크 자리) |
-| (이미지/영상 링크 자리) | (이미지/영상 링크 자리) |
+| ![메인페이지 (압축)](https://github.com/user-attachments/assets/7a4c7557-ef05-4962-a3a5-8f6b541f1dfe) | ![사이트 크게작게 보기](https://github.com/user-attachments/assets/4c89e811-b7b5-4a7e-bdcd-8d8fb67c91ea) | 
+| #농장상세 페이지 | #농장알림 상세 페이지 |
+| ![농장 상세 페이지 (압축)](https://github.com/user-attachments/assets/074db3d8-58b7-4c5f-bda2-3fbd7a96a551) | ![농장 알림 상세 페이지](https://github.com/user-attachments/assets/35ebdaed-a662-497d-a970-e3e961d7f46c) |
+| #일간통계 | #월간통계 |
+| ![일간통계](https://github.com/user-attachments/assets/62b02610-c017-48a9-a731-6dbd95617a5e) | ![월간통계](https://github.com/user-attachments/assets/e9779bf5-506b-45d8-93e3-0ffd60597c00) | 
+| #연간통계 | (__) |
+| ![연간통계](https://github.com/user-attachments/assets/0062fbfc-ae99-484a-a2a0-f17eea6a3c7c) | (__) |
+| #관리자 페이지 | #회원등록 및 농장등록 | 
+| ![관리자페이지](https://github.com/user-attachments/assets/67982c48-eea3-41bf-a32f-b08407c36405) | ![회원 및 농장 등록](https://github.com/user-attachments/assets/873a84f8-4694-4116-8ed1-3c710fcd2520) | 
 
 
 ### 🚀 주요 기능
@@ -63,16 +67,26 @@
 
 ### 서비스 아키텍처
 ---
-Webcam에서 촬영된 영상은 YOLOv5 감지 서버로 전송되며, 서버에서는 10초 단위로 영상을 저장합니다. 감지 서버는 동시에 여러 작업을 수행하는데, WebSocket을 통해 프론트엔드에 실시간 전화알림을 보내고, SignalWire TTS를 이용해 전화로 음성 알림을 제공합니다. 또한 GPT를 활용하여 벌레 리포트를 생성하며, LangChain과 ChromaDB를 활용해 방제 관련 챗봇 응답도 제공합니다.
+Webcam에서 촬영된 영상은 YOLOv5 감지 서버로 전송되며, 서버에서는 10초 단위로 영상을 저장합니다. <br/> 감지 서버는 동시에 여러 작업을 수행하는데, WebSocket을 통해 프론트엔드에 실시간 전화알림을 보내고, SignalWire TTS를 이용해 전화로 음성 알림을 제공합니다. 또한 GPT API를 활용하여 벌레 리포트를 생성하며, LangChain과 ChromaDB를 활용해 방제 관련 챗봇 응답도 제공합니다.
 
-<img width="1418" height="800" alt="image" src="https://github.com/user-attachments/assets/128ec166-5549-4ddc-b1ac-735537dd5698" />
+<img width="700" src="https://github.com/user-attachments/assets/128ec166-5549-4ddc-b1ac-735537dd5698" />
 
 
 ### 백엔드 트러블 슈팅
 ---
-| 트러블슈팅 |
-|:---:|
-| 이미지1|
+| 1. 이미지 저장 및 경로 설정 이슈 |
+|:---|
+| **발생 배경** <br/> 이미지를 DB에 직접 저장하는 대신 문자열(Base64) 형태로 저장하고, 실제 파일은 로컬 디렉토리에 저장하는 방식을 적용하고자 함. 그러나, 저장 경로 지정 과정에서 프로젝트 내부와 로컬 디렉토리 간 경로 매핑이 필요. <br/> **문제 원인**
+<br/>
+- 리소스 폴더(`/resources`) 내 이미지 디렉토리와 로컬 저장 경로(`C:` 드라이브) 간의 일관성 있는 경로 설정 부재.
+- MultipartFile 업로드 시 MediaType 설정 누락으로 파일 업로드 처리 오류 발생.
+<br/>
+**해결 방안**
+<br/>
+- `/resources/images` 디렉토리를 생성하여 내부 저장소 경로를 지정.
+- 로컬 저장소(`C:/images`)에도 동일한 구조를 생성해 운영 환경과 로컬 환경의 경로 동기화.
+- Spring Controller에서 `MultipartFile` 타입으로 수신하고, `MediaType`을 명시적으로 설정하여 이미지 처리 호환성 확보.
+<br/> | 
 | 설명 |
 |이미지2 |
 |설명2|
