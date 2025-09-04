@@ -1,29 +1,39 @@
-import React, { useEffect } from "react";
-import { useAlertList } from "../hooks/useAlerts";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { useNoti } from "../contexts/NotiContext";
-import Loader from "./Loader";
+// src/components/NotiList.jsx
+import React, { useEffect } from 'react';
+import { useAlertList } from '../hooks/useAlerts';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useNoti } from '../contexts/NotiContext';
+import Loader from './Loader';
 
 export default function NotiList() {
   const { user } = useAuth();
   const farmIdx = user?.selectedFarm?.farmIdx;
   const { alerts, loading, error, markAsRead } = useAlertList(farmIdx);
-  const { isNotiOpen, setIsNotiOpen, setUnreadCount } = useNoti();
+  const {
+    isNotiOpen,
+    setIsNotiOpen,
+    setUnreadCount,
+    cachedAlerts,
+    setCachedAlerts,
+  } = useNoti();
 
   // 알림 정렬: 안읽은 알림 우선 + 각각 최신순
-  const sortedAlerts = [...alerts].sort((a, b) => {
+  const baseAlerts = alerts.length > 0 ? alerts : cachedAlerts;
+  const sortedAlerts = [...baseAlerts].sort((a, b) => {
     // 1. 읽음 상태로 먼저 정렬 (안읽은 것이 위로)
     if (a.notiCheck !== b.notiCheck) {
-      if (a.notiCheck === "N" && b.notiCheck === "Y") return -1; // a가 위로
-      if (a.notiCheck === "Y" && b.notiCheck === "N") return 1; // b가 위로
+      if (a.notiCheck === 'N' && b.notiCheck === 'Y') return -1; // a가 위로
+      if (a.notiCheck === 'Y' && b.notiCheck === 'N') return 1; // b가 위로
     }
     // 2. 같은 읽음 상태 내에서는 createdAt 큰 순 (최신순)
     //return b.anlsIdx - a.anlsIdx;
     return b.createdAt - a.createdAt;
   });
 
-  const unreadCount = alerts.filter((alert) => alert.notiCheck !== "Y").length;
+  const unreadCount = baseAlerts.filter(
+    (alert) => alert.notiCheck !== 'Y'
+  ).length;
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,7 +52,7 @@ export default function NotiList() {
       const element = document.querySelector(
         `[data-anls-idx="${currentNotiId}"]`
       );
-      const container = document.querySelector(".noti-list");
+      const container = document.querySelector('.noti-list');
 
       if (element && container) {
         // 컨테이너 내에서의 상대적 위치 계산
@@ -51,7 +61,7 @@ export default function NotiList() {
         // noti-list 컨테이너만 스크롤
         container.scrollTo({
           top: scrollTop,
-          behavior: "smooth",
+          behavior: 'smooth',
         });
       }
     }
@@ -62,6 +72,16 @@ export default function NotiList() {
     setUnreadCount(unreadCount);
   }, [unreadCount, setUnreadCount]);
 
+  // API 응답이 오면 캐시에 저장
+  useEffect(() => {
+    if (alerts.length > 0) {
+      setCachedAlerts(alerts);
+      try {
+        localStorage.setItem('cachedAlerts', JSON.stringify(alerts));
+      } catch {}
+    }
+  }, [alerts, setCachedAlerts]);
+
   const handleSelect = async (alert) => {
     // 읽음 처리
     await markAsRead(alert.anlsIdx);
@@ -69,20 +89,20 @@ export default function NotiList() {
     navigate(`/notifications/${alert.anlsIdx}`);
   };
 
-  // 로딩 중이거나 농장 정보가 없으면 로딩 표시
-  if (loading || !farmIdx) {
+  // 농장 정보가 없으면 로딩 표시
+  if (!farmIdx) {
     return (
       <div
         className={`noti-area 
-                ${isNotiOpen ? "open" : ""}
-                ${location.pathname === "/mainFarm" ? "main" : ""}
+                ${isNotiOpen ? 'open' : ''}
+                ${location.pathname === '/mainFarm' ? 'main' : ''}
                 `}
       >
-        <div className="noti-header">
-          <div className="tit">오늘의 알림</div>
-          <div className="text-sm">로딩 중...</div>
+        <div className='noti-header'>
+          <div className='tit'>오늘의 알림</div>
+          <div className='text-sm'>로딩 중...</div>
         </div>
-        <div className="flex justify-center items-center h-32">
+        <div className='flex justify-center items-center h-32'>
           <Loader />
         </div>
       </div>
@@ -94,15 +114,15 @@ export default function NotiList() {
     return (
       <div
         className={`noti-area 
-                ${isNotiOpen ? "open" : ""}
-                ${location.pathname === "/mainFarm" ? "main" : ""}
+                ${isNotiOpen ? 'open' : ''}
+                ${location.pathname === '/mainFarm' ? 'main' : ''}
                 `}
       >
-        <div className="noti-header">
-          <div className="tit">오늘의 알림</div>
-          <div className="text-sm text-red-500">오류 발생</div>
+        <div className='noti-header'>
+          <div className='tit'>오늘의 알림</div>
+          <div className='text-sm text-red-500'>오류 발생</div>
         </div>
-        <div className="p-4 text-center">
+        <div className='p-4 text-center'>
           알림을 불러오는데 실패했습니다. <br /> 다시 시도해주세요.
         </div>
       </div>
@@ -112,19 +132,19 @@ export default function NotiList() {
   return (
     <div
       className={`noti-area 
-                ${isNotiOpen ? "open" : ""}
-                ${location.pathname === "/mainFarm" ? "main" : ""}
+                ${isNotiOpen ? 'open' : ''}
+                ${location.pathname === '/mainFarm' ? 'main' : ''}
                 `}
     >
-      <div className="noti-header">
-        <div className="tit">오늘의 알림</div>
-        <div className="text-sm">
-          미확인 <span className="noti-count">{unreadCount}</span> 건
+      <div className='noti-header'>
+        <div className='tit'>오늘의 알림</div>
+        <div className='text-sm'>
+          미확인 <span className='noti-count'>{unreadCount}</span> 건
         </div>
       </div>
-      <ul className="noti-list scrl-custom">
+      <ul className='noti-list scrl-custom'>
         {sortedAlerts.length === 0 ? (
-          <li className="noti-item text-center text-gray-500 py-8">
+          <li className='noti-item text-center text-gray-500 py-8'>
             알림이 없습니다.
           </li>
         ) : (
@@ -132,18 +152,18 @@ export default function NotiList() {
             <li
               key={alert.anlsIdx}
               className={`noti-item ${
-                currentNotiId === alert.anlsIdx ? "active" : ""
-              } ${alert.notiCheck !== "Y" ? "unread" : ""}`}
+                currentNotiId === alert.anlsIdx ? 'active' : ''
+              } ${alert.notiCheck !== 'Y' ? 'unread' : ''}`}
               onClick={() => handleSelect(alert)}
               data-anls-idx={alert.anlsIdx}
             >
-              <div className="noti-item-top">
-                <div className="noti-bug-name">{alert.insectName}</div>
-                <div className="noti-acc">(신뢰도 {alert.anlsAcc}%)</div>
-                {alert.notiCheck !== "Y" && <span className="red-dot"></span>}
+              <div className='noti-item-top'>
+                <div className='noti-bug-name'>{alert.insectName}</div>
+                <div className='noti-acc'>(신뢰도 {alert.anlsAcc}%)</div>
+                {alert.notiCheck !== 'Y' && <span className='red-dot'></span>}
               </div>
-              <div className="noti-item-bottom">
-                <div className="">
+              <div className='noti-item-bottom'>
+                <div className=''>
                   {alert.ghName}&nbsp;&nbsp;{alert.createdAt}
                 </div>
               </div>

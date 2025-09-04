@@ -116,7 +116,6 @@
     min-width: var(--window-min-width);
     margin: 0 auto;
     overflow-x: auto;
-    min-height: 695px;
   }
 
   html {
@@ -149,15 +148,16 @@
   }
 
   .logo-area {
-    width: 187px;
+    width: 200px;
   }
   .logo-area .logo {
     width: 100%;
   }
 
   .main-farm {
-    height: calc(100vh - var(--header-h));
     background: var(--bg);
+    min-height: 694px;
+    height: calc(100vh - var(--header-h));
   }
   .main-farm .noti-area {
     width: 22%;
@@ -236,7 +236,7 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    padding: 1.25rem 3.25rem;
+    padding: 0 2.4rem;
   }
 
   .header-left {
@@ -1428,7 +1428,7 @@
 
   /* ===== LeftPanel 스타일 ===== */
   .left-panel {
-    width: 24%;
+    width: 360px;
     max-width: 400px;
     min-width: 340px;
     height: calc(100vh - var(--header-h));
@@ -2456,7 +2456,7 @@
       display: flex;
       align-items: center;
       gap: 0.2rem;
-      font-size: 1.125rem;
+      font-size: 1rem;
       background: #fff;
       border: solid 1px #d0d0d0;
       padding: 0.3rem 0.4rem;
@@ -2540,7 +2540,7 @@
       color: #fff;
     }
     .left-panel {
-      width: 320px;
+      width: 340px;
       max-width: 100%;
       min-width: auto;
       position: fixed;
@@ -2621,7 +2621,7 @@
       align-items: center;
     }
     .logo-area {
-      width: 50px;
+      width: 48px;
     }
     .view-control {
       gap: 0.4rem;

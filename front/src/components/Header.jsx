@@ -1,43 +1,43 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import logo from "/images/logo-horizon.svg";
-import { LuLogOut, LuMenu, LuMinus, LuPlus, LuBell } from "react-icons/lu";
-import { useNoti } from "../contexts/NotiContext";
-import { getUserFarms } from "../api/auth";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import logo from '/images/logo-horizon.svg';
+import { LuLogOut, LuMenu, LuMinus, LuPlus, LuBell } from 'react-icons/lu';
+import { useNoti } from '../contexts/NotiContext';
+import { getUserFarms } from '../api/auth';
 
 export default function Header() {
   const { user, logout } = useAuth(); // logout 함수도 가져옴
   const navigate = useNavigate();
-  const [zoomLevel, setZoomLevel] = useState("100%");
+  const [zoomLevel, setZoomLevel] = useState('100%');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isNotiOpen, setIsNotiOpen, unreadCount } = useNoti();
   const [farms, setFarms] = useState([]);
 
   const location = useLocation();
   const hideNoti =
-    location.pathname === "/" || location.pathname === "/selectFarm";
+    location.pathname === '/' || location.pathname === '/selectFarm';
 
   // 스크롤 이벤트
   useEffect(() => {
     const handleScroll = () => {
       const bwLeft = window.scrollX;
       document.querySelector(
-        ".header-in"
+        '.header-in'
       ).style.transform = `translateX(-${bwLeft}px)`;
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
     if (isMenuOpen || isNotiOpen) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
     } else {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
     }
   }, [isMenuOpen, isNotiOpen]);
 
@@ -57,7 +57,7 @@ export default function Header() {
 
   // 컴포넌트 마운트 시 저장된 확대/축소 레벨 불러오기
   useEffect(() => {
-    const savedZoom = localStorage.getItem("zoomLevel") || "100%";
+    const savedZoom = localStorage.getItem('zoomLevel') || '100%';
     setZoomLevel(savedZoom);
     applyZoom(savedZoom);
   }, []);
@@ -66,10 +66,10 @@ export default function Header() {
   const applyZoom = (zoom) => {
     const html = document.documentElement;
     // 기존 data-zoom 속성 제거
-    html.removeAttribute("data-zoom");
+    html.removeAttribute('data-zoom');
     // 새로운 확대/축소 레벨 적용
-    if (zoom !== "100%") {
-      html.setAttribute("data-zoom", zoom);
+    if (zoom !== '100%') {
+      html.setAttribute('data-zoom', zoom);
     }
   };
 
@@ -77,80 +77,80 @@ export default function Header() {
   const handleZoomIn = () => {
     let newZoom;
     switch (zoomLevel) {
-      case "90%":
-        newZoom = "100%";
+      case '90%':
+        newZoom = '100%';
         break;
-      case "100%":
-        newZoom = "110%";
+      case '100%':
+        newZoom = '110%';
         break;
-      case "110%":
-        newZoom = "120%";
+      case '110%':
+        newZoom = '120%';
         break;
       default:
-        newZoom = "120%"; // 최대 120%
+        newZoom = '120%'; // 최대 120%
     }
     setZoomLevel(newZoom);
     applyZoom(newZoom);
-    localStorage.setItem("zoomLevel", newZoom);
+    localStorage.setItem('zoomLevel', newZoom);
   };
 
   // 축소 함수
   const handleZoomOut = () => {
     let newZoom;
     switch (zoomLevel) {
-      case "120%":
-        newZoom = "110%";
+      case '120%':
+        newZoom = '110%';
         break;
-      case "110%":
-        newZoom = "100%";
+      case '110%':
+        newZoom = '100%';
         break;
-      case "100%":
-        newZoom = "90%";
+      case '100%':
+        newZoom = '90%';
         break;
       default:
-        newZoom = "90%"; // 최소 90%
+        newZoom = '90%'; // 최소 90%
     }
     setZoomLevel(newZoom);
     applyZoom(newZoom);
-    localStorage.setItem("zoomLevel", newZoom);
+    localStorage.setItem('zoomLevel', newZoom);
   };
 
   const handleLogout = () => {
     logout(); // AuthContext의 logout 함수 호출
-    navigate("/", { replace: true }); // home.jsx로 이동
+    navigate('/', { replace: true }); // home.jsx로 이동
   };
 
   return (
     <header
-      className={`header ${isMenuOpen ? "open" : ""} ${
-        isNotiOpen ? "notiOpen" : ""
+      className={`header ${isMenuOpen ? 'open' : ''} ${
+        isNotiOpen ? 'notiOpen' : ''
       }`}
     >
-      <div className="header-in">
+      <div className='header-in'>
         {/* 왼쪽 영역 - 로고 */}
-        <div className="header-left">
+        <div className='header-left'>
           <div
-            className="logo-area cursor-pointer"
-            onClick={() => navigate("/")}
+            className='logo-area cursor-pointer'
+            onClick={() => navigate('/')}
           >
-            <img src={logo} alt="로고" className="logo pc" />
-            <div className="mobile">
+            <img src={logo} alt='로고' className='logo pc' />
+            <div className='mobile'>
               <img
-                src="/images/m_logo_symbol.png"
-                alt="로고"
-                className="logo"
+                src='/images/m_logo_symbol.png'
+                alt='로고'
+                className='logo'
               />
             </div>
           </div>
         </div>
 
         {/* 가운데 영역 - 농장명 */}
-        <div className="header-center">
+        <div className='header-center'>
           {user?.userName &&
-            user.role !== "admin" &&
+            user.role !== 'admin' &&
             user.selectedFarm?.farmName && (
               <div
-                className="header-text cursor-pointer transition-colors"
+                className='header-text cursor-pointer transition-colors'
                 onClick={() => {
                   // 현재 페이지가 MainFarm이면 새로고침, 아니면 이동
                   if (
@@ -163,8 +163,8 @@ export default function Header() {
                   }
                 }}
               >
-                {user.selectedFarm.farmName}{" "}
-                <span className="font-normal text-black hover:text-black">
+                {user.selectedFarm.farmName}{' '}
+                <span className='font-normal text-black hover:text-black'>
                   관리중
                 </span>
               </div>
@@ -172,44 +172,44 @@ export default function Header() {
         </div>
 
         {/* 오른쪽 영역 - 사용자 정보 & 날씨 */}
-        <div className="header-right">
-          {user?.role === "admin" ? (
-            <div className="flex items-center justify-end gap-2">
+        <div className='header-right'>
+          {user?.role === 'admin' ? (
+            <div className='flex items-center justify-end gap-2'>
               <span>관리자 모드</span>
               <LuLogOut
                 size={24}
                 onClick={handleLogout}
-                className="cursor-pointer"
+                className='cursor-pointer'
               />
             </div>
           ) : (
-            <div className="user">
-              <div className="pc">
-                <div className="view-control">
+            <div className='user'>
+              <div className='pc'>
+                <div className='view-control'>
                   <button
-                    className="btn"
+                    className='btn'
                     onClick={handleZoomOut}
-                    disabled={zoomLevel === "90%"}
+                    disabled={zoomLevel === '90%'}
                   >
                     작게
                   </button>
                   <span>글씨 크기</span>
                   <button
-                    className="btn"
+                    className='btn'
                     onClick={handleZoomIn}
-                    disabled={zoomLevel === "120%"}
+                    disabled={zoomLevel === '120%'}
                   >
                     크게
                   </button>
                 </div>
 
                 {user?.userName && (
-                  <div className="flex items-center gap-5">
-                    <span className="header-text">
+                  <div className='flex items-center gap-5'>
+                    <span className='header-text'>
                       {user.userName}님 환영합니다
                     </span>
                     <button
-                      className="color-80 cursor-pointer"
+                      className='color-80 cursor-pointer'
                       onClick={handleLogout}
                     >
                       로그아웃
@@ -217,29 +217,29 @@ export default function Header() {
                   </div>
                 )}
               </div>
-              <div className="m-header-btn">
+              <div className='m-header-btn'>
                 {!hideNoti &&
                   user?.userName &&
                   user?.selectedFarm?.farmName && (
                     <div
-                      className="m-btn cursor-pointer noti"
+                      className='m-btn cursor-pointer noti'
                       onClick={() => setIsNotiOpen((prev) => !prev)}
                     >
-                      <div className="relative">
-                        <LuBell size={22} />
+                      <div className='relative'>
+                        <LuBell size={20} />
                         {unreadCount > 0 && (
-                          <span className="red-dot">{/* {unreadCount} */}</span>
+                          <span className='red-dot'>{/* {unreadCount} */}</span>
                         )}
                       </div>
                       <div>알림</div>
                     </div>
                   )}
-                {location.pathname !== "/" && (
+                {location.pathname !== '/' && (
                   <div
-                    className="m-btn cursor-pointer menu"
+                    className='m-btn cursor-pointer menu'
                     onClick={() => setIsMenuOpen((prev) => !prev)}
                   >
-                    <LuMenu size={22} />
+                    <LuMenu size={20} />
                     <div>메뉴</div>
                   </div>
                 )}
@@ -248,34 +248,34 @@ export default function Header() {
           )}
         </div>
       </div>
-      <div className="m-nav">
-        <div className="nav-cont flex flex-col space-y-4 scrl-custom">
-          <div className="view-control justify-end gap-4">
+      <div className='m-nav'>
+        <div className='nav-cont flex flex-col space-y-4 scrl-custom'>
+          {/* <div className='view-control justify-end gap-4'>
             <div>화면</div>
-            <div className="flex gap-1">
+            <div className='flex gap-1'>
               <button
-                className="btn"
+                className='btn'
                 onClick={handleZoomOut}
-                disabled={zoomLevel === "90%"}
+                disabled={zoomLevel === '90%'}
               >
                 <LuMinus size={20} />
                 작게 보기
               </button>
               <button
-                className="btn"
+                className='btn'
                 onClick={handleZoomIn}
-                disabled={zoomLevel === "120%"}
+                disabled={zoomLevel === '120%'}
               >
                 <LuPlus size={20} />
                 크게 보기
               </button>
             </div>
-          </div>
+          </div> */}
           {user?.userName && (
-            <div className="nav-user">
-              <div className="header-text">{user.userName}님 환영합니다</div>
+            <div className='nav-user'>
+              <div className='header-text'>{user.userName}님 환영합니다</div>
               <button
-                className="color-80 cursor-pointer"
+                className='color-80 cursor-pointer'
                 onClick={handleLogout}
               >
                 로그아웃
@@ -283,18 +283,18 @@ export default function Header() {
             </div>
           )}
           {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
-            <div className="nav-link">
-              <div className="nav-link">
+            <div className='nav-link'>
+              <div className='nav-link'>
                 {farms.length > 1 && (
                   <div
-                    onClick={() => navigate("/selectFarm")}
-                    className="cursor-pointer"
+                    onClick={() => navigate('/selectFarm')}
+                    className='cursor-pointer'
                   >
                     다른 농장 선택
                   </div>
                 )}
                 <div
-                  className="cursor-pointer"
+                  className='cursor-pointer'
                   onClick={() => {
                     if (
                       window.location.pathname ===
@@ -309,20 +309,20 @@ export default function Header() {
                   오늘 농장 보기
                 </div>
                 <div
-                  onClick={() => navigate("/report/daily")}
-                  className="cursor-pointer"
+                  onClick={() => navigate('/report/daily')}
+                  className='cursor-pointer'
                 >
                   일간 통계
                 </div>
                 <div
-                  onClick={() => navigate("/report/monthly")}
-                  className="cursor-pointer"
+                  onClick={() => navigate('/report/monthly')}
+                  className='cursor-pointer'
                 >
                   월간 통계
                 </div>
                 <div
-                  onClick={() => navigate("/report/yearly")}
-                  className="cursor-pointer"
+                  onClick={() => navigate('/report/yearly')}
+                  className='cursor-pointer'
                 >
                   연간 통계
                 </div>

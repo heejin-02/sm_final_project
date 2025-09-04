@@ -23,10 +23,37 @@ export default function Report() {
 
   const [currentDate, setCurrentDate] = useState(() => getDefaultDate());
 
-  const { stats, loading, error, refetch } = useStatistics({
+  const {
+    stats: fetchedStats,
+    loading,
+    error,
+    refetch,
+  } = useStatistics({
     period,
     date: currentDate,
   });
+
+  const cacheKey = `report_${period}_${
+    currentDate.toISOString().split('T')[0]
+  }`;
+  const [stats, setStats] = useState(() => {
+    try {
+      const saved = localStorage.getItem(cacheKey);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // API 응답 오면 캐시에 저장
+  useEffect(() => {
+    if (fetchedStats) {
+      setStats(fetchedStats);
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(fetchedStats));
+      } catch {}
+    }
+  }, [fetchedStats, cacheKey]);
 
   useEffect(() => {
     setCurrentDate(getDefaultDate());
@@ -92,7 +119,7 @@ export default function Report() {
     return <p>선택된 농장이 없습니다. 다시 선택해주세요.</p>;
   }
 
-  if (loading) {
+  if (loading && !stats) {
     return <Loader message='통계 데이터를 불러오는 중입니다...' />;
   }
 
@@ -101,7 +128,7 @@ export default function Report() {
   }
 
   if (!stats) {
-    return <Loader message='통계 데이터를 불러오는 중입니다...' />;
+    return <Loader message='통계 데이터를 불러올 수 없습니다.' />;
   }
 
   return (

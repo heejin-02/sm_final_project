@@ -11,6 +11,7 @@ import {
 } from '../api/report';
 import { retryApiCall, withTimeout } from '../utils/apiRetry';
 import NotiList from '../components/NotiList';
+import { WeatherProvider } from '../contexts/WeatherContext';
 import Weather from '../components/Weather';
 import BaseFarmMap from '../components/BaseFarmMap';
 import Legend from '../components/Legend';
@@ -399,7 +400,7 @@ export default function MainFarm() {
     );
 
   // 온실 데이터 로딩 중일 때만 전체 로딩 표시 (다른 데이터는 부분적으로 표시)
-  if (greenhouseLoading) {
+  if (greenhouseLoading && greenhouseData.length === 0) {
     return (
       <div className='section flex flex-col items-center justify-center bg-gray-50'>
         <div className='bg-white p-8 rounded-lg shadow-lg text-center'>
@@ -419,7 +420,7 @@ export default function MainFarm() {
   }
 
   return (
-    <div className='main-farm noti-wrap p-4 flex gap-4 overflow-hidden'>
+    <div className='main-farm noti-wrap p-4 flex gap-4'>
       <NotiList />
 
       <div className='right flex-1 w-full flex gap-4'>
@@ -470,7 +471,9 @@ export default function MainFarm() {
         </div>
 
         <div className='r-rt flex flex-col'>
-          <Weather />
+          <WeatherProvider>
+            <Weather />
+          </WeatherProvider>
           {/* <div className="tit">아래와 같이 <br/>감지되었습니다.</div> */}
           <hr />
           <ul className='today_detecting flex-[1]'>
