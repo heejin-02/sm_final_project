@@ -1,3 +1,4 @@
+// components/MainBarChart.jsx
 import React, { useMemo } from 'react';
 import DailyDetectionChart from './DailyDetectionChart';
 import {

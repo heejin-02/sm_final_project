@@ -142,6 +142,29 @@ export default function Header() {
               />
             </div>
           </div>
+          {user?.userName &&
+            user.role !== 'admin' &&
+            user.selectedFarm?.farmName && (
+              <div
+                className='header-text cursor-pointer'
+                onClick={() => {
+                  // 현재 페이지가 MainFarm이면 새로고침, 아니면 이동
+                  if (
+                    window.location.pathname ===
+                    `/mainFarm/${user.selectedFarm.farmIdx}`
+                  ) {
+                    window.location.reload();
+                  } else {
+                    navigate(`/mainFarm/${user.selectedFarm.farmIdx}`);
+                  }
+                }}
+              >
+                {user.selectedFarm.farmName}{' '}
+                <span className='font-normal text-black hover:text-black'>
+                  관리중
+                </span>
+              </div>
+            )}
         </div>
 
         {/* 가운데 영역 - 농장명 */}
@@ -284,48 +307,59 @@ export default function Header() {
           )}
           {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
             <div className='nav-link'>
-              <div className='nav-link'>
-                {farms.length > 1 && (
-                  <div
-                    onClick={() => navigate('/selectFarm')}
-                    className='cursor-pointer'
-                  >
-                    다른 농장 선택
-                  </div>
-                )}
+              {farms.length > 1 && (
                 <div
-                  className='cursor-pointer'
-                  onClick={() => {
-                    if (
-                      window.location.pathname ===
-                      `/mainFarm/${user.selectedFarm?.farmIdx}`
-                    ) {
-                      window.location.reload();
-                    } else {
-                      navigate(`/mainFarm/${user.selectedFarm?.farmIdx}`);
-                    }
-                  }}
+                  onClick={() => navigate('/selectFarm')}
+                  className={`nav-link-item ${
+                    location.pathname === '/selectFarm' ? 'active' : ''
+                  }`}
                 >
-                  오늘 농장 보기
+                  다른 농장 선택
                 </div>
-                <div
-                  onClick={() => navigate('/report/daily')}
-                  className='cursor-pointer'
-                >
-                  일간 통계
-                </div>
-                <div
-                  onClick={() => navigate('/report/monthly')}
-                  className='cursor-pointer'
-                >
-                  월간 통계
-                </div>
-                <div
-                  onClick={() => navigate('/report/yearly')}
-                  className='cursor-pointer'
-                >
-                  연간 통계
-                </div>
+              )}
+              <div
+                onClick={() => {
+                  if (
+                    window.location.pathname ===
+                    `/mainFarm/${user.selectedFarm?.farmIdx}`
+                  ) {
+                    window.location.reload();
+                  } else {
+                    navigate(`/mainFarm/${user.selectedFarm?.farmIdx}`);
+                  }
+                }}
+                className={`nav-link-item ${
+                  location.pathname ===
+                  `/mainFarm/${user.selectedFarm?.farmIdx}`
+                    ? 'active'
+                    : ''
+                }`}
+              >
+                오늘 농장 보기
+              </div>
+              <div
+                onClick={() => navigate('/report/daily')}
+                className={`nav-link-item ${
+                  location.pathname === '/report/daily' ? 'active' : ''
+                }`}
+              >
+                일간 통계
+              </div>
+              <div
+                onClick={() => navigate('/report/monthly')}
+                className={`nav-link-item ${
+                  location.pathname === '/report/monthly' ? 'active' : ''
+                }`}
+              >
+                월간 통계
+              </div>
+              <div
+                onClick={() => navigate('/report/yearly')}
+                className={`nav-link-item ${
+                  location.pathname === '/report/yearly' ? 'active' : ''
+                }`}
+              >
+                연간 통계
               </div>
             </div>
           )}

@@ -10,6 +10,7 @@ import StatisticsChart from '../components/StatisticsChart';
 import MonthlyTable from '../components/MonthlyTable';
 import YearOverYearTable from '../components/YearOverYearTable';
 import GptSummary from '../components/GptSummary';
+import ReportSummary from '../components/ReportSummary';
 
 export default function Report() {
   const { period } = useParams(); // 'daily' | 'monthly' | 'yearly'
@@ -174,11 +175,18 @@ export default function Report() {
               key={`${period}-${currentDate.toISOString().split('T')[0]}`}
               className='report-content'
             >
+              <ReportSummary
+                stats={stats}
+                period={period}
+                currentDate={currentDate}
+                gptSummary={stats?.gptSummary}
+              />
+
               {/* GPT 분석 */}
               <GptSummary period={period} date={currentDate} />
 
               {/* 요약 카드 */}
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8'>
+              <div className='report-summary'>
                 <div className='bordered-box'>
                   <h3 className='font-bold mb-2'>총 탐지 수</h3>
                   <p className='text-3xl font-bold'>

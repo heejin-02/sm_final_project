@@ -35,6 +35,31 @@ const weatherKoreanMap = {
 const getWeatherIcon = (iconCode) =>
   `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
+// 풍향 변환
+function getWindDirection(degrees) {
+  if (degrees === undefined || degrees === null) return '';
+  const dirs = [
+    '북풍',
+    '북북동풍',
+    '북동풍',
+    '동북동풍',
+    '동풍',
+    '동남동풍',
+    '남동풍',
+    '남남동풍',
+    '남풍',
+    '남남서풍',
+    '남서풍',
+    '서남서풍',
+    '서풍',
+    '서북서풍',
+    '북서풍',
+    '북북서풍',
+  ];
+  const idx = Math.round(degrees / 22.5) % 16;
+  return dirs[idx];
+}
+
 // 주소 → 좌표
 async function getCoordinatesFromAddress(address) {
   try {
@@ -56,7 +81,7 @@ async function getCoordinatesFromAddress(address) {
 async function getCurrentLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error('Geolocation 미지원'));
+      reject(new Error('위치 정보를 불러올 수 없습니다.'));
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -112,7 +137,6 @@ export function WeatherProvider({ children }) {
         }
       }
 
-      // 농장 좌표 없으면 현재 위치 fallback
       if (!lat || !lon) {
         try {
           const loc = await getCurrentLocation();
@@ -120,17 +144,31 @@ export function WeatherProvider({ children }) {
           lon = loc.lon;
           locationName = loc.locationName;
         } catch {
-          // 현재 위치 실패 시 서울 fallback
           lat = 37.5665;
           lon = 126.978;
           locationName = '서울';
         }
       }
 
-      // API 호출
+      // 현재 날씨
       const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
       const res = await axios.get(url);
       const data = res.data;
+
+      // 예보 (강수확률용)
+      let precipitationProbability = null;
+      try {
+        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`;
+        const forecastRes = await axios.get(forecastUrl);
+        const forecastList = forecastRes.data?.list ?? [];
+        if (forecastList.length > 0) {
+          precipitationProbability = Math.round(
+            (forecastList[0].pop || 0) * 100
+          );
+        }
+      } catch (e) {
+        console.warn('forecast API 실패, 강수확률은 null 처리');
+      }
 
       const englishCondition = data.weather[0].main;
       const koreanCondition =
@@ -145,6 +183,9 @@ export function WeatherProvider({ children }) {
         tempMax: data.main.temp_max,
         humidity: data.main.humidity,
         wind: data.wind.speed,
+        windDirection: getWindDirection(data.wind.deg),
+        rain: data.rain?.['1h'] || 0,
+        precipitationProbability, // ✅ 강수확률 포함
         condition: koreanCondition,
         iconUrl: getWeatherIcon(data.weather[0].icon),
       };

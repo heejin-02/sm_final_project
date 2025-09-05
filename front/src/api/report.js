@@ -107,8 +107,8 @@ export const getYearlyGptSummary = async (farmIdx, date) => {
 export const getDailyZoneSummary = async (farmIdx, date) => {
   const startTime = Date.now();
   try {
-    console.log(`[DEBUG] ML API 호출 시작: ${BASE_URL}/ml/daily-gpt-summary`);
-    console.log(`[DEBUG] 파라미터: farmIdx=${farmIdx}, date=${date}`);
+    // console.log(`[DEBUG] ML API 호출 시작: ${BASE_URL}/ml/daily-gpt-summary`);
+    // console.log(`[DEBUG] 파라미터: farmIdx=${farmIdx}, date=${date}`);
 
     const response = await axios.get(`${BASE_URL}/ml/daily-gpt-summary`, {
       params: {
@@ -120,12 +120,12 @@ export const getDailyZoneSummary = async (farmIdx, date) => {
     });
 
     const endTime = Date.now();
-    console.log(
-      `[DEBUG] ML API 응답 성공: ${response.status}, 소요시간: ${
-        endTime - startTime
-      }ms`
-    );
-    console.log(`[DEBUG] 응답 데이터:`, response.data);
+    // console.log(
+    //   `[DEBUG] ML API 응답 성공: ${response.status}, 소요시간: ${
+    //     endTime - startTime
+    //   }ms`
+    // );
+    // console.log(`[DEBUG] 응답 데이터:`, response.data);
 
     return response.data;
   } catch (error) {

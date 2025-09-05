@@ -65,9 +65,9 @@ export function useStatistics({ period, date }) {
       }
 
       const timerLabel = `stats-${period}`;
-      console.time(timerLabel);
+      // console.time(timerLabel);
       const data = await fetchFn({ signal: abortRef.current.signal }); // axios면 무시됨, fetch면 전달됨
-      console.timeEnd(timerLabel);
+      // console.timeEnd(timerLabel);
 
       setStats(data);
     } catch (e) {

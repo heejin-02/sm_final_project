@@ -1,3 +1,4 @@
+// components/InsectPieChart.jsx
 import React, { useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import {
@@ -67,7 +68,7 @@ export default function InsectPieChart({ stats }) {
                 />
               ))}
             </Pie>
-            <Tooltip formatter={(v) => `${v}건`} />
+            <Tooltip formatter={(v) => `${v}마리`} />
           </PieChart>
         </ResponsiveContainer>
       </div>

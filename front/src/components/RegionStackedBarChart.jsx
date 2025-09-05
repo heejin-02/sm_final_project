@@ -20,8 +20,8 @@ import {
 } from '../charts/constants';
 
 // 레이아웃 상수
-const BAR_SIZE = 30;
-const ROW_GAP = 6; // px
+const BAR_SIZE = 28;
+const ROW_GAP = 42; // px
 const MARGIN = { top: 16, right: 0, left: 0, bottom: 20 };
 const YPAD = { top: 12, bottom: 12 };
 const LEGEND_H = 32;
@@ -136,10 +136,11 @@ export default function RegionStackedBarChart({ stats }) {
             <YAxis
               type='category'
               dataKey='region'
-              width={100}
+              width={90}
               interval={0}
               allowDuplicatedCategory={true}
               padding={YPAD}
+              tickMargin={10}
             />
             <Tooltip formatter={(v) => `${v}건`} />
             <Legend
