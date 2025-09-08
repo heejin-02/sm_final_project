@@ -1,6 +1,14 @@
 // components/InsectPieChart.jsx
 import React, { useMemo } from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { isMobile } from 'react-device-detect';
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+} from 'recharts';
 import {
   INSECT_COLOR,
   orderInsects,
@@ -44,6 +52,33 @@ export default function InsectPieChart({ stats }) {
   // 디버깅(원인 추적용): 둘 다 같은 순서인지 확인
   // console.log('PIE order:', pieData.map(d => d.name));
 
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5; // 안쪽 중앙
+    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill='white'
+        textAnchor='middle'
+        dominantBaseline='central'
+        fontSize={20}
+        fontWeight='semi-bold'
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
   return (
     <>
       <h3 className='text-lg font-bold mb-4'>해충 종류별 분포</h3>
@@ -54,12 +89,11 @@ export default function InsectPieChart({ stats }) {
               data={pieData}
               cx='50%'
               cy='50%'
-              outerRadius={80}
+              outerRadius='80%'
               dataKey='value'
+              nameKey='name'
               labelLine={false}
-              label={({ name, value, percent }) =>
-                value > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ''
-              }
+              label={renderCustomizedLabel}
             >
               {pieData.map((d, i) => (
                 <Cell
@@ -68,7 +102,8 @@ export default function InsectPieChart({ stats }) {
                 />
               ))}
             </Pie>
-            <Tooltip formatter={(v) => `${v}마리`} />
+            <Legend layout='horizontal' verticalAlign='bottom' align='center' />
+            {!isMobile && <Tooltip formatter={(v) => `${v}마리`} />}
           </PieChart>
         </ResponsiveContainer>
       </div>

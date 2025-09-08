@@ -272,97 +272,84 @@ export default function Header() {
         </div>
       </div>
       <div className='m-nav'>
-        <div className='nav-cont flex flex-col space-y-4 scrl-custom'>
-          {/* <div className='view-control justify-end gap-4'>
-            <div>화면</div>
-            <div className='flex gap-1'>
-              <button
-                className='btn'
-                onClick={handleZoomOut}
-                disabled={zoomLevel === '90%'}
-              >
-                <LuMinus size={20} />
-                작게 보기
-              </button>
-              <button
-                className='btn'
-                onClick={handleZoomIn}
-                disabled={zoomLevel === '120%'}
-              >
-                <LuPlus size={20} />
-                크게 보기
-              </button>
-            </div>
-          </div> */}
-          {user?.userName && (
-            <div className='nav-user'>
-              <div className='header-text'>{user.userName}님 환영합니다</div>
-              <button
-                className='color-80 cursor-pointer'
-                onClick={handleLogout}
-              >
-                로그아웃
-              </button>
-            </div>
-          )}
-          {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
-            <div className='nav-link'>
-              {farms.length > 1 && (
+        <div className='nav-cont scrl-custom'>
+          <div>
+            {user?.userName && (
+              <div className='nav-user'>
+                <div className='header-text'>{user.userName}님 환영합니다</div>
+                <button
+                  className='color-80 cursor-pointer'
+                  onClick={handleLogout}
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+            {!hideNoti && user?.userName && user?.selectedFarm?.farmName && (
+              <div className='nav-link'>
+                {farms.length > 1 && (
+                  <div
+                    onClick={() => navigate('/selectFarm')}
+                    className={`nav-link-item ${
+                      location.pathname === '/selectFarm' ? 'active' : ''
+                    }`}
+                  >
+                    다른 농장 선택
+                  </div>
+                )}
                 <div
-                  onClick={() => navigate('/selectFarm')}
+                  onClick={() => {
+                    if (
+                      window.location.pathname ===
+                      `/mainFarm/${user.selectedFarm?.farmIdx}`
+                    ) {
+                      window.location.reload();
+                    } else {
+                      navigate(`/mainFarm/${user.selectedFarm?.farmIdx}`);
+                    }
+                  }}
                   className={`nav-link-item ${
-                    location.pathname === '/selectFarm' ? 'active' : ''
+                    location.pathname ===
+                    `/mainFarm/${user.selectedFarm?.farmIdx}`
+                      ? 'active'
+                      : ''
                   }`}
                 >
-                  다른 농장 선택
+                  오늘 농장 보기
                 </div>
-              )}
-              <div
-                onClick={() => {
-                  if (
-                    window.location.pathname ===
-                    `/mainFarm/${user.selectedFarm?.farmIdx}`
-                  ) {
-                    window.location.reload();
-                  } else {
-                    navigate(`/mainFarm/${user.selectedFarm?.farmIdx}`);
-                  }
-                }}
-                className={`nav-link-item ${
-                  location.pathname ===
-                  `/mainFarm/${user.selectedFarm?.farmIdx}`
-                    ? 'active'
-                    : ''
-                }`}
-              >
-                오늘 농장 보기
+                <div
+                  onClick={() => navigate('/report/daily')}
+                  className={`nav-link-item ${
+                    location.pathname === '/report/daily' ? 'active' : ''
+                  }`}
+                >
+                  일간 통계
+                </div>
+                <div
+                  onClick={() => navigate('/report/monthly')}
+                  className={`nav-link-item ${
+                    location.pathname === '/report/monthly' ? 'active' : ''
+                  }`}
+                >
+                  월간 통계
+                </div>
+                <div
+                  onClick={() => navigate('/report/yearly')}
+                  className={`nav-link-item ${
+                    location.pathname === '/report/yearly' ? 'active' : ''
+                  }`}
+                >
+                  연간 통계
+                </div>
               </div>
-              <div
-                onClick={() => navigate('/report/daily')}
-                className={`nav-link-item ${
-                  location.pathname === '/report/daily' ? 'active' : ''
-                }`}
-              >
-                일간 통계
-              </div>
-              <div
-                onClick={() => navigate('/report/monthly')}
-                className={`nav-link-item ${
-                  location.pathname === '/report/monthly' ? 'active' : ''
-                }`}
-              >
-                월간 통계
-              </div>
-              <div
-                onClick={() => navigate('/report/yearly')}
-                className={`nav-link-item ${
-                  location.pathname === '/report/yearly' ? 'active' : ''
-                }`}
-              >
-                연간 통계
-              </div>
-            </div>
-          )}
+            )}
+          </div>
+          <a
+            href='tel:010-9308-1095'
+            className='btn-submit bg-[var(--color-accent)]'
+          >
+            📞 앱 문의/신고하기
+          </a>
         </div>
       </div>
     </header>

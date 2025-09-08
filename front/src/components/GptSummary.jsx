@@ -1,9 +1,5 @@
-// src/components/GptSummary.jsx
-import { useGptSummary } from '../hooks/useGptSummary';
-
-export default function GptSummary({ period, date }) {
-  const { gptSummary, gptLoading, gptError } = useGptSummary({ period, date });
-
+// GptSummary.jsx
+export default function GptSummary({ gptSummary, gptLoading, gptError }) {
   return (
     <div className='baekgu-msg-wrap mt-8 flex'>
       <div className='thumb'>

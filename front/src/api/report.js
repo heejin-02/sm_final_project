@@ -69,7 +69,7 @@ export const getDailyGptSummary = async (farmIdx, date) => {
   }
 };
 
-// 월별 통계 gpt 분석 요약
+// 월별 통계  분석 요약
 export const getMonthlyGptSummary = async (farmIdx, date) => {
   try {
     const response = await axios.get(`${BASE_URL}/ml/monthly-gpt-summary`, {

@@ -86,7 +86,7 @@ export default function NotiFarmMap({
           gridTemplateRows: `repeat(${finalRows}, 1fr)`,
           gap: `${gap}px`,
           height: '100%',
-          minHeight: '240px',
+          minHeight: '160px',
         }}
       >
         {regionsData.map((region) => (

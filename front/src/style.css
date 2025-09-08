@@ -156,7 +156,7 @@
 
   .main-farm {
     background: var(--bg);
-    min-height: 694px;
+    min-height: 608px;
     height: calc(100vh - var(--header-h));
   }
   .main-farm .noti-area {
@@ -326,6 +326,16 @@
     border-top: solid 1px #efefef;
     transform: translateX(100%);
     transition: all 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .nav-cont .btn-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2.5rem;
+    font-size: 1.2rem;
   }
   .nav-link {
     display: flex;
@@ -576,7 +586,8 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: #4b5563;
   }
 
@@ -1548,7 +1559,7 @@
   .r-rt hr {
     border: none;
     border-top: 1px solid #e5e7eb;
-    margin: 1rem 0;
+    margin: 0.8rem 0;
   }
 
   .today_detecting {
@@ -1558,6 +1569,7 @@
     background: #fff;
     border-radius: 0.66rem;
     padding: 1rem;
+    justify-content: center;
   }
   .today_detecting > li {
     display: flex;
@@ -2662,9 +2674,6 @@
     .view-control .btn {
       padding: 0.2rem 0.6rem;
     }
-    .home.section {
-      background: #fff;
-    }
     .home .cont-wrap {
       flex-direction: column;
     }
@@ -2672,13 +2681,13 @@
       display: none;
     }
     .white-box.home-rt {
-      padding: 0;
       color: #000;
       width: auto;
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
       text-align: center;
+      padding: 1rem;
     }
     .white-box.home-rt .desc {
       order: 1;
@@ -2812,7 +2821,7 @@
       padding: 0 1.2rem;
     }
 
-    .r-lt .baekgu-msg-wrap .thumb {
+    .baekgu-msg-wrap .thumb {
       display: none;
     }
     .farm_map {
@@ -2926,7 +2935,7 @@
       padding: 0.5rem;
     }
     .region-label {
-      font-size: 0.875rem;
+      font-size: 0.95rem;
     }
     .count-label {
       font-size: 1.5rem;
@@ -2943,12 +2952,26 @@
       order: -1;
       width: 49%;
       padding: 0 0.6rem;
+      font-size: 1.5rem;
+    }
+    .date-select {
+      font-size: 1.1rem;
+    }
+    .date-change-btn {
+      font-size: 1rem;
     }
     .date-controls .date-nav-btn:first-child {
       justify-content: flex-start;
     }
     .date-controls .date-nav-btn:last-child {
       justify-content: flex-end;
+    }
+    .report-summary {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .report-summary .bordered-box .text-3xl {
+      font-size: 1.3rem;
     }
   }
 
@@ -2957,6 +2980,16 @@
       --header-h: 68px;
       font-size: 16px;
     }
+
+    /* 텍스트 크기 조정 */
+    .text-lg {
+      font-size: 1rem;
+    }
+
+    .text-base {
+      font-size: 0.875rem;
+    }
+
     .home .cont-wrap {
       padding: 2.5rem 1rem;
     }
@@ -2965,6 +2998,9 @@
     .r-rt {
       flex-wrap: nowrap;
       flex-direction: column;
+    }
+    .today_detecting {
+      gap: 0.6rem;
     }
     .r-lt .baekgu-msg-wrap .thumb {
       display: none;
@@ -3002,13 +3038,26 @@
       aspect-ratio: 4 / 3;
     }
 
-    /* 텍스트 크기 조정 */
-    .text-lg {
-      font-size: 1rem;
+    .date-navigation {
+      width: 400px;
     }
 
-    .text-base {
-      font-size: 0.875rem;
+    /* ul.recharts-default-legend {
+      width: 100%;
+      display: flex;
+      align-items: start;
+      justify-content: left;
+      flex-wrap: wrap;
+    } */
+
+    .table th,
+    .table td {
+      padding: 0.6rem;
+      font-size: 0.9rem;
+    }
+
+    .baekgu-msg-wrap {
+      font-size: 0.95rem;
     }
   }
 
@@ -3051,6 +3100,20 @@
     }
     .home-rt .desc {
       font-size: 1rem;
+    }
+
+    .date-navigation {
+      width: 100%;
+    }
+    .date-navigation .date-nav-btn {
+      padding: 0;
+      width: 48%;
+    }
+    .date-select {
+      flex: 1;
+    }
+    .date-change-btn {
+      width: 100%;
     }
   }
 
@@ -3106,8 +3169,16 @@
     .feedback-btn-simple .btn-text {
       font-size: 0.875rem;
     }
+
+    .date-navigation {
+      margin: 2rem auto;
+    }
   }
 
   @media (max-width: 380px) {
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    /* when supported */
   }
 }

@@ -9,9 +9,9 @@ export default function Legend({ min, max }) {
 
       {/* 퍼센트 눈금 */}
       <div className='labels'>
-        <span className='text-xs font-semibold'>위험</span>
-        <span className='text-xs font-semibold'>주의</span>
-        <span className='text-xs font-semibold'>안심</span>
+        <span className=''>위험</span>
+        <span className=''>주의</span>
+        <span className=''>안심</span>
       </div>
     </div>
   );

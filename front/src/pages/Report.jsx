@@ -9,6 +9,7 @@ import GroupedDetailList from '../components/GroupedDetailList';
 import StatisticsChart from '../components/StatisticsChart';
 import MonthlyTable from '../components/MonthlyTable';
 import YearOverYearTable from '../components/YearOverYearTable';
+import { useGptSummary } from '../hooks/useGptSummary';
 import GptSummary from '../components/GptSummary';
 import ReportSummary from '../components/ReportSummary';
 
@@ -30,6 +31,11 @@ export default function Report() {
     error,
     refetch,
   } = useStatistics({
+    period,
+    date: currentDate,
+  });
+
+  const { gptSummary, gptLoading, gptError } = useGptSummary({
     period,
     date: currentDate,
   });
@@ -136,7 +142,7 @@ export default function Report() {
     <div className='section flex noti-wrap'>
       <LeftPanel />
 
-      <div className='right-section flex-1 overflow-y-auto'>
+      <div className={`right-section flex-1 overflow-y-auto ${period}`}>
         <div className='max-w-6xl mx-auto'>
           {/* 헤더 */}
           <div className='r-sec-top mb-6 flex justify-between items-center'>
@@ -175,15 +181,19 @@ export default function Report() {
               key={`${period}-${currentDate.toISOString().split('T')[0]}`}
               className='report-content'
             >
+              {/* GPT 분석 */}
+              <GptSummary
+                gptSummary={gptSummary}
+                gptLoading={gptLoading}
+                gptError={gptError}
+              />
+
               <ReportSummary
                 stats={stats}
                 period={period}
                 currentDate={currentDate}
-                gptSummary={stats?.gptSummary}
+                gptSummary={gptSummary}
               />
-
-              {/* GPT 분석 */}
-              <GptSummary period={period} date={currentDate} />
 
               {/* 요약 카드 */}
               <div className='report-summary'>

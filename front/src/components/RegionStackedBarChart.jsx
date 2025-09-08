@@ -145,7 +145,7 @@ export default function RegionStackedBarChart({ stats }) {
             <Tooltip formatter={(v) => `${v}건`} />
             <Legend
               verticalAlign='bottom'
-              align='right'
+              align='center'
               height={LEGEND_H}
               iconType='square'
               wrapperStyle={{

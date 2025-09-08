@@ -169,13 +169,11 @@ export default function ReportSummary({
 
     // 최종 텍스트
     const text = `
-      ${gptSummary ? '백구의 요약: ' + gptSummary + '.' : ''}
-      ${dateText} 기준, 총 ${totalText}의 해충이 탐지되었습니다.
-      탐지된 해충 종류는 ${typeText}이며,
-      최다 탐지 구역은 ${zoneText}입니다.
-      ${timeSummary}
-      ${insectSummary}
-    `;
+			${gptSummary ? gptSummary + '.' : ''} 
+			탐지된 해충 종류는 ${typeText}입니다.
+			${timeSummary}
+			${insectSummary}
+		`;
 
     speak(text);
   };
@@ -184,7 +182,7 @@ export default function ReportSummary({
     <div>
       <button
         onClick={handleReadSummary}
-        className='mt-4 px-6 py-3 text-lg bg-green-600 text-white rounded-xl w-full'
+        className='px-6 py-3 text-lg bg-green-600 text-white rounded-xl w-full'
       >
         🎙️ 전체 통계 음성 요약 듣기
       </button>
