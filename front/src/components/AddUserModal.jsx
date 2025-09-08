@@ -5,16 +5,16 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     userName: '',
     userPhone: '',
-    userPw: ''
+    userPw: '',
   });
   const [userPwChk, setUserPwChk] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -35,11 +35,11 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }) {
       setLoading(true);
       await addUser(formData);
       alert('회원 등록이 완료되었습니다.');
-      
+
       // 폼 초기화
       setFormData({ userName: '', userPhone: '', userPw: '' });
       setUserPwChk('');
-      
+
       onSuccess();
       onClose();
     } catch (err) {
@@ -57,72 +57,84 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 class="title">회원 등록</h3>
-          <button onClick={onClose} className="modal-close-btn">×</button>
+    <div className='modal-overlay' onClick={onClose}>
+      <div className='modal' onClick={(e) => e.stopPropagation()}>
+        <div className='modal-header'>
+          <h3 class='title'>회원 등록</h3>
+          <button onClick={onClose} className='modal-close-btn'>
+            ×
+          </button>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
-          <ul className="form-ul">
+          <ul className='form-ul'>
             <li>
-              <span className="frm-label">이름</span>
+              <span className='frm-label'>이름</span>
               <input
-                type="text"
-                name="userName"
+                type='text'
+                name='userName'
                 value={formData.userName}
                 onChange={handleChange}
-                placeholder="이름을 입력하세요"
-                className="input"
+                placeholder='이름을 입력하세요'
+                className='input'
                 required
               />
             </li>
-            
+
             <li>
-              <span className="frm-label">휴대폰번호</span>
+              <span className='frm-label'>휴대폰번호</span>
               <input
-                type="text"
-                name="userPhone"
+                type='text'
+                name='userPhone'
                 value={formData.userPhone}
                 onChange={handleChange}
-                placeholder="휴대폰번호를 입력하세요"
-                className="input"
+                placeholder='휴대폰번호를 입력하세요'
+                className='input'
                 required
               />
             </li>
-            
+
             <li>
-              <span className="frm-label">비밀번호</span>
+              <span className='frm-label'>비밀번호</span>
               <input
-                type="password"
-                name="userPw"
+                type='password'
+                name='userPw'
                 value={formData.userPw}
                 onChange={handleChange}
-                placeholder="비밀번호를 입력하세요"
-                className="input"
+                placeholder='비밀번호를 입력하세요'
+                className='input'
                 required
               />
             </li>
-            
+
             <li>
-              <span className="frm-label">비밀번호 확인</span>
+              <span className='frm-label'>비밀번호 확인</span>
               <input
-                type="password"
+                type='password'
                 value={userPwChk}
                 onChange={(e) => setUserPwChk(e.target.value)}
-                placeholder="비밀번호를 다시 입력하세요"
-                className="input"
+                placeholder='비밀번호를 다시 입력하세요'
+                className='input'
                 required
               />
             </li>
           </ul>
-          
+
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-gray" style={{ flex: 1 }}>
+            <button
+              type='button'
+              onClick={onClose}
+              className='btn btn-gray'
+              style={{ flex: 1 }}
+            >
               취소
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: 1 }}>
+            <button
+              type='submit'
+              className='btn btn-primary'
+              disabled={loading}
+              style={{ flex: 1 }}
+            >
               {loading ? '등록 중...' : '회원등록'}
             </button>
           </div>

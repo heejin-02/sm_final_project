@@ -11,7 +11,7 @@ export function groupDataByWeek(details) {
       grouped[key] = {
         title: `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${week}주차`,
         count: 0,
-        items: []
+        items: [],
       };
     }
 
@@ -20,7 +20,7 @@ export function groupDataByWeek(details) {
       greenhouse: item.greenhouse,
       insect: item.insect,
       accuracy: item.accuracy,
-      anlsIdx: item.anlsIdx
+      anlsIdx: item.anlsIdx,
     });
     grouped[key].count += 1;
   });

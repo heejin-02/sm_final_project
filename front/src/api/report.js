@@ -7,7 +7,7 @@ export const checkServerHealth = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/health`, {
       timeout: 3000,
-      withCredentials: true
+      withCredentials: true,
     });
     return true;
   } catch (error) {
@@ -22,9 +22,9 @@ export const getDailyStats = async (farmIdx, date) => {
     const response = await axios.get(`${BASE_URL}/report/daily-stats`, {
       params: {
         farmIdx: farmIdx,
-        date: date // YYYY-MM-DD 형식
+        date: date, // YYYY-MM-DD 형식
       },
-      withCredentials: true
+      withCredentials: true,
     });
 
     return response.data;
@@ -58,9 +58,9 @@ export const getDailyGptSummary = async (farmIdx, date) => {
     const response = await axios.get(`${BASE_URL}/ml/daily-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
-        date: date
+        date: date,
       },
-      withCredentials: true
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
@@ -69,15 +69,15 @@ export const getDailyGptSummary = async (farmIdx, date) => {
   }
 };
 
-// 월별 통계 gpt 분석 요약
+// 월별 통계  분석 요약
 export const getMonthlyGptSummary = async (farmIdx, date) => {
   try {
     const response = await axios.get(`${BASE_URL}/ml/monthly-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
-        month: date
+        month: date,
       },
-      withCredentials: true
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
@@ -92,9 +92,9 @@ export const getYearlyGptSummary = async (farmIdx, date) => {
     const response = await axios.get(`${BASE_URL}/ml/yearly-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
-        year: date
+        year: date,
       },
-      withCredentials: true
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
@@ -107,28 +107,39 @@ export const getYearlyGptSummary = async (farmIdx, date) => {
 export const getDailyZoneSummary = async (farmIdx, date) => {
   const startTime = Date.now();
   try {
-    console.log(`[DEBUG] ML API 호출 시작: ${BASE_URL}/ml/daily-gpt-summary`);
-    console.log(`[DEBUG] 파라미터: farmIdx=${farmIdx}, date=${date}`);
-    
+    // console.log(`[DEBUG] ML API 호출 시작: ${BASE_URL}/ml/daily-gpt-summary`);
+    // console.log(`[DEBUG] 파라미터: farmIdx=${farmIdx}, date=${date}`);
+
     const response = await axios.get(`${BASE_URL}/ml/daily-gpt-summary`, {
       params: {
         farm_idx: farmIdx,
-        date: date
+        date: date,
       },
       withCredentials: true,
-      timeout: 15000 // 15초 타임아웃
+      timeout: 15000, // 15초 타임아웃
     });
-    
+
     const endTime = Date.now();
-    console.log(`[DEBUG] ML API 응답 성공: ${response.status}, 소요시간: ${endTime - startTime}ms`);
-    console.log(`[DEBUG] 응답 데이터:`, response.data);
-    
+    // console.log(
+    //   `[DEBUG] ML API 응답 성공: ${response.status}, 소요시간: ${
+    //     endTime - startTime
+    //   }ms`
+    // );
+    // console.log(`[DEBUG] 응답 데이터:`, response.data);
+
     return response.data;
   } catch (error) {
     const endTime = Date.now();
-    console.error(`[ERROR] ML API 호출 실패: ${error.message}, 소요시간: ${endTime - startTime}ms`);
+    console.error(
+      `[ERROR] ML API 호출 실패: ${error.message}, 소요시간: ${
+        endTime - startTime
+      }ms`
+    );
     console.error(`[ERROR] 에러 상세:`, error.response?.data);
-    console.error(`[ERROR] 요청 URL:`, `${BASE_URL}/ml/daily-gpt-summary?farm_idx=${farmIdx}&date=${date}`);
+    console.error(
+      `[ERROR] 요청 URL:`,
+      `${BASE_URL}/ml/daily-gpt-summary?farm_idx=${farmIdx}&date=${date}`
+    );
     throw error;
   }
 };
@@ -138,10 +149,10 @@ export const getTodayStats = async (farmIdx) => {
   try {
     const response = await axios.get(`${BASE_URL}/user/today/today`, {
       params: {
-        farmIdx: farmIdx
+        farmIdx: farmIdx,
       },
       withCredentials: true,
-      timeout: 5000 // 5초 타임아웃
+      timeout: 5000, // 5초 타임아웃
     });
     return response.data;
   } catch (error) {
@@ -154,13 +165,16 @@ export const getTodayStats = async (farmIdx) => {
 export const getTodayGreenhouses = async (farmIdx) => {
   const startTime = Date.now();
   try {
-    const response = await axios.get(`${BASE_URL}/user/today/today/greenhouses`, {
-      params: {
-        farmIdx: farmIdx
-      },
-      // withCredentials: true, // 임시로 주석 처리
-      timeout: 3000 // 3초 타임아웃으로 단축
-    });
+    const response = await axios.get(
+      `${BASE_URL}/user/today/today/greenhouses`,
+      {
+        params: {
+          farmIdx: farmIdx,
+        },
+        // withCredentials: true, // 임시로 주석 처리
+        timeout: 3000, // 3초 타임아웃으로 단축
+      }
+    );
 
     const endTime = Date.now();
     return response.data;
@@ -176,10 +190,10 @@ export const getMonthlyStats = async (farmIdx, month) => {
     const response = await axios.get(`${BASE_URL}/report/monthly-stats`, {
       params: {
         farmIdx: farmIdx,
-        month: month // YYYY-MM 형식 (예: 2025-07)
+        month: month, // YYYY-MM 형식 (예: 2025-07)
       },
       withCredentials: true,
-      timeout: 10000 // 10초 타임아웃
+      timeout: 10000, // 10초 타임아웃
     });
     return response.data;
   } catch (error) {
@@ -203,10 +217,10 @@ export const getYearlyStats = async (farmIdx, year) => {
     const response = await axios.get(`${BASE_URL}/report/yearly-stats`, {
       params: {
         farmIdx: farmIdx,
-        year: year // YYYY 형식 (예: 2025)
+        year: year, // YYYY 형식 (예: 2025)
       },
       withCredentials: true,
-      timeout: 10000 // 10초 타임아웃
+      timeout: 10000, // 10초 타임아웃
     });
     return response.data;
   } catch (error) {

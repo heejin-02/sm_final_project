@@ -11,7 +11,7 @@ export function groupDataByMonth(details) {
       grouped[key] = {
         title: `${date.getFullYear()}년 ${month}월`,
         count: 0,
-        items: []
+        items: [],
       };
     }
 
@@ -20,7 +20,7 @@ export function groupDataByMonth(details) {
       greenhouse: item.greenhouse,
       insect: item.insect,
       accuracy: item.accuracy,
-      anlsIdx: item.anlsIdx
+      anlsIdx: item.anlsIdx,
     });
     grouped[key].count += 1;
   });

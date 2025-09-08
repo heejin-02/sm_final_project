@@ -4,7 +4,7 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095',
   withCredentials: true,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // 로그인
@@ -14,7 +14,7 @@ export const loginCheck = (id, pw) =>
 // 사용자 - 농장 리스트 조회
 export const getUserFarms = (userPhone) => {
   return api.get('/api/user/farms', { params: { userPhone } });
-}
+};
 
 // 세션 확인
 
@@ -27,7 +27,7 @@ export const checkSession = async () => {
     // 네트워크 오류 시 로그아웃 상태로 처리
     return {
       isAuthenticated: false,
-      user: null
+      user: null,
     };
   }
 };
@@ -41,4 +41,3 @@ export const logout = async () => {
     throw error;
   }
 };
-

@@ -2,7 +2,11 @@
 // 알림 관련 커스텀 훅들
 
 import { useState, useEffect } from 'react';
-import { fetchAlertList, fetchAlertDetail, markAlertAsRead } from '../api/alert';
+import {
+  fetchAlertList,
+  fetchAlertDetail,
+  markAlertAsRead,
+} from '../api/alert';
 
 /**
  * 알림 목록을 관리하는 훅 (NotiList에서 사용)
@@ -44,11 +48,11 @@ export const useAlertList = (farmIdx) => {
     try {
       await markAlertAsRead(anlsIdx);
       // 로컬 상태 업데이트 (notiCheck를 Y로 변경)
-      setAlerts(prev => prev.map(alert =>
-        alert.anlsIdx === anlsIdx
-          ? { ...alert, notiCheck: "Y" }
-          : alert
-      ));
+      setAlerts((prev) =>
+        prev.map((alert) =>
+          alert.anlsIdx === anlsIdx ? { ...alert, notiCheck: 'Y' } : alert
+        )
+      );
     } catch (err) {
       console.error('알림 읽음 처리 실패:', err);
     }
@@ -59,7 +63,7 @@ export const useAlertList = (farmIdx) => {
     loading,
     error,
     refreshAlerts,
-    markAsRead
+    markAsRead,
   };
 };
 
@@ -75,7 +79,7 @@ export const useAlertDetail = (anlsIdx) => {
 
   const loadAlertDetail = async () => {
     if (!anlsIdx) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -102,7 +106,7 @@ export const useAlertDetail = (anlsIdx) => {
     alertDetail,
     loading,
     error,
-    refreshDetail
+    refreshDetail,
   };
 };
 
@@ -118,11 +122,11 @@ export const useUnreadAlertCount = (farmIdx) => {
   useEffect(() => {
     const loadUnreadCount = async () => {
       if (!farmIdx) return;
-      
+
       try {
         setLoading(true);
         const alerts = await fetchAlertList(farmIdx);
-        const count = alerts.filter(alert => alert.notiCheck !== "Y").length;
+        const count = alerts.filter((alert) => alert.notiCheck !== 'Y').length;
         setUnreadCount(count);
       } catch (err) {
         // console.error('읽지 않은 알림 개수 로딩 실패:', err);

@@ -23,10 +23,10 @@ export function useRegions() {
         // 실제 API 호출 (getTodayGreenhouses 직접 사용)
         const apiData = await getTodayGreenhouses(farmIdx);
         // API 데이터를 regions 형태로 변환 (실제 데이터만 사용)
-        const regionsWithNames = apiData.map(region => ({
+        const regionsWithNames = apiData.map((region) => ({
           id: region.ghIdx,
           name: region.ghName || `${region.ghIdx}번 구역`,
-          count: region.todayInsectCount || 0
+          count: region.todayInsectCount || 0,
         }));
         setRegions(regionsWithNames);
         setError(null);
@@ -40,7 +40,7 @@ export function useRegions() {
           fallbackRegions.push({
             id: i,
             name: `${i}번 구역`,
-            count: 0
+            count: 0,
           });
         }
         setRegions(fallbackRegions);
@@ -62,7 +62,7 @@ export function useRegionByName(regionName) {
 
   useEffect(() => {
     if (regions.length > 0 && regionName) {
-      const foundRegion = regions.find(r => r.name === regionName);
+      const foundRegion = regions.find((r) => r.name === regionName);
       setRegion(foundRegion || null);
     }
   }, [regions, regionName]);

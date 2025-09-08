@@ -7,7 +7,7 @@ import {
   getYearlyGptSummary,
   formatDateForAPI,
   formatMonthForAPI,
-  formatYearForAPI
+  formatYearForAPI,
 } from '../api/report';
 
 // 간단한 메모리 캐시
@@ -26,7 +26,7 @@ export function useGptSummary({ period, date }) {
 
     // 캐시 키 생성
     const cacheKey = `${user.selectedFarm.farmIdx}-${period}-${date}`;
-    
+
     // 캐시 확인
     const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -53,28 +53,31 @@ export function useGptSummary({ period, date }) {
 
         if (period === 'daily') {
           formattedDate = formatDateForAPI(date);
-          fetchFn = () => getDailyGptSummary(user.selectedFarm.farmIdx, formattedDate);
+          fetchFn = () =>
+            getDailyGptSummary(user.selectedFarm.farmIdx, formattedDate);
         } else if (period === 'monthly') {
           formattedDate = formatMonthForAPI(date);
-          fetchFn = () => getMonthlyGptSummary(user.selectedFarm.farmIdx, formattedDate);
+          fetchFn = () =>
+            getMonthlyGptSummary(user.selectedFarm.farmIdx, formattedDate);
         } else if (period === 'yearly') {
           formattedDate = formatYearForAPI(date);
-          fetchFn = () => getYearlyGptSummary(user.selectedFarm.farmIdx, formattedDate);
+          fetchFn = () =>
+            getYearlyGptSummary(user.selectedFarm.farmIdx, formattedDate);
         } else {
           throw new Error('지원하지 않는 기간입니다.');
         }
 
         const result = await fetchFn();
-        
+
         // 취소되지 않았을 때만 상태 업데이트
         if (!controller.signal.aborted) {
           const summaryData = result.summary;
           setSummary(summaryData);
-          
+
           // 캐시에 저장
           cache.set(cacheKey, {
             data: summaryData,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
       } catch (err) {

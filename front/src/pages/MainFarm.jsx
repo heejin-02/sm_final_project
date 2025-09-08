@@ -1,19 +1,20 @@
 // src/pages/MainFarm.jsx
-import { useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { useDataCache } from "../contexts/DataCacheContext";
+import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useDataCache } from '../contexts/DataCacheContext';
 import {
   getDailyZoneSummary,
   formatDateForAPI,
   getTodayStats,
   getTodayGreenhouses,
-} from "../api/report";
-import { retryApiCall, withTimeout } from "../utils/apiRetry";
-import NotiList from "../components/NotiList";
-import Weather from "../components/Weather";
-import BaseFarmMap from "../components/BaseFarmMap";
-import Legend from "../components/Legend";
+} from '../api/report';
+import { retryApiCall, withTimeout } from '../utils/apiRetry';
+import NotiList from '../components/NotiList';
+import { WeatherProvider } from '../contexts/WeatherContext';
+import Weather from '../components/Weather';
+import BaseFarmMap from '../components/BaseFarmMap';
+import Legend from '../components/Legend';
 
 export default function MainFarm() {
   const { farmIdx: urlFarmIdx } = useParams(); // URL에서 farmIdx 가져오기
@@ -33,9 +34,9 @@ export default function MainFarm() {
   const [zoneSummary, setZoneSummary] = useState(() => {
     try {
       const cached = localStorage.getItem(`zone_summary_${farmIdx}`);
-      return cached || "오늘 해충 탐지 정보를 분석 중입니다...";
+      return cached || '오늘 해충 탐지 정보를 분석 중입니다...';
     } catch {
-      return "오늘 해충 탐지 정보를 분석 중입니다...";
+      return '오늘 해충 탐지 정보를 분석 중입니다...';
     }
   });
   const [summaryLoading, setSummaryLoading] = useState(true);
@@ -67,19 +68,19 @@ export default function MainFarm() {
   // 업데이트 상태 관리
   const [lastSummaryUpdate, setLastSummaryUpdate] = useState(null);
   const [lastMapUpdate, setLastMapUpdate] = useState(null);
-  const [summaryStatus, setSummaryStatus] = useState("loading"); // 'loading', 'success', 'error', 'cached'
-  const [mapStatus, setMapStatus] = useState("loading"); // 'loading', 'success', 'error', 'cached'
+  const [summaryStatus, setSummaryStatus] = useState('loading'); // 'loading', 'success', 'error', 'cached'
+  const [mapStatus, setMapStatus] = useState('loading'); // 'loading', 'success', 'error', 'cached'
 
   // 시간 포맷팅 함수
   const getTimeAgo = (timestamp) => {
-    if (!timestamp) return "업데이트 없음";
+    if (!timestamp) return '업데이트 없음';
 
     const now = new Date();
     const diff = now - new Date(timestamp);
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
 
-    if (minutes < 1) return "방금 전";
+    if (minutes < 1) return '방금 전';
     if (minutes < 60) return `${minutes}분 전`;
     if (hours < 24) return `${hours}시간 전`;
     return `${Math.floor(hours / 24)}일 전`;
@@ -88,16 +89,16 @@ export default function MainFarm() {
   // 상태별 메시지
   const getStatusMessage = (status) => {
     switch (status) {
-      case "loading":
-        return "업데이트 중...";
-      case "success":
-        return "최신 데이터";
-      case "error":
-        return "연결 실패";
-      case "cached":
-        return "캐시된 데이터";
+      case 'loading':
+        return '업데이트 중...';
+      case 'success':
+        return '최신 데이터';
+      case 'error':
+        return '연결 실패';
+      case 'cached':
+        return '캐시된 데이터';
       default:
-        return "상태 확인 중...";
+        return '상태 확인 중...';
     }
   };
 
@@ -106,15 +107,15 @@ export default function MainFarm() {
 
   // 네비게이션 함수들 - useCallback으로 최적화
   const handleDailyReport = useCallback(() => {
-    navigate("/report/daily");
+    navigate('/report/daily');
   }, [navigate]);
 
   const handleMonthlyReport = useCallback(() => {
-    navigate("/report/monthly");
+    navigate('/report/monthly');
   }, [navigate]);
 
   const handleYearlyReport = useCallback(() => {
-    navigate("/report/yearly");
+    navigate('/report/yearly');
   }, [navigate]);
 
   // 범례용 최소·최대값 (온실 데이터 기반) - 메모이제이션으로 성능 최적화
@@ -149,13 +150,13 @@ export default function MainFarm() {
       // 캐시된 데이터가 있으면 즉시 표시 (빠른 초기 로딩)
       if (cachedSummary) {
         setZoneSummary(cachedSummary);
-        setSummaryStatus("cached");
+        setSummaryStatus('cached');
         const cacheTimestamp = localStorage.getItem(`${summaryKey}_timestamp`);
         setLastSummaryUpdate(cacheTimestamp);
       } else {
         // 캐시가 없을 때만 초기 메시지 설정
-        setZoneSummary("오늘 해충 탐지 정보를 분석 중입니다...");
-        setSummaryStatus("loading");
+        setZoneSummary('오늘 해충 탐지 정보를 분석 중입니다...');
+        setSummaryStatus('loading');
       }
 
       // 캐시 여부와 관계없이 항상 최신 데이터 요청
@@ -172,7 +173,7 @@ export default function MainFarm() {
       // 캐시된 데이터가 있으면 즉시 표시하고 로딩 완료 처리
       if (cachedGreenhouse) {
         setGreenhouseData(cachedGreenhouse);
-        setMapStatus("cached");
+        setMapStatus('cached');
         const cacheTimestamp = localStorage.getItem(
           `${greenhouseKey}_timestamp`
         );
@@ -209,19 +210,19 @@ export default function MainFarm() {
         setGreenhouseLoading(false);
 
         setZoneSummary(
-          "서버 연결이 지연되고 있습니다. 잠시 후 다시 시도해주세요."
+          '서버 연결이 지연되고 있습니다. 잠시 후 다시 시도해주세요.'
         );
         setTodayStats({ todayCount: 0, insectTypeCount: 0, zoneCount: 0 });
         setGreenhouseData([
-          { ghIdx: 1, ghName: "1번 구역", todayInsectCount: 0 },
-          { ghIdx: 2, ghName: "2번 구역", todayInsectCount: 0 },
-          { ghIdx: 3, ghName: "3번 구역", todayInsectCount: 0 },
-          { ghIdx: 4, ghName: "4번 구역", todayInsectCount: 0 },
-          { ghIdx: 5, ghName: "5번 구역", todayInsectCount: 0 },
-          { ghIdx: 6, ghName: "6번 구역", todayInsectCount: 0 },
-          { ghIdx: 7, ghName: "7번 구역", todayInsectCount: 0 },
-          { ghIdx: 8, ghName: "8번 구역", todayInsectCount: 0 },
-          { ghIdx: 9, ghName: "9번 구역", todayInsectCount: 0 },
+          { ghIdx: 1, ghName: '1번 구역', todayInsectCount: 0 },
+          { ghIdx: 2, ghName: '2번 구역', todayInsectCount: 0 },
+          { ghIdx: 3, ghName: '3번 구역', todayInsectCount: 0 },
+          { ghIdx: 4, ghName: '4번 구역', todayInsectCount: 0 },
+          { ghIdx: 5, ghName: '5번 구역', todayInsectCount: 0 },
+          { ghIdx: 6, ghName: '6번 구역', todayInsectCount: 0 },
+          { ghIdx: 7, ghName: '7번 구역', todayInsectCount: 0 },
+          { ghIdx: 8, ghName: '8번 구역', todayInsectCount: 0 },
+          { ghIdx: 9, ghName: '9번 구역', todayInsectCount: 0 },
         ]);
       }, 20000);
 
@@ -238,7 +239,7 @@ export default function MainFarm() {
         ];
 
         // greenhouse API는 캐시가 신선하지 않을 때만 호출
-        if (typeof skipGreenhouseApi === "undefined" || !skipGreenhouseApi) {
+        if (typeof skipGreenhouseApi === 'undefined' || !skipGreenhouseApi) {
           apiCalls.push(
             retryApiCall(() => withTimeout(getTodayGreenhouses(farmIdx), 5000))
           ); // 5초로 증가
@@ -253,7 +254,7 @@ export default function MainFarm() {
           ? [
               results[0],
               results[1],
-              { status: "fulfilled", value: cachedGreenhouse },
+              { status: 'fulfilled', value: cachedGreenhouse },
             ] // 캐시된 데이터 사용
           : results;
 
@@ -262,11 +263,11 @@ export default function MainFarm() {
         // 타임아웃 취소 (API 응답이 왔으므로)
         clearTimeout(timeoutId);
 
-        if (summaryResult.status === "fulfilled") {
+        if (summaryResult.status === 'fulfilled') {
           // API 응답 구조 확인 - 다양한 가능성 체크
           let newSummary = null;
 
-          if (summaryResult.value && typeof summaryResult.value === "object") {
+          if (summaryResult.value && typeof summaryResult.value === 'object') {
             // 1. summary 필드가 있는 경우
             if (summaryResult.value.summary) {
               newSummary = summaryResult.value.summary;
@@ -279,7 +280,7 @@ export default function MainFarm() {
               newSummary = summaryResult.value.data.summary;
             }
             // 3. 응답 자체가 문자열인 경우
-            else if (typeof summaryResult.value === "string") {
+            else if (typeof summaryResult.value === 'string') {
               newSummary = summaryResult.value;
             }
             // 4. message 필드가 있는 경우
@@ -289,12 +290,12 @@ export default function MainFarm() {
           }
 
           // 최종 검증
-          if (!newSummary || newSummary.trim() === "") {
-            newSummary = "오늘의 요약 정보가 없습니다.";
+          if (!newSummary || newSummary.trim() === '') {
+            newSummary = '오늘의 요약 정보가 없습니다.';
           }
 
           setZoneSummary(newSummary);
-          setSummaryStatus("success");
+          setSummaryStatus('success');
           const now = new Date().toISOString();
           setLastSummaryUpdate(now);
 
@@ -302,17 +303,17 @@ export default function MainFarm() {
           setData(summaryKey, newSummary);
           localStorage.setItem(`${summaryKey}_timestamp`, now);
         } else {
-          setSummaryStatus("error");
+          setSummaryStatus('error');
           if (!cachedSummary) {
             setZoneSummary(
-              "요약 정보를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요."
+              '요약 정보를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.'
             );
           }
         }
         setSummaryLoading(false);
 
         // 2. 오늘 통계 결과 처리
-        if (todayResult.status === "fulfilled") {
+        if (todayResult.status === 'fulfilled') {
           const newStats = {
             todayCount: todayResult.value.todayCount || 0,
             insectTypeCount: todayResult.value.insectTypeCount || 0,
@@ -335,11 +336,11 @@ export default function MainFarm() {
         setTodayStatsLoading(false);
 
         // 3. 온실별 데이터 결과 처리
-        if (greenhouseResult.status === "fulfilled") {
+        if (greenhouseResult.status === 'fulfilled') {
           const data = greenhouseResult.value || [];
 
           setGreenhouseData(data);
-          setMapStatus("success");
+          setMapStatus('success');
           const now = new Date().toISOString();
           setLastMapUpdate(now);
 
@@ -348,19 +349,19 @@ export default function MainFarm() {
           cacheGreenhouseData(farmIdx, data);
           localStorage.setItem(`${greenhouseKey}_timestamp`, now);
         } else {
-          setMapStatus("error");
+          setMapStatus('error');
           if (!cachedGreenhouse) {
             // API 실패 시 더미 데이터 사용
             const fallbackGreenhouses = [
-              { ghIdx: 1, ghName: "1번 구역", todayInsectCount: 0 },
-              { ghIdx: 2, ghName: "2번 구역", todayInsectCount: 0 },
-              { ghIdx: 3, ghName: "3번 구역", todayInsectCount: 0 },
-              { ghIdx: 4, ghName: "4번 구역", todayInsectCount: 0 },
-              { ghIdx: 5, ghName: "5번 구역", todayInsectCount: 0 },
-              { ghIdx: 6, ghName: "6번 구역", todayInsectCount: 0 },
-              { ghIdx: 7, ghName: "7번 구역", todayInsectCount: 0 },
-              { ghIdx: 8, ghName: "8번 구역", todayInsectCount: 0 },
-              { ghIdx: 9, ghName: "9번 구역", todayInsectCount: 0 },
+              { ghIdx: 1, ghName: '1번 구역', todayInsectCount: 0 },
+              { ghIdx: 2, ghName: '2번 구역', todayInsectCount: 0 },
+              { ghIdx: 3, ghName: '3번 구역', todayInsectCount: 0 },
+              { ghIdx: 4, ghName: '4번 구역', todayInsectCount: 0 },
+              { ghIdx: 5, ghName: '5번 구역', todayInsectCount: 0 },
+              { ghIdx: 6, ghName: '6번 구역', todayInsectCount: 0 },
+              { ghIdx: 7, ghName: '7번 구역', todayInsectCount: 0 },
+              { ghIdx: 8, ghName: '8번 구역', todayInsectCount: 0 },
+              { ghIdx: 9, ghName: '9번 구역', todayInsectCount: 0 },
             ];
             setGreenhouseData(fallbackGreenhouses);
           }
@@ -374,7 +375,7 @@ export default function MainFarm() {
         setTodayStatsLoading(false);
         setGreenhouseLoading(false);
 
-        setZoneSummary("서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        setZoneSummary('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
         setTodayStats({ todayCount: 0, insectTypeCount: 0, zoneCount: 0 });
         setGreenhouseData([]);
       }
@@ -387,9 +388,9 @@ export default function MainFarm() {
   if (!farm)
     return (
       <div className="select-farm section flex flex-col bg-[url('/images/home_bg.jpg')] bg-center bg-cover">
-        <div className="cont-wrap text-center items-center justify-center">
-          <div className="mt-4 space-y-4 text-white">
-            <p className="text-2xl ">
+        <div className='cont-wrap text-center items-center justify-center'>
+          <div className='mt-4 space-y-4 text-white'>
+            <p className='text-2xl '>
               선택된 농장이 없습니다. <br />
               다시 선택해주세요.
             </p>
@@ -399,19 +400,19 @@ export default function MainFarm() {
     );
 
   // 온실 데이터 로딩 중일 때만 전체 로딩 표시 (다른 데이터는 부분적으로 표시)
-  if (greenhouseLoading) {
+  if (greenhouseLoading && greenhouseData.length === 0) {
     return (
-      <div className="section flex flex-col items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-gray-200 border-t-[#1A6900] rounded-full mx-auto mb-4"></div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+      <div className='section flex flex-col items-center justify-center bg-gray-50'>
+        <div className='bg-white p-8 rounded-lg shadow-lg text-center'>
+          <div className='animate-spin w-12 h-12 border-4 border-gray-200 border-t-[#1A6900] rounded-full mx-auto mb-4'></div>
+          <h3 className='text-lg font-semibold text-gray-700 mb-2'>
             농장 데이터 로딩 중
           </h3>
-          <p className="text-gray-500">잠시만 기다려주세요...</p>
-          <div className="mt-4 text-sm text-gray-400">
+          <p className='text-gray-500'>잠시만 기다려주세요...</p>
+          <div className='mt-4 text-sm text-gray-400'>
             {summaryLoading && todayStatsLoading
-              ? "초기 로딩 중..."
-              : "거의 완료되었습니다!"}
+              ? '초기 로딩 중...'
+              : '거의 완료되었습니다!'}
           </div>
         </div>
       </div>
@@ -419,16 +420,16 @@ export default function MainFarm() {
   }
 
   return (
-    <div className="main-farm noti-wrap p-4 flex gap-4 overflow-hidden">
+    <div className='main-farm noti-wrap p-4 flex gap-4'>
       <NotiList />
 
-      <div className="right flex-1 w-full flex gap-4">
-        <div className="r-lt">
-          <div className="farm_map h-[65%]">
+      <div className='right flex-1 w-full flex gap-4'>
+        <div className='r-lt'>
+          <div className='farm_map h-[65%]'>
             <Legend min={min} max={max} />
-            <div className="flex flex-col w-full h-full gap-1">
+            <div className='flex flex-col w-full h-full gap-1'>
               <BaseFarmMap
-                mode="overview"
+                mode='overview'
                 data={[]}
                 greenhouseData={greenhouseData}
                 rows={3}
@@ -438,30 +439,30 @@ export default function MainFarm() {
                 interactive={false}
                 // onCellClick={id => navigate(`/regions/${id}`)}
               />
-              <div className="last-update">
+              <div className='last-update'>
                 마지막 업데이트: {getTimeAgo(lastMapUpdate)} (
                 {getStatusMessage(mapStatus)})
               </div>
             </div>
           </div>
-          <div className="baekgu-msg-wrap h-[35%]">
-            <div className="thumb">
-              <img src="/images/talk_109.png" alt="" />
+          <div className='baekgu-msg-wrap h-[35%]'>
+            <div className='thumb'>
+              <img src='/images/talk_109.png' alt='' />
             </div>
-            <div className="baekgu-msg flex flex-col w-full h-full gap-1">
-              <div className="scrl-custom overflow-y-auto h-full">
+            <div className='baekgu-msg flex flex-col w-full h-full gap-1'>
+              <div className='scrl-custom overflow-y-auto h-full'>
                 {summaryLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full"></div>
+                  <div className='flex items-center justify-center h-full'>
+                    <div className='flex items-center gap-2 text-gray-500'>
+                      <div className='animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full'></div>
                       <span>백구가 농장 데이터를 분석하고 있습니다...</span>
                     </div>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap">{zoneSummary}</div>
+                  <div className='whitespace-pre-wrap'>{zoneSummary}</div>
                 )}
               </div>
-              <div className="last-update">
+              <div className='last-update'>
                 마지막 업데이트: {getTimeAgo(lastSummaryUpdate)} (
                 {getStatusMessage(summaryStatus)})
               </div>
@@ -469,60 +470,62 @@ export default function MainFarm() {
           </div>
         </div>
 
-        <div className="r-rt flex flex-col">
-          <Weather />
+        <div className='r-rt flex flex-col'>
+          <WeatherProvider>
+            <Weather />
+          </WeatherProvider>
           {/* <div className="tit">아래와 같이 <br/>감지되었습니다.</div> */}
           <hr />
-          <ul className="today_detecting flex-[1]">
+          <ul className='today_detecting flex-[1]'>
             <li>
-              <div className="today_tit">해충 수</div>
-              <div className="today_desc">
+              <div className='today_tit'>해충 수</div>
+              <div className='today_desc'>
                 {todayStatsLoading ? (
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-400">--</span>
+                  <div className='flex items-center gap-1'>
+                    <span className='text-gray-400'>--</span>
                   </div>
                 ) : (
                   <b>{todayStats.todayCount}</b>
-                )}{" "}
-                {!todayStatsLoading && "마리"}
+                )}{' '}
+                {!todayStatsLoading && '마리'}
               </div>
             </li>
             <li>
-              <div className="today_tit">해충 종류</div>
-              <div className="today_desc">
+              <div className='today_tit'>해충 종류</div>
+              <div className='today_desc'>
                 {todayStatsLoading ? (
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-400">--</span>
+                  <div className='flex items-center gap-1'>
+                    <span className='text-gray-400'>--</span>
                   </div>
                 ) : (
                   <b>{todayStats.insectTypeCount}</b>
-                )}{" "}
-                {!todayStatsLoading && "종"}
+                )}{' '}
+                {!todayStatsLoading && '종'}
               </div>
             </li>
             <li>
-              <div className="today_tit">발견된 구역</div>
-              <div className="today_desc">
+              <div className='today_tit'>발견된 구역</div>
+              <div className='today_desc'>
                 {todayStatsLoading ? (
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-400">--</span>
+                  <div className='flex items-center gap-1'>
+                    <span className='text-gray-400'>--</span>
                   </div>
                 ) : (
                   <b>{todayStats.zoneCount}</b>
-                )}{" "}
-                {!todayStatsLoading && "곳"}
+                )}{' '}
+                {!todayStatsLoading && '곳'}
               </div>
             </li>
           </ul>
           <hr />
-          <div className="day-check-buttons flex-[1]">
-            <div className="btn stat-button" onClick={handleDailyReport}>
+          <div className='day-check-buttons flex-[1]'>
+            <div className='btn stat-button' onClick={handleDailyReport}>
               일간 통계
             </div>
-            <div className="btn stat-button" onClick={handleMonthlyReport}>
+            <div className='btn stat-button' onClick={handleMonthlyReport}>
               월간 통계
             </div>
-            <div className="btn stat-button" onClick={handleYearlyReport}>
+            <div className='btn stat-button' onClick={handleYearlyReport}>
               연간 통계
             </div>
           </div>

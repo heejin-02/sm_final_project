@@ -1,9 +1,13 @@
 import React, { useMemo } from 'react';
 import {
   ResponsiveContainer,
-  LineChart, CartesianGrid,
-  XAxis, YAxis, Tooltip,
-  Legend, Line
+  LineChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Line,
 } from 'recharts';
 
 export default function DailyDetectionChart({ hourlyStats }) {
@@ -35,17 +39,17 @@ export default function DailyDetectionChart({ hourlyStats }) {
 
   // 3) 렌더
   return (
-    <div className="w-full h-full min-w-0">
+    <div className='w-full h-full min-w-0'>
       {/* 부모가 실제 높이를 가지고 있어야 합니다. (예: 상위 div에 h-64 등) */}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width='100%' height='100%'>
         <LineChart
           data={chartData}
           margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray='3 3' />
           <XAxis
-            dataKey="time"
-            type="number"
+            dataKey='time'
+            type='number'
             domain={[0, 23]}
             ticks={Array.from({ length: 24 }, (_, i) => i)}
             tickFormatter={(t) => `${t}시`}
@@ -57,10 +61,10 @@ export default function DailyDetectionChart({ hourlyStats }) {
           />
           <Legend wrapperStyle={{ paddingTop: '10px', margin: 0 }} />
           <Line
-            type="monotone"
-            dataKey="count"
-            name="탐지 해충 수"
-            stroke="#ef4444"
+            type='monotone'
+            dataKey='count'
+            name='탐지 해충 수'
+            stroke='#ef4444'
             strokeWidth={3}
             dot={(props) => {
               const { cx, cy, payload } = props;
@@ -72,7 +76,7 @@ export default function DailyDetectionChart({ hourlyStats }) {
                     cy={cy}
                     r={6}
                     strokeWidth={2}
-                    fill="#ef4444"
+                    fill='#ef4444'
                   />
                 );
               }

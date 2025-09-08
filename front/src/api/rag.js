@@ -8,7 +8,7 @@ export const askInsectInfo = async (insectName) => {
   try {
     const response = await axios.post(`${BASE_URL}/ml/chat`, {
       insect: insectName,
-      question: '이 해충의 특성과 방제 방법을 알려주세요'
+      question: '이 해충의 특성과 방제 방법을 알려주세요',
     });
     return response.data;
   } catch (error) {
@@ -21,7 +21,7 @@ export const askInsectInfo = async (insectName) => {
 export const askQuestion = async (question) => {
   try {
     const response = await axios.post(`${BASE_URL}/ml/ask`, {
-      question
+      question,
     });
     return response.data;
   } catch (error) {

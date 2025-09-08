@@ -41,26 +41,33 @@ export default function AdminMain() {
       // console.log('🔍 백엔드에서 받은 원본 데이터:', rawUserList.length, '건');
 
       // admin 계정 제외
-      const filteredList = rawUserList.filter(user => user.userPhone !== 'admin');
+      const filteredList = rawUserList.filter(
+        (user) => user.userPhone !== 'admin'
+      );
 
       // console.log('🔍 admin 제외 후:', filteredList.length, '건');
       // 회원별로 중복 제거 (userPhone 기준으로 farmIdx가 가장 낮은 농장을 대표로 사용)
       const uniqueUserMap = new Map();
-      filteredList.forEach(user => {
+      filteredList.forEach((user) => {
         const existingUser = uniqueUserMap.get(user.userPhone);
         if (!existingUser) {
           // 첫 번째 회원 정보 저장
           uniqueUserMap.set(user.userPhone, user);
         } else {
           // 기존 회원이 있으면 farmIdx가 더 낮은 농장으로 업데이트
-          if (user.farmIdx && existingUser.farmIdx && user.farmIdx < existingUser.farmIdx) {
+          if (
+            user.farmIdx &&
+            existingUser.farmIdx &&
+            user.farmIdx < existingUser.farmIdx
+          ) {
             uniqueUserMap.set(user.userPhone, user);
           }
         }
       });
 
-      const userList = Array.from(uniqueUserMap.values())
-        .sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt)); // 가입일자 최신순
+      const userList = Array.from(uniqueUserMap.values()).sort(
+        (a, b) => new Date(b.joinedAt) - new Date(a.joinedAt)
+      ); // 가입일자 최신순
 
       // console.log('중복 제거 후 최종 회원 수:', userList.length, '명');
 
@@ -69,7 +76,7 @@ export default function AdminMain() {
       setTotalCount(userList.length);
 
       const duplicatePhones = userList
-        .map(user => user.userPhone)
+        .map((user) => user.userPhone)
         .filter((v, i, arr) => arr.indexOf(v) !== i);
       // if (duplicatePhones.length) {
       //   console.warn('중복된 userPhone 있음:', duplicatePhones);
@@ -77,7 +84,6 @@ export default function AdminMain() {
 
       // 첫 페이지 데이터 설정
       updateDisplayedData(userList, 1);
-
     } catch (error) {
       // console.error('회원 정보 조회 실패:', error);
       setError('데이터 요청이 실패했습니다. 서버 연결을 확인해주세요.');
@@ -124,7 +130,7 @@ export default function AdminMain() {
     }
 
     // 검색 필터링 (admin 계정은 이미 제외된 상태)
-    const filtered = allUserList.filter(user => {
+    const filtered = allUserList.filter((user) => {
       const searchValue = keyword.toLowerCase();
 
       switch (searchField) {
@@ -135,7 +141,9 @@ export default function AdminMain() {
           // }
           return matches;
         case 'farm_name':
-          const farmMatches = user.farmName?.toLowerCase().includes(searchValue);
+          const farmMatches = user.farmName
+            ?.toLowerCase()
+            .includes(searchValue);
           // if (farmMatches) {
           //   console.log('매칭된 농장:', user.farmName, user.userName);
           // }
@@ -185,38 +193,35 @@ export default function AdminMain() {
 
   if (loading) {
     return (
-      <div className="section flex items-center justify-center">
-        <Loader message="회원 정보를 불러오는 중..." />
+      <div className='section flex items-center justify-center'>
+        <Loader message='회원 정보를 불러오는 중...' />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="section p-6">
-        <div className="inner">
-          <h1 className="tit-head">전체 회원 정보</h1>
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-gray-600 text-base">
+      <div className='section p-6'>
+        <div className='inner'>
+          <h1 className='tit-head'>전체 회원 정보</h1>
+          <div className='flex items-center justify-between mb-6'>
+            <p className='text-gray-600 text-base'>
               총 {totalCount}명의 회원 (페이지당 {pageSize}개씩 표시)
             </p>
-            <button 
+            <button
               onClick={() => setShowAddUserModal(true)}
-              className="btn btn-primary"
+              className='btn btn-primary'
             >
               회원 등록
             </button>
           </div>
 
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <div className="text-red-600 text-lg font-medium mb-2">
+          <div className='bg-red-50 border border-red-200 rounded-lg p-6 text-center'>
+            <div className='text-red-600 text-lg font-medium mb-2'>
               ⚠️ 오류 발생
             </div>
-            <p className="text-red-700 mb-4">{error}</p>
-            <button
-              onClick={() => fetchAllUsers()}
-              className="btn btn-accent"
-            >
+            <p className='text-red-700 mb-4'>{error}</p>
+            <button onClick={() => fetchAllUsers()} className='btn btn-accent'>
               다시 시도
             </button>
           </div>
@@ -226,58 +231,63 @@ export default function AdminMain() {
   }
 
   return (
-    <div className="section">
-      <div className="inner">
-        <h1 className="tit-head">전체 회원 정보</h1>
-        
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-gray-600 mt-1">
+    <div className='section'>
+      <div className='inner'>
+        <h1 className='tit-head'>전체 회원 정보</h1>
+
+        <div className='flex justify-between items-center mb-4'>
+          <p className='text-gray-600 mt-1'>
             총 {totalCount}명의 회원 (페이지당 {pageSize}개씩 표시)
           </p>
-          <button 
+          <button
             onClick={() => setShowAddUserModal(true)}
-            className="btn btn-primary"
+            className='btn btn-primary'
           >
             회원 등록
           </button>
         </div>
 
         {/* 검색 폼 */}
-        <div className="search-bar">
-          <form onSubmit={handleSearch} className="flex gap-2 justify-between w-full">
-            <div className="flex-1">
+        <div className='search-bar'>
+          <form
+            onSubmit={handleSearch}
+            className='flex gap-2 justify-between w-full'
+          >
+            <div className='flex-1'>
               {/* <label className="block text-sm font-medium text-gray-700 mb-2">
                 검색 조건
               </label> */}
               <select
                 value={searchField}
                 onChange={(e) => setSearchField(e.target.value)}
-                className="input"
+                className='input'
               >
-                <option value="" disabled>검색 조건</option>
-                <option value="user_name">회원 이름</option>
-                <option value="farm_name">농장 이름</option>
+                <option value='' disabled>
+                  검색 조건
+                </option>
+                <option value='user_name'>회원 이름</option>
+                <option value='farm_name'>농장 이름</option>
               </select>
             </div>
-            <div className="flex-2">
+            <div className='flex-2'>
               {/* <label className="block text-sm font-medium text-gray-700 mb-2">
                 검색어
               </label> */}
               <input
-                type="text"
+                type='text'
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="검색어를 입력하세요"
-                className="input"
+                placeholder='검색어를 입력하세요'
+                className='input'
               />
             </div>
-            <button type="submit" className="btn btn-accent">
+            <button type='submit' className='btn btn-accent'>
               검색
             </button>
             <button
-              type="button"
+              type='button'
               onClick={handleReset}
-              className="btn btn-secondary"
+              className='btn btn-secondary'
             >
               검색 초기화
             </button>
@@ -286,20 +296,18 @@ export default function AdminMain() {
 
         {/* 검색 결과 표시 */}
         {isSearched && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="text-blue-800">
-                <span className="font-medium">
-                  {searchedField === 'user_name' ? '회원 이름' : '농장 이름'}에서
-                  "{searchedKeyword}" 검색 결과
+          <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
+            <div className='flex items-center justify-between'>
+              <div className='text-blue-800'>
+                <span className='font-medium'>
+                  {searchedField === 'user_name' ? '회원 이름' : '농장 이름'}
+                  에서 "{searchedKeyword}" 검색 결과
                 </span>
-                <span className="ml-2 text-blue-600">
-                  ({totalCount}건)
-                </span>
+                <span className='ml-2 text-blue-600'>({totalCount}건)</span>
               </div>
               <button
                 onClick={handleReset}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer"
+                className='text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer'
               >
                 ✕ 검색 해제
               </button>
@@ -308,9 +316,9 @@ export default function AdminMain() {
         )}
 
         {/* 회원 목록 테이블 */}
-        <div className="table-wrap">
-          <div className="overflow-x-auto">
-            <table className="table">
+        <div className='table-wrap'>
+          <div className='overflow-x-auto'>
+            <table className='table'>
               <thead>
                 <tr>
                   <th>번호</th>
@@ -327,15 +335,13 @@ export default function AdminMain() {
                   displayedUserList.map((user, index) => (
                     <tr
                       key={`${user.userPhone}-${user.farmIdx || index}`}
-                      className="clickable"
+                      className='clickable'
                       onClick={() => handleEditUser(user.userPhone)}
                       data-farm-idx={user.farmIdx}
                     >
                       <td>{(currentPage - 1) * pageSize + index + 1}</td>
                       <td>
-                        <span className="text-blue-600">
-                          {user.userName}
-                        </span>
+                        <span className='text-blue-600'>{user.userName}</span>
                       </td>
                       <td>{user.userPhone}</td>
                       <td>{user.farmName}</td>
@@ -346,7 +352,7 @@ export default function AdminMain() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="text-center text-gray-500">
+                    <td colSpan='7' className='text-center text-gray-500'>
                       검색 결과가 없습니다.
                     </td>
                   </tr>
@@ -358,18 +364,24 @@ export default function AdminMain() {
 
         {/* 페이지네이션 */}
         {totalPages > 1 && (
-          <div className="pg_wrap">
-            <nav className="flex space-x-2">
+          <div className='pg_wrap'>
+            <nav className='flex space-x-2'>
               {/* 처음 버튼 (5페이지 이상일 때만) */}
               {totalPages >= 5 && currentPage > 1 && (
-                <button className='pg-btn' onClick={() => handlePageChange(1)}>처음</button>
+                <button className='pg-btn' onClick={() => handlePageChange(1)}>
+                  처음
+                </button>
               )}
 
               {/* 이전 5페이지 그룹 버튼 */}
               {Math.ceil(currentPage / 5) > 1 && (
                 <button
                   className='pg-btn'
-                  onClick={() => handlePageChange(Math.max(1, Math.floor((currentPage - 1) / 5) * 5))}
+                  onClick={() =>
+                    handlePageChange(
+                      Math.max(1, Math.floor((currentPage - 1) / 5) * 5)
+                    )
+                  }
                 >
                   이전
                 </button>
@@ -381,11 +393,16 @@ export default function AdminMain() {
                 const startPage = (currentGroup - 1) * 5 + 1;
                 const endPage = Math.min(startPage + 4, totalPages);
 
-                return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((page) => (
+                return Array.from(
+                  { length: endPage - startPage + 1 },
+                  (_, i) => startPage + i
+                ).map((page) => (
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`pg-btn ${page === currentPage ? 'current' : ''}`}
+                    className={`pg-btn ${
+                      page === currentPage ? 'current' : ''
+                    }`}
                   >
                     {page}
                   </button>
@@ -396,7 +413,11 @@ export default function AdminMain() {
               {Math.ceil(currentPage / 5) < Math.ceil(totalPages / 5) && (
                 <button
                   className='pg-btn'
-                  onClick={() => handlePageChange(Math.min(totalPages, Math.ceil(currentPage / 5) * 5 + 1))}
+                  onClick={() =>
+                    handlePageChange(
+                      Math.min(totalPages, Math.ceil(currentPage / 5) * 5 + 1)
+                    )
+                  }
                 >
                   다음
                 </button>
@@ -404,7 +425,12 @@ export default function AdminMain() {
 
               {/* 맨끝 버튼 (5페이지 이상일 때만) */}
               {totalPages >= 5 && currentPage < totalPages && (
-                <button className='pg-btn' onClick={() => handlePageChange(totalPages)}>맨끝</button>
+                <button
+                  className='pg-btn'
+                  onClick={() => handlePageChange(totalPages)}
+                >
+                  맨끝
+                </button>
               )}
             </nav>
           </div>

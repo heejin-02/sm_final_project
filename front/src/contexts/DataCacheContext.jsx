@@ -17,8 +17,11 @@ export function DataCacheProvider({ children }) {
         // 만료된 캐시 제거
         const now = Date.now();
         const validCache = {};
-        Object.keys(parsed).forEach(key => {
-          if (parsed[key].timestamp && (now - parsed[key].timestamp) < CACHE_DURATION) {
+        Object.keys(parsed).forEach((key) => {
+          if (
+            parsed[key].timestamp &&
+            now - parsed[key].timestamp < CACHE_DURATION
+          ) {
             validCache[key] = parsed[key];
           }
         });
@@ -41,12 +44,12 @@ export function DataCacheProvider({ children }) {
 
   // 캐시 설정
   const setData = (key, data) => {
-    setCache(prev => ({
+    setCache((prev) => ({
       ...prev,
       [key]: {
         data,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     }));
   };
 
@@ -54,18 +57,18 @@ export function DataCacheProvider({ children }) {
   const getData = (key) => {
     const cached = cache[key];
     if (!cached) return null;
-    
+
     // 만료 체크
     if (Date.now() - cached.timestamp > CACHE_DURATION) {
       // 만료된 캐시 제거
-      setCache(prev => {
+      setCache((prev) => {
         const newCache = { ...prev };
         delete newCache[key];
         return newCache;
       });
       return null;
     }
-    
+
     return cached.data;
   };
 
@@ -76,7 +79,7 @@ export function DataCacheProvider({ children }) {
 
   // 캐시 삭제
   const clearData = (key) => {
-    setCache(prev => {
+    setCache((prev) => {
       const newCache = { ...prev };
       delete newCache[key];
       return newCache;
@@ -104,7 +107,7 @@ export function DataCacheProvider({ children }) {
     const greenhouseData = getGreenhouseData(farmIdx);
     if (!greenhouseData || !ghName) return null;
 
-    const found = greenhouseData.find(gh => gh.ghName === ghName);
+    const found = greenhouseData.find((gh) => gh.ghName === ghName);
     return found ? found.ghIdx : null;
   };
 
@@ -117,7 +120,7 @@ export function DataCacheProvider({ children }) {
     // 구역 데이터 전용 함수들
     setGreenhouseData,
     getGreenhouseData,
-    findGhIdxByName
+    findGhIdxByName,
   };
 
   return (

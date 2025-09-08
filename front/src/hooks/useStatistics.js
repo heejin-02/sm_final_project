@@ -7,7 +7,7 @@ import {
   getYearlyStats,
   formatDateForAPI,
   formatMonthForAPI,
-  formatYearForAPI
+  formatYearForAPI,
 } from '../api/report';
 
 export function useStatistics({ period, date }) {
@@ -65,14 +65,18 @@ export function useStatistics({ period, date }) {
       }
 
       const timerLabel = `stats-${period}`;
-      console.time(timerLabel);
+      // console.time(timerLabel);
       const data = await fetchFn({ signal: abortRef.current.signal }); // axios면 무시됨, fetch면 전달됨
-      console.timeEnd(timerLabel);
+      // console.timeEnd(timerLabel);
 
       setStats(data);
     } catch (e) {
       // 취소는 조용히 무시
-      if (e?.name === 'CanceledError' || e?.code === 'ERR_CANCELED' || e?.name === 'AbortError') {
+      if (
+        e?.name === 'CanceledError' ||
+        e?.code === 'ERR_CANCELED' ||
+        e?.name === 'AbortError'
+      ) {
         return;
       }
       setError(e?.message || '통계 데이터를 불러오는데 실패했습니다.');

@@ -9,7 +9,9 @@ export default function GroupedDetailList({ stats, period }) {
 
   const toggleGroup = (groupKey) => {
     const newExpanded = new Set(expandedGroups);
-    newExpanded.has(groupKey) ? newExpanded.delete(groupKey) : newExpanded.add(groupKey);
+    newExpanded.has(groupKey)
+      ? newExpanded.delete(groupKey)
+      : newExpanded.add(groupKey);
     setExpandedGroups(newExpanded);
   };
 
@@ -20,12 +22,12 @@ export default function GroupedDetailList({ stats, period }) {
   // 일간: 단순 리스트
   if (period === 'daily') {
     return (
-      <div className="bordered-box grouped-detail-list">
-        <h2 className="text-xl font-bold mb-4">상세 현황</h2>
-        <div className="table-wrap scrl-custom">
-          <table className="table border">
+      <div className='bordered-box grouped-detail-list'>
+        <h2 className='text-xl font-bold mb-4'>상세 현황</h2>
+        <div className='table-wrap scrl-custom'>
+          <table className='table border'>
             <thead>
-              <tr className="border-b">
+              <tr className='border-b'>
                 <th>탐지 시간</th>
                 <th>탐지 구역</th>
                 <th>해충 이름</th>
@@ -37,7 +39,7 @@ export default function GroupedDetailList({ stats, period }) {
                 stats.details.map((item) => (
                   <tr
                     key={item.anlsIdx}
-                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    className='border-b hover:bg-gray-50 cursor-pointer'
                     onClick={() => handleRowClick(item.anlsIdx)}
                   >
                     <td>{item.time}</td>
@@ -48,7 +50,7 @@ export default function GroupedDetailList({ stats, period }) {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="p-4 text-center text-gray-500">
+                  <td colSpan='4' className='p-4 text-center text-gray-500'>
                     데이터가 없습니다.
                   </td>
                 </tr>
@@ -69,31 +71,35 @@ export default function GroupedDetailList({ stats, period }) {
       : null;
 
   return (
-    <div className="bordered-box grouped-detail-list">
-      <h2 className="text-xl font-bold mb-4">상세 현황</h2>
+    <div className='bordered-box grouped-detail-list'>
+      <h2 className='text-xl font-bold mb-4'>상세 현황</h2>
 
       {groupedData ? (
-        <div className="space-y-2">
+        <div className='space-y-2'>
           {Object.entries(groupedData).map(([groupKey, group]) => (
-            <div key={groupKey} className="border rounded-lg overflow-hidden">
+            <div key={groupKey} className='border rounded-lg overflow-hidden'>
               {/* 토글 헤더 */}
               <button
-                className="w-full p-4 text-left hover:bg-gray-50 flex items-center justify-between"
+                className='w-full p-4 text-left hover:bg-gray-50 flex items-center justify-between'
                 onClick={() => toggleGroup(groupKey)}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{expandedGroups.has(groupKey) ? '▼' : '▶'}</span>
-                  <span className="font-semibold">{group.title}</span>
-                  <span className="text-sm text-gray-600">({group.count}건)</span>
+                <div className='flex items-center gap-2'>
+                  <span className='text-lg'>
+                    {expandedGroups.has(groupKey) ? '▼' : '▶'}
+                  </span>
+                  <span className='font-semibold'>{group.title}</span>
+                  <span className='text-sm text-gray-600'>
+                    ({group.count}건)
+                  </span>
                 </div>
               </button>
 
               {/* 토글 내용 */}
               {expandedGroups.has(groupKey) && (
-                <div className="table-wrap scrl-custom">
-                  <table className="table border">
+                <div className='table-wrap scrl-custom'>
+                  <table className='table border'>
                     <thead>
-                      <tr className="bg-gray-50">
+                      <tr className='bg-gray-50'>
                         <th>탐지 시간</th>
                         <th>탐지 구역</th>
                         <th>해충 이름</th>
@@ -104,7 +110,7 @@ export default function GroupedDetailList({ stats, period }) {
                       {group.items.map((item) => (
                         <tr
                           key={item.anlsIdx}
-                          className="border-b hover:bg-blue-50 cursor-pointer"
+                          className='border-b hover:bg-blue-50 cursor-pointer'
                           onClick={() => handleRowClick(item.anlsIdx)}
                         >
                           <td>{item.time}</td>
@@ -121,7 +127,7 @@ export default function GroupedDetailList({ stats, period }) {
           ))}
         </div>
       ) : (
-        <div className="p-4 text-center text-gray-500">데이터가 없습니다.</div>
+        <div className='p-4 text-center text-gray-500'>데이터가 없습니다.</div>
       )}
     </div>
   );
